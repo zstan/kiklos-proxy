@@ -3,7 +3,10 @@ package org.amrmostafa.experiments.netty;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.jboss.netty.handler.codec.http.Cookie;
+import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMessage;
@@ -21,7 +24,10 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.util.CharsetUtil;
+
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
+
 import org.redisson.Redisson;
 
 import target.eyes.vag.codec.xml.javolution.VASTv2Parser;
@@ -39,7 +45,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private final String EMPTY_VAST = "<VAST /> ";
 	private final String FAKE_USER_AGENT = "Opera/9.80 (X11; Linux x86_64) Presto/2.12.388 Version/12.16";
 	private static final String FILE_ENCODING = UTF_8.name();
-	private static final String TEXT_CONTENT_TYPE = "text/plain; charset=" + FILE_ENCODING;	
+	private static final String TEXT_CONTENT_TYPE = "text/plain; charset=" + FILE_ENCODING;
+	private static final String SESSION_ID_COOKIE = "sess";
 	
 	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements) {
 		asyncClient = c;
@@ -80,6 +87,11 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			return;
 		}
 		
+		System.out.println("\n\n---------------------------------------------");		
+		
+		Cookie cook = findSessionIdCookie((HttpRequest)e.getMessage());		
+		System.out.println("cook: " + cook.getName() + ":" + cook.getValue());
+		
 		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).addHeader("user-agent", FAKE_USER_AGENT).execute(new AsyncCompletionHandler<Response>(){
 
 			StringBuilder buff = new StringBuilder(4096);
@@ -103,14 +115,13 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				writeResp(e);
 				//List<String> list = redisson.getList("anyList");			
 				//List<String> list = redisson. getList("mylist");
-				VAST v = VASTv2Parser.parse(response.getResponseBody());
+				//VAST v = VASTv2Parser.parse(response.getResponseBody());
 				//System.out.println();
-				//list.add("some test string");
-				System.out.println("---------------------------------------------");
+				//list.add("some test string");				
 				System.out.println("req incoming : " + Uri);
 				System.out.println("req transormed : " + newUri);
 				System.out.println("status code : " + response.getStatusCode());
-				//System.out.println("request :" + response.getResponseBody());
+				System.out.println("request size:" + response.getResponseBody().length());
 				return response;
 			}
 
@@ -127,4 +138,20 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		e.getCause().printStackTrace();
 		e.getChannel().close();
 	}
+	
+	private Cookie findSessionIdCookie(HttpRequest request) {
+		String cookieString = request.headers().get(COOKIE);
+		if (cookieString != null) {
+			CookieDecoder cookieDecoder = new CookieDecoder();
+			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+			if (!cookies.isEmpty()) {
+				for (Cookie cookie : cookies) {
+					if (cookie.getName().equals(SESSION_ID_COOKIE)) {
+						return cookie;
+					}
+				}
+			}
+		}
+		return null;
+	}	
 }
