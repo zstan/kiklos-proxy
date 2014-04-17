@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<VAST version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast.xsd">
+<Ad id="3125665"><Wrapper><AdSystem version="1.0">adnxs</AdSystem>
+<VASTAdTagURI><![CDATA[http://spc.cepghffemeifkhheeeffbhed.vast2as3.telemetryverification.net/?]]></VASTAdTagURI>
+<Impression><![CDATA[http://ib.adnxs.com/it?enc=AAAAAAAAFEAAAAAAAAAUQAAAAAAAAPA_AAAAAAAAFEAAAAAAAAAUQKGD1mgGb-UJHHxHWjwzzW7S1UlQAAAAAJY5DgDuAwAA7gMAAAIAAAChsS8AulQCAAAAAQBVU0QAVVNEAAEAAQBeaQAA6zMBBAMCAQUAAIIADBUgSQAAAAA.&cnd=%21Wx2pvAjYrCIQoeO-ARgAILqpCTAAON7SBUAESO4HUJbzOFgAYCxoAHAAeACAAXSIAZL6AZABAZgBAaABAagBALABALkBAAAAAAAAFEDBAQAAAAAAABRAyQFrVfEEXLXCP9kBAAAAAAAA8D_gAQA.&udj=uf%28%27a%27%2C+49806%2C+1347016146%29%3Buf%28%27r%27%2C+3125665%2C+1347016146%29%3B&ccd=%21qgXMMgjYrCIQoeO-ARi6qQkgBA..&vpid=219&dlo=1]]></Impression>
+<Creatives><Creative AdID="3125665">
+<Linear><VideoClicks><ClickTracking><![CDATA[http://ib.adnxs.com/click?AAAAAAAAFEAAAAAAAAAUQAAAAAAAAPA_AAAAAAAAFEAAAAAAAAAUQKGD1mgGb-UJHHxHWjwzzW7S1UlQAAAAAJY5DgDuAwAA7gMAAAIAAAChsS8AulQCAAAAAQBVU0QAVVNEAAEAAQBeaQAA6zMBBAMCAQUAAIIADBUgSQAAAAA./cnd=%21qgXMMgjYrCIQoeO-ARi6qQkgBA../clickenc=]]></ClickTracking></VideoClicks></Linear>
+</Creative></Creatives>
+</Wrapper></Ad></VAST>
