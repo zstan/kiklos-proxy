@@ -1,23 +1,36 @@
 package org.amrmostafa.experiments.netty;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.redisson.Redisson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PlacementsMapping {
 	private final Redisson storage = Redisson.create();
-	private final static String PLACEMENTS_MAP_NAME = ".placements";
-	private Map<String, List<String>> placements = new ConcurrentHashMap<>();
+	private static final String PLACEMENTS_MAP_NAME = ".placements";
+    private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
+	private Map<String, List<String>> placements;
+	private Map<String, List<String>> plExternal = storage.getMap(PLACEMENTS_MAP_NAME);
 	
 	public PlacementsMapping() {
-		Map<String, List<String>> pl = storage.getMap(PLACEMENTS_MAP_NAME);
-		pl.put("111", Arrays.asList("2504637", "some comment1"));
-		pl.put("222", Arrays.asList("2504638", "some comment2"));
 		
-		placements.putAll(pl);
+		//pl.put("111", Arrays.asList("2504637", "some comment1"));
+		placements = getRemoteCollection();
+		Thread t = new Thread(new PlacementsUpdater());
+		t.start();
+	}
+	
+	private Map<String, List<String>> getRemoteCollection() {
+		Map<String, List<String>> tmp = new HashMap<>(plExternal.size());
+		tmp.putAll(plExternal);
+		return Collections.unmodifiableMap(tmp);
 	}
 	
 	public List<String> getMappingPlacementList(final String key) {
@@ -31,4 +44,20 @@ public class PlacementsMapping {
 		else
 			return "";
 	}	
+
+    private class PlacementsUpdater implements Runnable {
+        @Override
+        public void run() {
+        	while (true) {
+	            LOG.info("Read new placements config");
+	            placements = getRemoteCollection();
+	            try {
+					TimeUnit.SECONDS.sleep(60);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+        	}
+        }
+    }
+
 }

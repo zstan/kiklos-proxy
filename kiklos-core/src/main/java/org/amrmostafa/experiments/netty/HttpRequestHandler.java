@@ -9,12 +9,10 @@ import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -28,7 +26,8 @@ import org.jboss.netty.util.CharsetUtil;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
 
-import org.redisson.Redisson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import target.eyes.vag.codec.xml.javolution.VASTv2Parser;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
@@ -47,6 +46,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String TEXT_CONTENT_TYPE = "text/plain; charset=" + FILE_ENCODING;
 	private static final String SESSION_ID_COOKIE = "sess";
+    private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
 	
 	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements) {
 		asyncClient = c;
@@ -54,22 +54,24 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	}
 	
 	private String reqTransformer(final String req) {
+		String out = req;
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
-		final String id = decoder.getParameters().get("id").get(0);
-		String newId = plMap.getMappingPlacement(id);
-		decoder.getParameters().remove("id");
-		decoder.getParameters().put("id", Arrays.asList(newId));
-		
-		// stub !!!
-		
-		String out = decoder.getPath() + "?";
-		for (Map.Entry<String, List<String>> e: decoder.getParameters().entrySet()) {
-			out += e.getKey();
-			for (String val: e.getValue())
-				out += "=" + val;
-			out += "&"; 
+		if (!decoder.getParameters().isEmpty()) {
+			final String id = decoder.getParameters().get("id").get(0);
+			String newId = plMap.getMappingPlacement(id);
+			decoder.getParameters().remove("id");
+			decoder.getParameters().put("id", Arrays.asList(newId));
+			
+			// stub !!!
+			
+			out = decoder.getPath() + "?";
+			for (Map.Entry<String, List<String>> e: decoder.getParameters().entrySet()) {
+				out += e.getKey();
+				for (String val: e.getValue())
+					out += "=" + val;
+				out += "&"; 
+			}
 		}
-		
 		return out;
 	}
 	
@@ -116,10 +118,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				//List<String> list = redisson.getList("anyList");			
 				//List<String> list = redisson. getList("mylist");
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
-				//System.out.println();
-				//list.add("some test string");				
 				System.out.println("req incoming : " + Uri);
-				System.out.println("req transormed : " + newUri);
+				System.out.println("req transformed : " + newUri);
 				System.out.println("status code : " + response.getStatusCode());
 				System.out.println("request size:" + response.getResponseBody().length());
 				return response;
