@@ -1,5 +1,9 @@
 package org.amrmostafa.experiments.netty;
 
+import java.util.Date;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +50,14 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String TEXT_CONTENT_TYPE = "text/plain; charset=" + FILE_ENCODING;
 	private static final String SESSION_ID_COOKIE = "sess";
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH-mm-ss_dd-MM-yyyy");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
+    private final MemoryLogStorage memLogStorage;
 	
-	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements) {
+	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage) {
 		asyncClient = c;
 		plMap = placements;
+		memLogStorage = logStorage;
 	}
 	
 	private String reqTransformer(final String req) {
@@ -75,6 +82,20 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		return out;
 	}
 	
+	private String composeLogString(final MessageEvent e) {
+		final String date = DATE_FORMAT.format(new Date());
+		HttpRequest req = (HttpRequest)e.getMessage();
+		final String Uri = req.getUri();
+		String cookieString = "<err cookie>";
+		final String cString = req.headers().get(COOKIE);
+		try {			
+			cookieString = URLEncoder.encode(cString, "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+			LOG.error("can`t encode cookie: {}", cString);
+		}
+		return String.format("%s\t%s\t%s", date, Uri, cookieString);
+	}
+	
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
 		if (HttpHeaders.is100ContinueExpected(request)) {
@@ -82,6 +103,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		}
 		
 		final String Uri = ((HttpRequest)e.getMessage()).getUri();
+		
+		memLogStorage.put(composeLogString(e));
 		
 		final String newUri = reqTransformer(Uri);
 		if (newUri.isEmpty()) {

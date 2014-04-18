@@ -1,27 +1,25 @@
 package org.amrmostafa.experiments.netty;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.redisson.Redisson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PlacementsMapping {
-	private final Redisson storage = Redisson.create();
+public class PlacementsMapping {	
 	private static final String PLACEMENTS_MAP_NAME = ".placements";
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
 	private Map<String, List<String>> placements;
-	private Map<String, List<String>> plExternal = storage.getMap(PLACEMENTS_MAP_NAME);
+	private Map<String, List<String>> plExternal;
 	
-	public PlacementsMapping() {
+	public PlacementsMapping(final Redisson memStorage) {
 		
 		//pl.put("111", Arrays.asList("2504637", "some comment1"));
+		plExternal = memStorage.getMap(PLACEMENTS_MAP_NAME);
 		placements = getRemoteCollection();
 		Thread t = new Thread(new PlacementsUpdater());
 		t.start();
