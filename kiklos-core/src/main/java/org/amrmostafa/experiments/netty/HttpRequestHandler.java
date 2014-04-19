@@ -4,13 +4,16 @@ import java.util.Date;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
+import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
@@ -28,6 +31,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.util.CharsetUtil;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
 
 import org.slf4j.Logger;
@@ -48,8 +52,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private final String EMPTY_VAST = "<VAST /> ";
 	private final String FAKE_USER_AGENT = "Opera/9.80 (X11; Linux x86_64) Presto/2.12.388 Version/12.16";
 	private static final String FILE_ENCODING = UTF_8.name();
-	private static final String TEXT_CONTENT_TYPE = "text/plain; charset=" + FILE_ENCODING;
-	private static final String SESSION_ID_COOKIE = "sess";
+	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH-mm-ss_dd-MM-yyyy");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
@@ -88,8 +91,9 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		final String Uri = req.getUri();
 		String cookieString = "<err cookie>";
 		final String cString = req.headers().get(COOKIE);
-		try {			
-			cookieString = URLEncoder.encode(cString, "UTF-8");
+		try {
+			if (cString != null)
+				cookieString = URLEncoder.encode(cString, "UTF-8");
 		} catch (UnsupportedEncodingException e1) {
 			LOG.error("can`t encode cookie: {}", cString);
 		}
@@ -98,11 +102,14 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
+		
+		request = (HttpRequest)e.getMessage();
+		
 		if (HttpHeaders.is100ContinueExpected(request)) {
 			send100Continue(e);
 		}
 		
-		final String Uri = ((HttpRequest)e.getMessage()).getUri();
+		final String Uri = request.getUri();
 		
 		memLogStorage.put(composeLogString(e));
 		
@@ -114,18 +121,17 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		
 		System.out.println("\n\n---------------------------------------------");		
 		
-		Cookie cook = findSessionIdCookie((HttpRequest)e.getMessage());		
-		System.out.println("cook: " + cook.getName() + ":" + cook.getValue());
-		
 		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).addHeader("user-agent", FAKE_USER_AGENT).execute(new AsyncCompletionHandler<Response>(){
 
 			StringBuilder buff = new StringBuilder(4096);
 			
-			private void writeResp(MessageEvent e) {
+			private void writeResp(MessageEvent e, final List<CookieEncoder> cookieList) {
 				HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 				
 				response.setContent(ChannelBuffers.copiedBuffer(buff.toString(), CharsetUtil.UTF_8));
 				response.headers().add(HttpHeaders.Names.CONTENT_TYPE, TEXT_CONTENT_TYPE);
+				for (CookieEncoder ce: cookieList)
+					response.headers().add(HttpHeaders.Names.SET_COOKIE, ce.encode());
 				
 				ChannelFuture future = e.getChannel().write(response);
 				future.addListener(ChannelFutureListener.CLOSE);
@@ -137,7 +143,10 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 					buff.append(response.getResponseBody());
 				else
 					buff.append(EMPTY_VAST);
-				writeResp(e);
+				
+				List<CookieEncoder> cookieList = storeADSessionCookie(response);								
+				
+				writeResp(e, cookieList);
 				//List<String> list = redisson.getList("anyList");			
 				//List<String> list = redisson. getList("mylist");
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
@@ -162,19 +171,27 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		e.getChannel().close();
 	}
 	
-	private Cookie findSessionIdCookie(HttpRequest request) {
-		String cookieString = request.headers().get(COOKIE);
-		if (cookieString != null) {
-			CookieDecoder cookieDecoder = new CookieDecoder();
-			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-			if (!cookies.isEmpty()) {
-				for (Cookie cookie : cookies) {
-					if (cookie.getName().equals(SESSION_ID_COOKIE)) {
-						return cookie;
+	private List<CookieEncoder> storeADSessionCookie(Response request) {		
+		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
+		if (cookieStrings == null)
+			return Collections.emptyList();
+		
+		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
+		for (String cookieString : cookieStrings) {
+			System.out.println("storeADSessionCookie: " + cookieString);		
+			if (cookieString != null) {
+				CookieDecoder cookieDecoder = new CookieDecoder();
+				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+				if (!cookies.isEmpty()) {
+					for (Cookie cookie : cookies) {
+						LOG.info(cookie.getName());
+						CookieEncoder ce = new CookieEncoder(false);
+						ce.addCookie(cookie);
+						httpCookieEncoderList.add(ce);
 					}
 				}
 			}
 		}
-		return null;
-	}	
+		return httpCookieEncoderList;
+	}
 }

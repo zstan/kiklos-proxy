@@ -9,11 +9,19 @@ import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.redisson.Redisson;
 
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
 
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 	
 	private final Redisson storage = Redisson.create();
-	private final AsyncHttpClient cl = new AsyncHttpClient();
+	AsyncHttpClientConfig cfg = new AsyncHttpClientConfig.Builder()
+		.setCompressionEnabled(true)
+		.setConnectionTimeoutInMs(1000)
+		.setRequestTimeoutInMs(1000)
+		.setUserAgent("Opera/9.80 (X11; Linux x86_64) Presto/2.12.388 Version/12.16")
+		.build();
+	
+	private final AsyncHttpClient cl = new AsyncHttpClient(cfg);
 	private final PlacementsMapping plMap = new PlacementsMapping(storage);
 	private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage);
 	

@@ -1,6 +1,8 @@
 package org.amrmostafa.experiments.netty;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.net.URLEncoder;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -18,6 +20,7 @@ public class NettyHttpServer
 		
 		bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
 		
-		bootstrap.bind(new InetSocketAddress(9090));
+		bootstrap.bind(new InetSocketAddress(80));
+		
 	}
 }
