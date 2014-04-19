@@ -66,7 +66,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private String reqTransformer(final String req) {
 		String out = req;
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
-		if (!decoder.getParameters().isEmpty()) {
+		Map<String, List<String>> params = decoder.getParameters(); 
+		if (!params.isEmpty() && !params.get("id").isEmpty()) {
 			final String id = decoder.getParameters().get("id").get(0);
 			String newId = plMap.getMappingPlacement(id);
 			decoder.getParameters().remove("id");
@@ -119,7 +120,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			return;
 		}
 		
-		System.out.println("\n\n---------------------------------------------");		
+		LOG.info("\n\n---------------------------------------------");		
 		
 		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).addHeader("user-agent", FAKE_USER_AGENT).execute(new AsyncCompletionHandler<Response>(){
 
@@ -150,10 +151,10 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				//List<String> list = redisson.getList("anyList");			
 				//List<String> list = redisson. getList("mylist");
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
-				System.out.println("req incoming : " + Uri);
-				System.out.println("req transformed : " + newUri);
-				System.out.println("status code : " + response.getStatusCode());
-				System.out.println("request size:" + response.getResponseBody().length());
+				LOG.info("req incoming : {}", Uri);
+				LOG.info("req transformed : {}", newUri);
+				LOG.info("status code : {}", response.getStatusCode());
+				LOG.info("request size:" + response.getResponseBody().length());
 				return response;
 			}
 
@@ -178,7 +179,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		
 		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
 		for (String cookieString : cookieStrings) {
-			System.out.println("storeADSessionCookie: " + cookieString);		
 			if (cookieString != null) {
 				CookieDecoder cookieDecoder = new CookieDecoder();
 				Set<Cookie> cookies = cookieDecoder.decode(cookieString);

@@ -15,6 +15,19 @@
 	</properties>
 	
 	<build>
+	
+	
+		<resources>
+			<!-- standard Maven folder -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>logback.xml</include>
+				</includes>				
+			</resource>
+		</resources>
+			
 		<plugins>
 		
             <plugin>
@@ -28,7 +41,7 @@
                 </configuration>
             </plugin>
                 		
-			<plugin>
+<!-- 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.3.1</version>
 				<configuration>
@@ -36,15 +49,15 @@
 						<manifest>
 							<mainClass>org.amrmostafa.experiments.netty.NettyHttpServer</mainClass>
 							<addClasspath>true</addClasspath>
-							<!--
+							
 								This is the default path used by mvn dependency:copy-dependencies
 								we will probably change it later
-							-->
+							
 							<classpathPrefix>dependency/</classpathPrefix>
 						</manifest>
 					</archive>
 				</configuration>
-			</plugin>
+			</plugin> -->
 		</plugins>
 	</build>
 
@@ -60,12 +73,24 @@
 		  <groupId>com.ning</groupId>
 		  <artifactId>async-http-client</artifactId>
 		  <version>1.8.4</version>
+ 	    	<exclusions>
+		    <exclusion>
+			    <groupId>org.slf4j</groupId>
+			    <artifactId>slf4j-api</artifactId>
+	        </exclusion>
+		   </exclusions>		  
 		</dependency>	
 		
 		<dependency>
 		   <groupId>org.redisson</groupId>
 		   <artifactId>redisson</artifactId>
 		   <version>1.0.3</version>
+ 	    	<exclusions>
+		    <exclusion>
+			    <groupId>org.slf4j</groupId>
+			    <artifactId>slf4j-api</artifactId>
+	        </exclusion>
+		   </exclusions>
 		</dependency>
 		
 		<dependency>
@@ -89,7 +114,7 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.0.13</version>
-        </dependency>
+        </dependency>       
 
 	
 	</dependencies>
