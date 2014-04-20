@@ -67,30 +67,30 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		String out = req;
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
 		Map<String, List<String>> params = decoder.getParameters(); 
-		if (!params.isEmpty() && !params.get("id").isEmpty()) {
-			final String id = decoder.getParameters().get("id").get(0);
-			String newId = plMap.getMappingPlacement(id);
-			decoder.getParameters().remove("id");
-			decoder.getParameters().put("id", Arrays.asList(newId));
-			
-			// stub !!!
-			
-			out = decoder.getPath() + "?";
-			for (Map.Entry<String, List<String>> e: decoder.getParameters().entrySet()) {
-				out += e.getKey();
-				for (String val: e.getValue())
-					out += "=" + val;
-				out += "&"; 
-			}
+		if (!params.isEmpty())
+			if (!params.get("id").isEmpty()) {
+				final String id = decoder.getParameters().get("id").get(0);
+				String newId = plMap.getMappingPlacement(id);
+				decoder.getParameters().remove("id");
+				decoder.getParameters().put("id", Arrays.asList(newId));
+				
+				// stub !!!
+				
+				out = decoder.getPath() + "?";
+				for (Map.Entry<String, List<String>> e: decoder.getParameters().entrySet()) {
+					out += e.getKey();
+					for (String val: e.getValue())
+						out += "=" + val;
+					out += "&"; 
+				}
 		}
 		return out;
 	}
 	
-	private String composeLogString(final MessageEvent e) {
+	private String composeLogString(final HttpRequest req, final String newUri) {
 		final String date = DATE_FORMAT.format(new Date());
-		HttpRequest req = (HttpRequest)e.getMessage();
 		final String Uri = req.getUri();
-		String cookieString = "<err cookie>";
+		String cookieString = "<err>";
 		final String cString = req.headers().get(COOKIE);
 		try {
 			if (cString != null)
@@ -98,7 +98,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		} catch (UnsupportedEncodingException e1) {
 			LOG.error("can`t encode cookie: {}", cString);
 		}
-		return String.format("%s\t%s\t%s", date, Uri, cookieString);
+		return String.format("%s\t%s\t%s\t%s", date, Uri, newUri, cookieString);
 	}
 	
 	@Override
@@ -110,11 +110,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			send100Continue(e);
 		}
 		
-		final String Uri = request.getUri();
-		
-		memLogStorage.put(composeLogString(e));
+		final String Uri = request.getUri();		
 		
 		final String newUri = reqTransformer(Uri);
+		
+		memLogStorage.put(composeLogString(request, newUri));		
+		
 		if (newUri.isEmpty()) {
 			e.getChannel().close();
 			return;
@@ -122,7 +123,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		
 		LOG.info("\n\n---------------------------------------------");		
 		
-		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).addHeader("user-agent", FAKE_USER_AGENT).execute(new AsyncCompletionHandler<Response>(){
+		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).execute(new AsyncCompletionHandler<Response>(){
 
 			StringBuilder buff = new StringBuilder(4096);
 			
