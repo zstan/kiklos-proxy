@@ -50,7 +50,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private final PlacementsMapping plMap;
 	private final String AD_DOMAIN = "http://ib.adnxs.com";
 	private final String EMPTY_VAST = "<VAST /> ";
-	private final String FAKE_USER_AGENT = "Opera/9.80 (X11; Linux x86_64) Presto/2.12.388 Version/12.16";
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH-mm-ss_dd-MM-yyyy");
@@ -63,28 +62,31 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		memLogStorage = logStorage;
 	}
 	
-	private String reqTransformer(final String req) {
-		String out = req;
+	private Pair<String, Boolean> reqTransformer(final String req) {
+		String trans = req;
+		Boolean transformed = false;
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
+		
 		Map<String, List<String>> params = decoder.getParameters(); 
 		if (!params.isEmpty())
 			if (!params.get("id").isEmpty()) {
+				transformed = true;
 				final String id = decoder.getParameters().get("id").get(0);
 				String newId = plMap.getMappingPlacement(id);
-				decoder.getParameters().remove("id");
-				decoder.getParameters().put("id", Arrays.asList(newId));
+				params.remove("id");
+				params.put("id", Arrays.asList(newId));				
 				
 				// stub !!!
 				
-				out = decoder.getPath() + "?";
-				for (Map.Entry<String, List<String>> e: decoder.getParameters().entrySet()) {
-					out += e.getKey();
+				trans = decoder.getPath() + "?";
+				for (Map.Entry<String, List<String>> e: params.entrySet()) {
+					trans += e.getKey();
 					for (String val: e.getValue())
-						out += "=" + val;
-					out += "&"; 
+						trans += "=" + val;
+					trans += "&"; 
 				}
 		}
-		return out;
+		return new Pair<String, Boolean>(trans, transformed);
 	}
 	
 	private String composeLogString(final HttpRequest req, final String newUri) {
@@ -111,10 +113,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		}
 		
 		final String Uri = request.getUri();		
+		final Pair<String, Boolean> newUriPair = reqTransformer(Uri);
+		final String newUri = newUriPair.getFirst();
 		
-		final String newUri = reqTransformer(Uri);
-		
-		memLogStorage.put(composeLogString(request, newUri));		
+		if (newUriPair.getSecond()) {
+			memLogStorage.put(composeLogString(request, newUri));
+		}
 		
 		if (newUri.isEmpty()) {
 			e.getChannel().close();
