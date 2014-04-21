@@ -138,6 +138,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				response.headers().add(HttpHeaders.Names.CONTENT_TYPE, TEXT_CONTENT_TYPE);
 				for (CookieEncoder ce: cookieList)
 					response.headers().add(HttpHeaders.Names.SET_COOKIE, ce.encode());
+				response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
 				
 				ChannelFuture future = e.getChannel().write(response);
 				future.addListener(ChannelFutureListener.CLOSE);

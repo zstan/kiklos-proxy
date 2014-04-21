@@ -28,7 +28,7 @@ public class NettyHttpServer
 		
 		bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
 		
-		bootstrap.bind(new InetSocketAddress(8080));
+		bootstrap.bind(new InetSocketAddress(80));
 		
 	}
 }
