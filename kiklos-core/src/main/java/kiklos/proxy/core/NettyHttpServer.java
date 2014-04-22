@@ -1,5 +1,6 @@
-package org.amrmostafa.experiments.netty;
+package kiklos.proxy.core;
 
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
@@ -15,10 +16,11 @@ import ch.qos.logback.core.util.StatusPrinter;
 public class NettyHttpServer
 {
 	public static void main(String[] args)
-	{
-		
+	{		
 	    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-	    StatusPrinter.print(lc);		
+	    StatusPrinter.print(lc);
+	    InputStream resource = NettyHttpServer.class.getResourceAsStream("logback.xml");
+	    System.out.println(resource);
 		
 		ServerBootstrap bootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(

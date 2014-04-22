@@ -1,8 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+      <groupId>kiklos.ad</groupId>
+      <artifactId>kiklos-http-project</artifactId>
+      <version>0.1-SNAPSHOT</version>
+  </parent>
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>ru.kiklos</groupId>
 	<artifactId>kiklos.core</artifactId>
 	<version>0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -29,7 +32,7 @@
 		</resources>
 			
 		<plugins>
-		
+<!--		
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -41,7 +44,7 @@
                 </configuration>
             </plugin>
                 		
-<!-- 			<plugin>
+ 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.3.1</version>
 				<configuration>
@@ -65,7 +68,6 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty</artifactId>
-			<version>3.9.0.Final</version>
 			<scope>compile</scope>
 		</dependency>
 		
@@ -94,7 +96,7 @@
 		</dependency>
 		
 		<dependency>
-		   <groupId>target.eyes.vag</groupId>
+		   <groupId>kiklos.ad</groupId>
 		   <artifactId>codec.xml.javolution</artifactId>
 		   <version>1.10.3.ASG-SNAPSHOT</version>
 		</dependency>
@@ -113,7 +115,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
         </dependency>       
 
 	

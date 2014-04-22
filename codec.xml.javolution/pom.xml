@@ -1,9 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
+  <parent>
+      <groupId>kiklos.ad</groupId>
+      <artifactId>kiklos-http-project</artifactId>
+      <version>0.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>  
   <artifactId>codec.xml.javolution</artifactId>
   <name>XmlJavolutionCodec</name>
-  <groupId>target.eyes.vag</groupId>  
   <version>1.10.3.ASG-SNAPSHOT</version>
   
   <dependencies>
@@ -11,31 +14,28 @@
 		<dependency>
 			<groupId>javolution</groupId>
 			<artifactId>javolution</artifactId>
-			<version>5.5.1</version>
 		</dependency>	
 		
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
         </dependency>        		
 		
         <!-- Logging -->
-        <dependency>
+<!--        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
         </dependency>
-<!--          <dependency>
+          <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
             <version>1.7.5</version>
         </dependency>  -->
-<!--         <dependency>
+         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
-        </dependency> -->
+        </dependency> 
 		
   </dependencies>
   

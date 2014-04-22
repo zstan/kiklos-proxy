@@ -1,4 +1,4 @@
-package org.amrmostafa.experiments.netty;
+package kiklos.proxy.core;
 
 
 import org.jboss.netty.channel.ChannelPipeline;
