@@ -16,6 +16,7 @@ import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
@@ -112,7 +113,13 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			send100Continue(e);
 		}
 		
-		final String Uri = request.getUri();		
+		final String Uri = request.getUri();
+		
+		if ("/favicon.ico".equals(Uri)) {
+			e.getChannel().close();
+			return;			
+		}
+		
 		final Pair<String, Boolean> newUriPair = reqTransformer(Uri);
 		final String newUri = newUriPair.getFirst();
 		
@@ -141,6 +148,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
 				
 				ChannelFuture future = e.getChannel().write(response);
+				HttpHeaders.setContentLength((HttpMessage)e.getMessage(), response.getContent().readableBytes());
 				future.addListener(ChannelFutureListener.CLOSE);
 			}			
 			
