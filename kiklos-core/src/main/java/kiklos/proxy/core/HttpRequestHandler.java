@@ -2,6 +2,7 @@ package kiklos.proxy.core;
 
 import java.util.Date;
 import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private final String EMPTY_VAST = "<VAST /> ";
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH-mm-ss_dd-MM-yyyy");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
 	
@@ -108,7 +109,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
 		
 		request = (HttpRequest)e.getMessage();
-		
+				
 		if (HttpHeaders.is100ContinueExpected(request)) {
 			send100Continue(e);
 		}
@@ -132,7 +133,11 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			return;
 		}
 		
-		LOG.info("\n\n---------------------------------------------");		
+		LOG.info("\n\n---------------------------------------------");	
+		
+	    String remoteHost = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress().getHostAddress();
+	    int remotePort = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getPort();
+	    LOG.info(String.format("host: %s port: %d", remoteHost, remotePort));				
 		
 		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).execute(new AsyncCompletionHandler<Response>(){
 
@@ -168,7 +173,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				LOG.info("req incoming : {}", Uri);
 				LOG.info("req transformed : {}", newUri);
 				LOG.info("status code : {}", response.getStatusCode());
-				LOG.info("request size:" + response.getResponseBody().length());
+				LOG.info("request size: {}", response.getResponseBody().length());
 				return response;
 			}
 
@@ -198,7 +203,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
 				if (!cookies.isEmpty()) {
 					for (Cookie cookie : cookies) {
-						LOG.info(cookie.getName());
 						CookieEncoder ce = new CookieEncoder(false);
 						ce.addCookie(cookie);
 						httpCookieEncoderList.add(ce);
