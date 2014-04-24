@@ -47,10 +47,10 @@ public class PlacementsMapping {
         @Override
         public void run() {
         	while (true) {
-	            LOG.info("Read new placements config");
+	            LOG.debug("Read new placements config");
 	            placements = getRemoteCollection();
 	            try {
-					TimeUnit.SECONDS.sleep(60);
+					TimeUnit.MINUTES.sleep(2);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

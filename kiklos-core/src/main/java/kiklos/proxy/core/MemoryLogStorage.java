@@ -23,8 +23,7 @@ public class MemoryLogStorage {
 		logData.add(str);
 		if (logData.size() == LOG_DATA_SIZE) {
 			memStorageList.addAll(logData);
-			LOG.info("MemoryLogStorage put data");
-			System.out.println("MemoryLogStorage put data");
+			LOG.debug("MemoryLogStorage put data");
 			logData.clear();
 		}		
 	}

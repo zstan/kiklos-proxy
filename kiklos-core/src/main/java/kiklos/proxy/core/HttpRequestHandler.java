@@ -91,10 +91,10 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		return new Pair<String, Boolean>(trans, transformed);
 	}
 	
-	private String composeLogString(final HttpRequest req, final String newUri) {
+	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
 		final String date = DATE_FORMAT.format(new Date());
 		final String Uri = req.getUri();
-		String cookieString = "<err>";
+		String cookieString = "<e>";
 		final String cString = req.headers().get(COOKIE);
 		try {
 			if (cString != null)
@@ -102,7 +102,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		} catch (UnsupportedEncodingException e1) {
 			LOG.error("can`t encode cookie: {}", cString);
 		}
-		return String.format("%s\t%s\t%s\t%s", date, Uri, newUri, cookieString);
+		return String.format("%s\t%s\t%s\t%s\t%s", date, Uri, newUri, cookieString, remoteHost);
 	}
 	
 	@Override
@@ -123,9 +123,13 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		
 		final Pair<String, Boolean> newUriPair = reqTransformer(Uri);
 		final String newUri = newUriPair.getFirst();
+
+	    String remoteHost = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress().getHostAddress();
+	    int remotePort = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getPort();
+	    LOG.info(String.format("host: %s port: %d", remoteHost, remotePort));						
 		
 		if (newUriPair.getSecond()) {
-			memLogStorage.put(composeLogString(request, newUri));
+			memLogStorage.put(composeLogString(request, newUri, remoteHost));
 		}
 		
 		if (newUri.isEmpty()) {
@@ -134,10 +138,6 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		}
 		
 		LOG.info("\n\n---------------------------------------------");	
-		
-	    String remoteHost = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress().getHostAddress();
-	    int remotePort = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getPort();
-	    LOG.info(String.format("host: %s port: %d", remoteHost, remotePort));				
 		
 		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).execute(new AsyncCompletionHandler<Response>(){
 
