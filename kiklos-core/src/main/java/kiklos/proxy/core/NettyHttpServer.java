@@ -21,12 +21,14 @@ public class NettyHttpServer
 	    StatusPrinter.print(lc);
 	    InputStream resource = NettyHttpServer.class.getResourceAsStream("logback.xml");
 	    System.out.println(resource);
+	    int procCount = Runtime.getRuntime().availableProcessors();
+	    System.out.println("proc count: " + procCount);
 		
 		ServerBootstrap bootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(
 						Executors.newCachedThreadPool(),
 						Executors.newCachedThreadPool(),
-						4));
+						procCount * 2));		
 		
 		bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
 		
