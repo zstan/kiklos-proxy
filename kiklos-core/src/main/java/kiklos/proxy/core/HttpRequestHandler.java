@@ -137,7 +137,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			return;
 		}
 		
-		LOG.info("\n\n---------------------------------------------");	
+		LOG.info("\n---------------------------------------------");	
 		
 		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).execute(new AsyncCompletionHandler<Response>(){
 
@@ -170,10 +170,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				//List<String> list = redisson.getList("anyList");			
 				//List<String> list = redisson. getList("mylist");
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
-				LOG.info("req incoming : {}", Uri);
-				LOG.info("req transformed : {}", newUri);
-				LOG.info("status code : {}", response.getStatusCode());
-				LOG.info("request size: {}", response.getResponseBody().length());
+				LOG.info("req incoming : {}, req transformed : {}", Uri, newUri);
+				LOG.info("status code : {}, request size: {}", response.getStatusCode(), response.getResponseBody().length());
 				return response;
 			}
 

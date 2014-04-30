@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class PlacementsMapping {	
 	private static final String PLACEMENTS_MAP_NAME = ".placements";
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
-	private Map<String, List<String>> placements;
+	private volatile Map<String, List<String>> placements;
 	private Map<String, List<String>> plExternal;
 	
 	public PlacementsMapping(final Redisson memStorage) {
