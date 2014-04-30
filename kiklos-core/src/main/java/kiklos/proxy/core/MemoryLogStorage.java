@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 public class MemoryLogStorage {
 	
 	private final List<String> memStorageList;	
-	private List<String> logData = new ArrayList<String>();
-	private final int LOG_DATA_SIZE = 5;
+	private static final int LOG_DATA_SIZE = 10;	
+	private List<String> logData = new ArrayList<String>(LOG_DATA_SIZE);
 	private static final String LOG_NAME = ".access_log";
 	private static final Logger LOG = LoggerFactory.getLogger(MemoryLogStorage.class);
 	

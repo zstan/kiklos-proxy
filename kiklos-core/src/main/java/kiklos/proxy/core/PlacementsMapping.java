@@ -22,6 +22,7 @@ public class PlacementsMapping {
 		plExternal = memStorage.getMap(PLACEMENTS_MAP_NAME);
 		placements = getRemoteCollection();
 		Thread t = new Thread(new PlacementsUpdater());
+		t.setPriority(Thread.MIN_PRIORITY);
 		t.start();
 	}
 	
