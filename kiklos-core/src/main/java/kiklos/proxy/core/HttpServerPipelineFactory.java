@@ -19,6 +19,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 		.setConnectionTimeoutInMs(1000)
 		.setRequestTimeoutInMs(1000)
 		.setUserAgent("Opera/9.80 (X11; Linux x86_64) Presto/2.12.388 Version/12.16")
+		.setFollowRedirects(true)
 		.build();
 	
 	private final AsyncHttpClient cl = new AsyncHttpClient(cfg);

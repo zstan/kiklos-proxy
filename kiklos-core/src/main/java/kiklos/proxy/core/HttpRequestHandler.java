@@ -44,13 +44,14 @@ import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
 
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Response;
+import com.ning.http.client.Response.ResponseBuilder;
 
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private HttpRequest request;
 	private final AsyncHttpClient asyncClient;
 	private final PlacementsMapping plMap;
-	private final String AD_DOMAIN = "http://ib.adnxs.com";
 	private final String EMPTY_VAST = "<VAST /> ";
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
@@ -64,23 +65,24 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		memLogStorage = logStorage;
 	}
 	
-	private Pair<String, Boolean> reqTransformer(final String req) {
-		String trans = req;
-		Boolean transformed = false;
+	private Pair<String, String> reqTransformer(final String req) {
+		String trans = req, main = "";
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
 		
 		Map<String, List<String>> params = decoder.getParameters(); 
 		if (!params.isEmpty())
 			if (!params.get("id").isEmpty()) {
-				transformed = true;
 				final String id = decoder.getParameters().get("id").get(0);
-				String newId = plMap.getMappingPlacement(id);
+				main =  plMap.getMappingPlacement(id);
 				params.remove("id");
-				params.put("id", Arrays.asList(newId));				
 				
 				// stub !!!
+
+				if (new QueryStringDecoder(main).getParameters().isEmpty()) // TODO: fix it
+					trans = "?";
+				else
+					trans = "&";
 				
-				trans = decoder.getPath() + "?";
 				for (Map.Entry<String, List<String>> e: params.entrySet()) {
 					trans += e.getKey();
 					for (String val: e.getValue())
@@ -88,7 +90,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 					trans += "&"; 
 				}
 		}
-		return new Pair<String, Boolean>(trans, transformed);
+		LOG.debug("main: {}, params: {}", main, trans);
+		return new Pair<String, String>(main, trans);
 	}
 	
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
@@ -120,26 +123,29 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			e.getChannel().close();
 			return;			
 		}
+
+		//Response resp = new ResponseBuilder
 		
-		final Pair<String, Boolean> newUriPair = reqTransformer(Uri);
-		final String newUri = newUriPair.getFirst();
+		final Pair<String, String> newUriPair = reqTransformer(Uri);
+		final String newPath = newUriPair.getFirst();
+		final String newParams = newUriPair.getSecond();
 
 	    String remoteHost = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress().getHostAddress();
 	    int remotePort = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getPort();
 	    LOG.info(String.format("host: %s port: %d", remoteHost, remotePort));						
 		
-		if (newUriPair.getSecond()) {
-			memLogStorage.put(composeLogString(request, newUri, remoteHost));
+		if (!newUriPair.getSecond().isEmpty()) {
+			memLogStorage.put(composeLogString(request, newPath + newParams, remoteHost));
 		}
 		
-		if (newUri.isEmpty()) {
+		if (newPath.isEmpty()) {
 			e.getChannel().close();
 			return;
 		}
 		
 		LOG.info("\n---------------------------------------------");	
 		
-		asyncClient.prepareGet(String.format("%s%s", AD_DOMAIN, newUri)).execute(new AsyncCompletionHandler<Response>(){
+		asyncClient.prepareGet(String.format("%s%s", newPath, newParams)).execute(new AsyncCompletionHandler<Response>(){
 
 			StringBuilder buff = new StringBuilder(4096);
 			
@@ -167,10 +173,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				List<CookieEncoder> cookieList = storeADSessionCookie(response);								
 				
 				writeResp(e, cookieList);
-				//List<String> list = redisson.getList("anyList");			
-				//List<String> list = redisson. getList("mylist");
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
-				LOG.info("req incoming : {}, req transformed : {}", Uri, newUri);
+				LOG.info("req incoming : {}, req transformed : {}", Uri, newPath, newParams);
 				LOG.info("status code : {}, request size: {}", response.getStatusCode(), response.getResponseBody().length());
 				return response;
 			}
