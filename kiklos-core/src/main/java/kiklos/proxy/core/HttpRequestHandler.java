@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +45,7 @@ import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
 
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Response;
 import com.ning.http.client.Response.ResponseBuilder;
@@ -145,7 +147,14 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		
 		LOG.info("\n---------------------------------------------");	
 		
-		asyncClient.prepareGet(String.format("%s%s", newPath, newParams)).execute(new AsyncCompletionHandler<Response>(){
+		BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams)); 
+		
+		for (CookieEncoder ce : getSessionCookies(request)) {
+			rb.addHeader(COOKIE, ce.encode());
+			LOG.debug("cookie: {}", ce.encode());
+		}
+				
+			rb.execute(new AsyncCompletionHandler<Response>(){
 
 			StringBuilder buff = new StringBuilder(4096);
 			
@@ -214,4 +223,26 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		}
 		return httpCookieEncoderList;
 	}
+	
+	private List<CookieEncoder> getSessionCookies(HttpRequest request) {
+		List<String> cookieStrings = request.headers().getAll(COOKIE);
+		if (cookieStrings == null)
+			return Collections.emptyList();
+		
+		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
+		for (String cookieString : cookieStrings) {
+			if (cookieString != null) {
+				CookieDecoder cookieDecoder = new CookieDecoder();
+				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+				if (!cookies.isEmpty()) {
+					for (Cookie cookie : cookies) {
+						CookieEncoder ce = new CookieEncoder(false);
+						ce.addCookie(cookie);
+						httpCookieEncoderList.add(ce);
+					}
+				}
+			}
+		}
+		return httpCookieEncoderList;
+	}	
 }
