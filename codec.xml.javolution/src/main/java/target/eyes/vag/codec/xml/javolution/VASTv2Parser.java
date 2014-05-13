@@ -2,6 +2,7 @@ package target.eyes.vag.codec.xml.javolution;
 
 import javolution.xml.XMLObjectReader;
 import javolution.xml.stream.XMLStreamException;
+import target.eyes.vag.codec.xml.javolution.mast.impl.MAST;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.*;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.MediaFiles.MediaFile;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.TrackingEvents.Tracking;
@@ -47,6 +48,21 @@ public class VASTv2Parser {
 					+ ": unable to parse", e);
 		}
 	}
+	
+	public static MAST parse2(String s) throws XMLStreamException {
+		XMLObjectReader reader;
+		//try {
+			reader = XMLObjectReader.newInstance(new StringReader(s));
+			MAST template = reader.read("MAST", MAST.class);
+			reader.close();
+			return template;
+		/*} catch (XMLStreamException e) {
+			System.out.println(e.getMessage());
+			logger.error(e.getMessage());
+			throw new RuntimeException(VASTv2Parser.class.getSimpleName()
+					+ ": unable to parse", e);
+		}*/
+	}	
 
 	private static class Context {
 		private VAST vast;

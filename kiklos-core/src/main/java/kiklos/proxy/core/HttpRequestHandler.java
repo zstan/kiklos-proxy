@@ -136,7 +136,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	    int remotePort = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getPort();
 	    LOG.info(String.format("host: %s port: %d", remoteHost, remotePort));						
 		
-		if (!newUriPair.getSecond().isEmpty()) {
+		if (!newUriPair.getFirst().isEmpty()) {
 			memLogStorage.put(composeLogString(request, newPath + newParams, remoteHost));
 		}
 		

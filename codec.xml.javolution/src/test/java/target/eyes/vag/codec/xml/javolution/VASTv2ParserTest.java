@@ -5,12 +5,16 @@ import static org.junit.Assert.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+import javolution.xml.XMLObjectWriter;
 import javolution.xml.stream.XMLStreamException;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import target.eyes.vag.codec.xml.javolution.VASTv2Parser;
+import target.eyes.vag.codec.xml.javolution.mast.impl.MAST;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
 
 public class VASTv2ParserTest {
@@ -76,12 +80,50 @@ public class VASTv2ParserTest {
 			"</Ad>" +
 			"</VAST>";
 	
+/*	String mastV1 = 	
+"<MAST xsi:schemaLocation=\"http://openvideoplayer.sf.net/mast\" xmlns=\"http://openvideoplayer.sf.net/mast\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+  "<triggers>" + 
+		 "<trigger id=\"preroll\" description=\"preroll\">"+
+		 "</trigger>"+
+	"</triggers>" +
+	"</MAST>";*/
+	
+	String mastV1 = 	
+"<MAST xsi:schemaLocation=\"http://openvideoplayer.sf.net/mast\" xmlns=\"http://openvideoplayer.sf.net/mast\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+		"<triggers>" + 
+		 "<trigger id=\"preroll\" description=\"preroll\">" +
+		  "<startConditions>" +
+		   "<condition type=\"event1\" name=\"OnItemStart\" />" +
+		   "<condition type=\"event2\" name=\"OnItemStart\" />" +
+		  "</startConditions>" +
+		 "</trigger>" +
+		"</triggers>" +
+	"</MAST>";	
+	
 	
 	@Test
 	public void test() throws XMLStreamException {
 		VAST v = VASTv2Parser.parse(arg0outv2ext);
 		System.out.println(v.getAds().get(0).getInLine().getExtensions().getExtensions().size());
-		//v.setXmlns(xmlns);
+		
+		MAST m = VASTv2Parser.parse2(mastV1);
+		System.out.println(m.getTriggers().getTriggers().get(0).getDescription());
+		System.out.println(m.getTriggers().getTriggers().get(0).getStartConditions().getStartConditions().get(0).getType());
+		System.out.println(m.getTriggers().getTriggers().get(0).getStartConditions().getStartConditions().get(1).getType());
+		
+		MAST m1 = new MAST();
+		m1.setSchemaLocation("http://openvideoplayer.sf.net/mast");
+		Trigger tr1 = new Trigger();
+		tr1.setDescription("jopa");
+		tr1.setId("preroll");
+		Triggers trgs = new Triggers();
+		trgs.getTriggers().add(tr1);
+		m1.setTriggers(trgs);
+		System.out.println(m1.getTriggers().getTriggers().get(0).getDescription());
+		XMLObjectWriter ow = new XMLObjectWriter();
+		ow.setOutput(System.out);
+		ow.write(m1, "MAST", MAST.class);
+		ow.flush();
 	}
 
 	
