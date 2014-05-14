@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import target.eyes.vag.codec.xml.javolution.VASTv2Parser;
 import target.eyes.vag.codec.xml.javolution.mast.impl.MAST;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Source;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Sources;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
@@ -96,6 +98,10 @@ public class VASTv2ParserTest {
 		   "<condition type=\"event1\" name=\"OnItemStart\" />" +
 		   "<condition type=\"event2\" name=\"OnItemStart\" />" +
 		  "</startConditions>" +
+		  "<sources>" +
+		    "<source uri=\"http://api.atdmt.com/sf=VAST_PreRoll_XML_V2;\" format=\"vast\">" +
+		    "</source>" +
+		  "</sources>" +
 		 "</trigger>" +
 		"</triggers>" +
 	"</MAST>";	
@@ -119,6 +125,13 @@ public class VASTv2ParserTest {
 		Triggers trgs = new Triggers();
 		trgs.getTriggers().add(tr1);
 		m1.setTriggers(trgs);
+		Source s1 = new Source();
+		s1.setFormat("vast");
+		s1.setUri("www.au.ru");
+		Sources ss = new Sources();
+		ss.getSources().add(s1);
+		tr1.setSources(ss);
+		
 		System.out.println(m1.getTriggers().getTriggers().get(0).getDescription());
 		XMLObjectWriter ow = new XMLObjectWriter();
 		ow.setOutput(System.out);

@@ -10,6 +10,15 @@ public class Trigger implements XMLSerializable {
 
 	private String id, description;
 	private StartConditions startConditions;
+	private Sources sources;
+
+	public Sources getSources() {
+		return sources;
+	}
+
+	public void setSources(Sources sources) {
+		this.sources = sources;
+	}
 
 	public String getDescription() {
 		return description;
@@ -44,14 +53,15 @@ public class Trigger implements XMLSerializable {
 			if (obj.description != null)
 				xml.setAttribute("description", obj.description);
 			xml.add(obj.startConditions, "startConditions", StartConditions.class);
+			xml.add(obj.sources, "sources", Sources.class);
 		}
 
 		@Override
 		public void read(InputElement xml, Trigger obj) throws XMLStreamException {
-			System.out.println(obj.id);
 			obj.setId(xml.getAttribute("id", obj.id));
 			obj.setDescription(xml.getAttribute("description", obj.description));
-			obj.setStartConditions(xml.get("startConditions", StartConditions.class));			
+			obj.setStartConditions(xml.get("startConditions", StartConditions.class));
+			obj.setSources(xml.get("sources", Sources.class));
 		}
 
 	};

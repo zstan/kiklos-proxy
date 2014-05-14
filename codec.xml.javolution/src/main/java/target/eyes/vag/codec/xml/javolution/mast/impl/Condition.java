@@ -8,8 +8,24 @@ public class Condition implements XMLSerializable {
 
 	private static final long serialVersionUID = -2403953204304148774L;
 	
-	private String type, name;
+	private String type, name, value, operator;
 	
+	public String getOperator() {
+		return operator;
+	}
+
+	public void setOperator(String operator) {
+		this.operator = operator;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -33,12 +49,18 @@ public class Condition implements XMLSerializable {
 				xml.setAttribute("type", obj.type);			
 			if (obj.name != null)
 				xml.setAttribute("name", obj.name);
+			if (obj.value != null)
+				xml.setAttribute("value", obj.value);			
+			if (obj.operator != null)
+				xml.setAttribute("operator", obj.operator);			
 		}
 	
 		@Override
 		public void read(InputElement xml, Condition obj) throws XMLStreamException {
 			obj.setType(xml.getAttribute("type", obj.type));
-			obj.setName(xml.getAttribute("name", obj.name));
+			obj.setName(xml.getAttribute("name", obj.name));			
+			obj.setValue(xml.getAttribute("value", obj.value));
+			obj.setName(xml.getAttribute("operator", obj.operator));
 		}
 
 	};	
