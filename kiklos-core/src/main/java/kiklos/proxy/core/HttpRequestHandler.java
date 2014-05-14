@@ -1,6 +1,8 @@
 package kiklos.proxy.core;
 
 import java.util.Date;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
@@ -12,6 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javolution.xml.XMLObjectWriter;
+import javolution.xml.stream.XMLStreamException;
 
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
@@ -41,6 +46,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import target.eyes.vag.codec.xml.javolution.VASTv2Parser;
+import target.eyes.vag.codec.xml.javolution.mast.impl.MAST;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Source;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Sources;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
 
 import com.ning.http.client.AsyncCompletionHandler;
@@ -67,33 +77,39 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		memLogStorage = logStorage;
 	}
 	
-	private Pair<String, String> reqTransformer(final String req) {
-		String trans = req, main = "";
+	private Pair<List<String>, String> reqTransformer(final String req) {
+		String trans = req; 
+		String main = "";
+		List<String> vastList = Collections.emptyList();
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
 		
 		Map<String, List<String>> params = decoder.getParameters(); 
 		if (!params.isEmpty())
 			if (!params.get("id").isEmpty()) {
 				final String id = decoder.getParameters().get("id").get(0);
-				main =  plMap.getMappingPlacement(id);
-				params.remove("id");
-				
-				// stub !!!
-
-				if (new QueryStringDecoder(main).getParameters().isEmpty()) // TODO: fix it
-					trans = "?";
-				else
-					trans = "&";
-				
-				for (Map.Entry<String, List<String>> e: params.entrySet()) {
-					trans += e.getKey();
-					for (String val: e.getValue())
-						trans += "=" + val;
-					trans += "&"; 
+				vastList =  plMap.getMappingVASTList(id);
+				if (!vastList.isEmpty()) {
+					params.remove("id");
+					
+					// stub !!!
+					
+					main = vastList.get(0);
+	
+					if (new QueryStringDecoder(main).getParameters().isEmpty()) // TODO: fix it
+						trans = "?";
+					else
+						trans = "&";
+					
+					for (Map.Entry<String, List<String>> e: params.entrySet()) {
+						trans += e.getKey();
+						for (String val: e.getValue())
+							trans += "=" + val;
+						trans += "&"; 
+					}
 				}
 		}
 		LOG.debug("main: {}, params: {}", main, trans);
-		return new Pair<String, String>(main, trans);
+		return new Pair<List<String>, String>(vastList, trans);
 	}
 	
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
@@ -110,26 +126,75 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		return String.format("%s\t%s\t%s\t%s\t%s", date, Uri, newUri, cookieString, remoteHost);
 	}
 	
-	@Override
-	public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
+	private String createMastFromVastList(final List<String> vastList) {
+		MAST m1 = new MAST();
+		m1.setSchemaLocation("http://openvideoplayer.sf.net/mast");
+		m1.setXmlns("http://openvideoplayer.sf.net/mast");
+		m1.setXsi("http://www.w3.org/2001/XMLSchema-instance");
+		Trigger tr1 = new Trigger();
+		tr1.setDescription("preroll");
+		tr1.setId("preroll");
+		Triggers trgs = new Triggers();
+		trgs.getTriggers().add(tr1);
+		m1.setTriggers(trgs);
+		Sources ss = new Sources();
+		tr1.setSources(ss);
 		
-		request = (HttpRequest)e.getMessage();
+		for (final String vast: vastList) {
+			Source s1 = new Source();
+			s1.setFormat("vast");
+			s1.setUri(vast);		
+			ss.getSources().add(s1);		
+		}
+		
+		StringWriter sw = new StringWriter();
+		
+		XMLObjectWriter ow = new XMLObjectWriter();
+		try {
+			ow.setOutput(sw);
+			ow.write(m1, "MAST", MAST.class);
+			ow.flush();			
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
+		return sw.toString();
+	}
+	
+	private void writeResp0(MessageEvent e, final String body, final List<CookieEncoder> cookieList) {
+		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+		
+		response.setContent(ChannelBuffers.copiedBuffer(body, CharsetUtil.UTF_8));
+		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, TEXT_CONTENT_TYPE);
+		for (CookieEncoder ce: cookieList)
+			response.headers().add(HttpHeaders.Names.SET_COOKIE, ce.encode());
+		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
+		
+		ChannelFuture future = e.getChannel().write(response);
+		HttpHeaders.setContentLength((HttpMessage)e.getMessage(), response.getContent().readableBytes());
+		future.addListener(ChannelFutureListener.CLOSE);
+	}				
+	
+	@Override
+	public void messageReceived(ChannelHandlerContext ctx, final MessageEvent mEvent) throws Exception {
+		
+		request = (HttpRequest)mEvent.getMessage();
 				
 		if (HttpHeaders.is100ContinueExpected(request)) {
-			send100Continue(e);
+			send100Continue(mEvent);
 		}
 		
 		final String Uri = request.getUri();
 		
 		if ("/favicon.ico".equals(Uri)) {
-			e.getChannel().close();
+			mEvent.getChannel().close();
 			return;			
 		}
 
 		//Response resp = new ResponseBuilder
 		
-		final Pair<String, String> newUriPair = reqTransformer(Uri);
-		final String newPath = newUriPair.getFirst();
+		final Pair<List<String>, String> newUriPair = reqTransformer(Uri);
+		final List<String> VASTList = newUriPair.getFirst();
+		final String newPath = VASTList.isEmpty() ? "" : VASTList.get(0);
 		final String newParams = newUriPair.getSecond();
 
 	    String remoteHost = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress().getHostAddress();
@@ -141,7 +206,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		}
 		
 		if (newPath.isEmpty()) {
-			e.getChannel().close();
+			mEvent.getChannel().close();
+			return;
+		}
+				
+		if (VASTList.size() > 1) {
+			//List<CookieEncoder> cookieList = storeADSessionCookie(response);
+			String mast = createMastFromVastList(VASTList);
+			List<CookieEncoder> cookieList = Collections.emptyList();
+			writeResp0(mEvent, mast, cookieList);
 			return;
 		}
 		
@@ -181,7 +254,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				
 				List<CookieEncoder> cookieList = storeADSessionCookie(response);								
 				
-				writeResp(e, cookieList);
+				writeResp(mEvent, cookieList);
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
 				LOG.info("req incoming : {}, req transformed : {}", Uri, newPath, newParams);
 				LOG.info("status code : {}, request size: {}", response.getStatusCode(), response.getResponseBody().length());

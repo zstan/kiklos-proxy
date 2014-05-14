@@ -36,12 +36,12 @@ public class PlacementsMapping {
 		return placements.get(key);
 	}
 	
-	public String getMappingPlacement(final String key) {
+	public List<String> getMappingVASTList(final String key) {
 		List<String> val = placements.get(key); 
 		if (val != null)
-			return val.get(0);
+			return val;
 		else
-			return "";
+			return Collections.emptyList();
 	}	
 
     private class PlacementsUpdater implements Runnable {
