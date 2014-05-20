@@ -1,5 +1,7 @@
 package target.eyes.vag.codec.xml.javolution.mast.impl;
 
+import java.util.ArrayList;
+
 import javolution.xml.XMLFormat;
 import javolution.xml.XMLSerializable;
 import javolution.xml.stream.XMLStreamException;
@@ -9,7 +11,7 @@ public class Trigger implements XMLSerializable {
 	private static final long serialVersionUID = 2042852089516259805L;
 
 	private String id, description;
-	private StartConditions startConditions;
+	private StartConditions startConditions = new StartConditions();
 	private Sources sources;
 
 	public Sources getSources() {

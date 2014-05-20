@@ -46,9 +46,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import target.eyes.vag.codec.xml.javolution.VASTv2Parser;
+import target.eyes.vag.codec.xml.javolution.mast.impl.Condition;
 import target.eyes.vag.codec.xml.javolution.mast.impl.MAST;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Source;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Sources;
+import target.eyes.vag.codec.xml.javolution.mast.impl.StartConditions;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
@@ -78,7 +80,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	}
 	
 	private Pair<List<String>, String> reqTransformer(final String req) {
-		String trans = req; 
+		String trans = ""; 
 		String main = "";
 		List<String> vastList = Collections.emptyList();
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
@@ -94,7 +96,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 					// stub !!!
 					
 					main = vastList.get(0);
-	
+					// no need params now !!!
+					/*
 					if (new QueryStringDecoder(main).getParameters().isEmpty()) // TODO: fix it
 						trans = "?";
 					else
@@ -106,6 +109,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 							trans += "=" + val;
 						trans += "&"; 
 					}
+					*/
 				}
 		}
 		LOG.debug("main: {}, params: {}", main, trans);
@@ -132,13 +136,19 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		m1.setXmlns("http://openvideoplayer.sf.net/mast");
 		m1.setXsi("http://www.w3.org/2001/XMLSchema-instance");
 		Trigger tr1 = new Trigger();
-		tr1.setDescription("preroll");
+		tr1.setDescription("test_preroll");
 		tr1.setId("preroll");
 		Triggers trgs = new Triggers();
 		trgs.getTriggers().add(tr1);
 		m1.setTriggers(trgs);
 		Sources ss = new Sources();
 		tr1.setSources(ss);
+		StartConditions sCond = tr1.getStartConditions();
+		Condition cond = new Condition();
+		cond.setName("OnItemStart");
+		cond.setType("event");
+		sCond.getStartConditions().add(cond);
+		
 		
 		for (final String vast: vastList) {
 			Source s1 = new Source();
