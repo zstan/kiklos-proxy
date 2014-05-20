@@ -1,5 +1,7 @@
 package kiklos.proxy.core;
 
+import io.netty.handler.codec.http.DefaultCookie;
+
 import java.util.Date;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -285,6 +287,17 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		e.getChannel().close();
 	}
 	
+	private void injectOurCookie(List<CookieEncoder> cookList) {
+		CookieFabric cf = new CookieFabric();
+		Cookie c = new org.jboss.netty.handler.codec.http.DefaultCookie("stUID", cf.generateUserId(System.currentTimeMillis()));
+		c.setMaxAge(60*60*24*30*3);
+		c.setPath("/");
+		c.setDomain("st.beintv.ru");
+		CookieEncoder ce = new CookieEncoder(false);
+		ce.addCookie(c);
+		cookList.add(ce);
+	}
+	
 	private List<CookieEncoder> storeADSessionCookie(Response request) {		
 		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
 		if (cookieStrings == null)
@@ -304,6 +317,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 		}
+		this.injectOurCookie(httpCookieEncoderList);
 		return httpCookieEncoderList;
 	}
 	
