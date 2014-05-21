@@ -11,17 +11,24 @@ public class CookieFabric {
 	
 	private final static int byteMask = 0x4f;	
 	private final static SecureRandom random = new SecureRandom();	
-	private final static String substitunionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";	
+	private final static String substitunionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";
+	private MessageDigest md;
+	
+	private CookieFabric() {}
+	
+	public static CookieFabric buildCookieFabric() {
+		CookieFabric cf = new CookieFabric();		
+		try {
+			cf.md = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return cf;
+	}
 	
 	public String generateUserId(long sessionCreationTime) {
 		
-		MessageDigest md;
-		try {
-			md = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return "";
-		}
 		String cString = Long.toString(sessionCreationTime);
 		cString += Integer.toString(random.nextInt());
 		byte[] bytesOfMessage;
@@ -81,6 +88,13 @@ public class CookieFabric {
 		System.out.println(cf.generateUserId(System.currentTimeMillis()));
 		System.out.println(cf.generateUserId(System.currentTimeMillis()));
 		System.out.println(cf.generateUserId(System.currentTimeMillis()));*/
+		Boolean b = false;
+		foo(b);
+		System.out.println(b);
+	}
+	
+	private static void foo(Boolean b) {
+		b = true;
 	}
 	
 }

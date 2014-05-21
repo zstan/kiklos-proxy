@@ -13,6 +13,10 @@ import com.ning.http.client.AsyncHttpClientConfig;
 
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 	
+	public HttpServerPipelineFactory() {
+		cf = CookieFabric.buildCookieFabric();
+	}
+	
 	private final Redisson storage = Redisson.create();
 	AsyncHttpClientConfig cfg = new AsyncHttpClientConfig.Builder()
 		.setCompressionEnabled(true)
@@ -25,14 +29,16 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 	private final AsyncHttpClient cl = new AsyncHttpClient(cfg);
 	private final PlacementsMapping plMap = new PlacementsMapping(storage);
 	private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage);
+	private final CookieFabric cf;
 	
 	public ChannelPipeline getPipeline() throws Exception {
-		// Create a default channel pipeline implementation 
+		if (cf == null)
+			throw new ExceptionInInitializerError("CookieFabric initialization failed");
 		ChannelPipeline pipeline = Channels.pipeline();
 		
 		pipeline.addLast("decoder", new HttpRequestDecoder());
 		pipeline.addLast("encoder", new HttpResponseEncoder());
-		pipeline.addLast("handler", new HttpRequestHandler(cl, plMap, memLogStorage));
+		pipeline.addLast("handler", new HttpRequestHandler(cl, plMap, memLogStorage, cf));
 		
 		return pipeline;
 	}

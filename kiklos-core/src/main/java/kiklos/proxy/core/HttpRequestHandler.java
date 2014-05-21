@@ -1,18 +1,13 @@
 package kiklos.proxy.core;
 
-import io.netty.handler.codec.http.DefaultCookie;
-
 import java.util.Date;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +18,7 @@ import javolution.xml.stream.XMLStreamException;
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
+import org.jboss.netty.handler.codec.http.DefaultCookie;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMessage;
@@ -47,7 +43,6 @@ import static org.jboss.netty.util.CharsetUtil.UTF_8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import target.eyes.vag.codec.xml.javolution.VASTv2Parser;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Condition;
 import target.eyes.vag.codec.xml.javolution.mast.impl.MAST;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Source;
@@ -55,30 +50,31 @@ import target.eyes.vag.codec.xml.javolution.mast.impl.Sources;
 import target.eyes.vag.codec.xml.javolution.mast.impl.StartConditions;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
-import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
 
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
-import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Response;
-import com.ning.http.client.Response.ResponseBuilder;
 
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private HttpRequest request;
 	private final AsyncHttpClient asyncClient;
 	private final PlacementsMapping plMap;
-	private final String EMPTY_VAST = "<VAST /> ";
+	private static final String EMPTY_VAST = "<VAST /> ";
+	private final CookieFabric cookieFabric;
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
+    private static final String OUR_COOKIE_NAME = "tuid";    
 	
-	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage) {
+	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
+			final CookieFabric cf) {
 		asyncClient = c;
 		plMap = placements;
 		memLogStorage = logStorage;
+		cookieFabric = cf;
 	}
 	
 	private Pair<List<String>, String> reqTransformer(final String req) {
@@ -221,11 +217,32 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			mEvent.getChannel().close();
 			return;
 		}
+		
+		boolean injectCookie = true;
+		CookieEncoder ce = new CookieEncoder(false);
+		final Cookie stCookie;
+		Cookie t1 = null;
+		
+		for (Cookie cookie : getSessionCookies(request)) {
+			if (injectCookie && cookie.getName().equals(OUR_COOKIE_NAME)) {
+				injectCookie = false;
+				t1 = cookie;
+			}
+			ce.addCookie(cookie);
+		}
+		
+		if (injectCookie)
+		{
+			stCookie = getOurCookie();
+			ce.addCookie(stCookie);
+		}
+		else 
+			stCookie = t1;		
 				
 		if (VASTList.size() > 1) {
-			//List<CookieEncoder> cookieList = storeADSessionCookie(response);
 			String mast = createMastFromVastList(VASTList);
-			List<CookieEncoder> cookieList = Collections.emptyList();
+			List<CookieEncoder> cookieList = new ArrayList<>();
+			cookieList.add(ce);
 			writeResp0(mEvent, mast, cookieList);
 			return;
 		}
@@ -233,18 +250,20 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		LOG.info("\n---------------------------------------------");	
 		
 		BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams)); 
-		
-		for (CookieEncoder ce : getSessionCookies(request)) {
-			rb.addHeader(COOKIE, ce.encode());
-			LOG.debug("cookie: {}", ce.encode());
-		}
+						
+		rb.addHeader(COOKIE, ce.encode());
 				
-			rb.execute(new AsyncCompletionHandler<Response>(){
-
+		rb.execute(new AsyncCompletionHandler<Response>(){
+	
 			StringBuilder buff = new StringBuilder(4096);
 			
 			private void writeResp(MessageEvent e, final List<CookieEncoder> cookieList) {
 				HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+				if (stCookie != null) {
+					CookieEncoder ce = new CookieEncoder(false);
+					ce.addCookie(stCookie);	
+					cookieList.add(ce);
+				}
 				
 				response.setContent(ChannelBuffers.copiedBuffer(buff.toString(), CharsetUtil.UTF_8));
 				response.headers().add(HttpHeaders.Names.CONTENT_TYPE, TEXT_CONTENT_TYPE);
@@ -268,7 +287,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				
 				writeResp(mEvent, cookieList);
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
-				LOG.info("req incoming : {}, req transformed : {}", Uri, newPath, newParams);
+				LOG.info("req incoming : {}, req transformed : {}, new params: {}", Uri, newPath, newParams);
 				LOG.info("status code : {}, request size: {}", response.getStatusCode(), response.getResponseBody().length());
 				return response;
 			}
@@ -287,25 +306,22 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		e.getChannel().close();
 	}
 	
-	private void injectOurCookie(List<CookieEncoder> cookList) {
-		CookieFabric cf = new CookieFabric();
-		Cookie c = new org.jboss.netty.handler.codec.http.DefaultCookie("tuid", cf.generateUserId(System.currentTimeMillis()));
+	private Cookie getOurCookie() {		
+		Cookie c = new DefaultCookie(OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
 		c.setMaxAge(60*60*24*30*3);
 		c.setPath("/");
-		c.setDomain("st.beintv.ru");
-		CookieEncoder ce = new CookieEncoder(false);
-		ce.addCookie(c);
-		cookList.add(ce);
+		c.setDomain(".beintv.ru");
+		return c;
 	}
 	
 	private List<CookieEncoder> storeADSessionCookie(Response request) {		
 		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
-		if (cookieStrings == null)
-			return Collections.emptyList();
+		LOG.debug("SET_COOKIE len: {}", cookieStrings.size());
 		
 		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
 		for (String cookieString : cookieStrings) {
 			if (cookieString != null) {
+				LOG.debug("SET_COOKIE string: {}", cookieString);
 				CookieDecoder cookieDecoder = new CookieDecoder();
 				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
 				if (!cookies.isEmpty()) {
@@ -317,29 +333,22 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				}
 			}
 		}
-		this.injectOurCookie(httpCookieEncoderList);
 		return httpCookieEncoderList;
 	}
 	
-	private List<CookieEncoder> getSessionCookies(HttpRequest request) {
+	private List<Cookie> getSessionCookies(HttpRequest request) {
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
 		if (cookieStrings == null)
 			return Collections.emptyList();
 		
-		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
+		List<Cookie> httpCookieEncoderList = new ArrayList<>();
+		CookieDecoder cookieDecoder = new CookieDecoder();
+		
 		for (String cookieString : cookieStrings) {
-			if (cookieString != null) {
-				CookieDecoder cookieDecoder = new CookieDecoder();
-				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-				if (!cookies.isEmpty()) {
-					for (Cookie cookie : cookies) {
-						CookieEncoder ce = new CookieEncoder(false);
-						ce.addCookie(cookie);
-						httpCookieEncoderList.add(ce);
-					}
-				}
-			}
+			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+			httpCookieEncoderList.addAll(cookies);
 		}
+		LOG.debug("getSessionCookies size: {}", httpCookieEncoderList.size());
 		return httpCookieEncoderList;
 	}	
 }
