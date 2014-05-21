@@ -289,7 +289,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	
 	private void injectOurCookie(List<CookieEncoder> cookList) {
 		CookieFabric cf = new CookieFabric();
-		Cookie c = new org.jboss.netty.handler.codec.http.DefaultCookie("stUID", cf.generateUserId(System.currentTimeMillis()));
+		Cookie c = new org.jboss.netty.handler.codec.http.DefaultCookie("tuid", cf.generateUserId(System.currentTimeMillis()));
 		c.setMaxAge(60*60*24*30*3);
 		c.setPath("/");
 		c.setDomain("st.beintv.ru");
