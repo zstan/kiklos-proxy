@@ -85,8 +85,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		
 		Map<String, List<String>> params = decoder.getParameters(); 
 		if (!params.isEmpty())
-			if (!params.get("id").isEmpty()) {
-				final String id = decoder.getParameters().get("id").get(0);
+			if (!params.get("id").isEmpty() && !params.get("id").get(0).isEmpty()) {
+				final String id = params.get("id").get(0);
 				vastList =  plMap.getMappingVASTList(id);
 				if (!vastList.isEmpty()) {
 					params.remove("id");
