@@ -18,6 +18,7 @@ import target.eyes.vag.codec.xml.javolution.mast.impl.Sources;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
+import target.eyes.vag.codec.xml.javolution.vast.v3.impl.VAST3;
 
 public class VASTv2ParserTest {
 
@@ -109,10 +110,13 @@ public class VASTv2ParserTest {
 	
 	@Test
 	public void test() throws XMLStreamException {
-		VAST v = VASTv2Parser.parse(arg0outv2ext);
+		//VAST v = VASTv2Parser.parse(arg0outv2ext);
+		VAST3 v = VASTv2Parser.parseVast3(arg0outv2ext);
 		System.out.println(v.getAds().get(0).getInLine().getExtensions().getExtensions().size());
+		v.getAds().get(0).setSequence("0");
+		System.out.println(v.getAds().get(0).getSequence());
 		
-		MAST m = VASTv2Parser.parse2(mastV1);
+		MAST m = VASTv2Parser.parseMast(mastV1);
 		System.out.println(m.getTriggers().getTriggers().get(0).getDescription());
 		System.out.println(m.getTriggers().getTriggers().get(0).getStartConditions().getStartConditions().get(0).getType());
 		System.out.println(m.getTriggers().getTriggers().get(0).getStartConditions().getStartConditions().get(1).getType());

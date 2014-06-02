@@ -1,22 +1,20 @@
 package kiklos.proxy.core;
 
+import io.netty.handler.codec.http.QueryStringEncoder;
+
 import java.util.Date;
-import java.io.StringWriter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import javolution.xml.XMLObjectWriter;
-import javolution.xml.stream.XMLStreamException;
 
 import org.jboss.netty.handler.codec.http.Cookie;
-import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.DefaultCookie;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
@@ -37,23 +35,15 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.util.CharsetUtil;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import target.eyes.vag.codec.xml.javolution.mast.impl.Condition;
-import target.eyes.vag.codec.xml.javolution.mast.impl.MAST;
-import target.eyes.vag.codec.xml.javolution.mast.impl.Source;
-import target.eyes.vag.codec.xml.javolution.mast.impl.Sources;
-import target.eyes.vag.codec.xml.javolution.mast.impl.StartConditions;
-import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
-import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
-
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
+import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
@@ -65,7 +55,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
-    private final MemoryLogStorage memLogStorage;    
+    private final MemoryLogStorage memLogStorage; 
+    private StringBuilder buff = new StringBuilder(4096);
 	
 	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
 			final CookieFabric cf) {
@@ -126,59 +117,31 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		return String.format("%s\t%s\t%s\t%s\t%s", date, Uri, newUri, cookieString, remoteHost);
 	}
 	
-	private String createMastFromVastList(final List<String> vastList) {
-		MAST m1 = new MAST();
-		m1.setSchemaLocation("http://openvideoplayer.sf.net/mast");
-		m1.setXmlns("http://openvideoplayer.sf.net/mast");
-		m1.setXsi("http://www.w3.org/2001/XMLSchema-instance");
-		Trigger tr1 = new Trigger();
-		tr1.setDescription("test_preroll");
-		tr1.setId("preroll");
-		Triggers trgs = new Triggers();
-		trgs.getTriggers().add(tr1);
-		m1.setTriggers(trgs);
-		Sources ss = new Sources();
-		tr1.setSources(ss);
-		StartConditions sCond = tr1.getStartConditions();
-		Condition cond = new Condition();
-		cond.setName("OnItemStart");
-		cond.setType("event");
-		sCond.getStartConditions().add(cond);
-		
-		
-		for (final String vast: vastList) {
-			Source s1 = new Source();
-			s1.setFormat("vast");
-			s1.setUri(vast);		
-			ss.getSources().add(s1);		
-		}
-		
-		StringWriter sw = new StringWriter();
-		
-		XMLObjectWriter ow = new XMLObjectWriter();
-		try {
-			ow.setOutput(sw);
-			ow.write(m1, "MAST", MAST.class);
-			ow.flush();			
-		} catch (XMLStreamException e) {
-			e.printStackTrace();
-		}
-		return sw.toString();
+	private void writeResp(MessageEvent e, final List<CookieEncoder> cookieList) {
+		writeResp(e, cookieList, null);
 	}
 	
-	private void writeResp0(MessageEvent e, final String body, final List<CookieEncoder> cookieList) {
+	private void writeResp(MessageEvent e, final List<CookieEncoder> cookieList, final Cookie stCookie) {
 		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+		CookieEncoder ce = new CookieEncoder(true);
+		if (stCookie != null) {					
+			ce.addCookie(stCookie);	
+		} else {
+			ce.addCookie(getOurCookie());
+		}
+		cookieList.add(ce);
 		
-		response.setContent(ChannelBuffers.copiedBuffer(body, CharsetUtil.UTF_8));
+		response.setContent(ChannelBuffers.copiedBuffer(buff.toString(), CharsetUtil.UTF_8));
 		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, TEXT_CONTENT_TYPE);
-		for (CookieEncoder ce: cookieList)
-			response.headers().add(HttpHeaders.Names.SET_COOKIE, ce.encode());
+		for (CookieEncoder ce1: cookieList)
+			response.headers().add(HttpHeaders.Names.SET_COOKIE, ce1.encode());
 		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
 		
 		ChannelFuture future = e.getChannel().write(response);
 		HttpHeaders.setContentLength((HttpMessage)e.getMessage(), response.getContent().readableBytes());
 		future.addListener(ChannelFutureListener.CLOSE);
-	}				
+	}			
+				
 	
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, final MessageEvent mEvent) throws Exception {
@@ -218,40 +181,20 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		final CookieEncoder sessionCookieEncoder = ourAndSessionCookPair.getSecond();
 		
 		if (VASTList.size() > 1) {
-			String mast = createMastFromVastList(VASTList);
 			List<CookieEncoder> cookieList = new ArrayList<>();
 			if (sessionCookieEncoder != null)
 				cookieList.add(sessionCookieEncoder);
-			writeResp0(mEvent, mast, cookieList);
+			for (String vs : VASTList) {
+				URI decoder = new URI(vs);
+				ListenableFuture<Response> f = createResponse(sessionCookieEncoder, decoder.getPath(), decoder.getQuery());
+			}
+			writeResp(mEvent, mast, cookieList);
 			return;
 		}
 		
-		BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams)); 
+		final BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams));
 		rb.addHeader(COOKIE, sessionCookieEncoder.encode());
-		rb.execute(new AsyncCompletionHandler<Response>() {
-	
-			StringBuilder buff = new StringBuilder(4096);
-			
-			private void writeResp(MessageEvent e, final List<CookieEncoder> cookieList) {
-				HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-				CookieEncoder ce = new CookieEncoder(true);
-				if (stCookie != null) {					
-					ce.addCookie(stCookie);	
-				} else {
-					ce.addCookie(getOurCookie());
-				}
-				cookieList.add(ce);
-				
-				response.setContent(ChannelBuffers.copiedBuffer(buff.toString(), CharsetUtil.UTF_8));
-				response.headers().add(HttpHeaders.Names.CONTENT_TYPE, TEXT_CONTENT_TYPE);
-				for (CookieEncoder ce1: cookieList)
-					response.headers().add(HttpHeaders.Names.SET_COOKIE, ce1.encode());
-				response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
-				
-				ChannelFuture future = e.getChannel().write(response);
-				HttpHeaders.setContentLength((HttpMessage)e.getMessage(), response.getContent().readableBytes());
-				future.addListener(ChannelFutureListener.CLOSE);
-			}			
+		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {			
 			
 			@Override
 			public Response onCompleted(Response response) throws Exception {
@@ -270,6 +213,30 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			}
 
 		});
+	}
+	
+	private ListenableFuture<Response> createResponse(final CookieEncoder sessionCookieEncoder, 
+			final String newPath, final String newParams) throws IOException {
+		final BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams));
+		rb.addHeader(COOKIE, sessionCookieEncoder.encode());
+		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {			
+			
+			@Override
+			public Response onCompleted(Response response) throws Exception {
+				if (!response.getResponseBody().isEmpty())
+					buff.append(response.getResponseBody());
+				else
+					buff.append(EMPTY_VAST);
+				
+				//List<CookieEncoder> cookieList = CookieFabric.getResponseCookies(response); !!!!								
+				
+				LOG.info("req transformed : {}, new params: {}", newPath, newParams);
+				LOG.info("status code : {}, response size: {}", response.getStatusCode(), response.getResponseBody().length());
+				return response;
+			}
+
+		});
+		return f;
 	}
 	
 	private void send100Continue(MessageEvent e) {
