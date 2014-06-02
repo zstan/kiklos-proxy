@@ -57,7 +57,6 @@ import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.Response;
 
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
-	private HttpRequest request;
 	private final AsyncHttpClient asyncClient;
 	private final PlacementsMapping plMap;
 	private static final String EMPTY_VAST = "<VAST /> ";
@@ -66,8 +65,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
-    private final MemoryLogStorage memLogStorage;
-    private static final String OUR_COOKIE_NAME = "tuid";    
+    private final MemoryLogStorage memLogStorage;    
 	
 	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
 			final CookieFabric cf) {
@@ -185,29 +183,26 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, final MessageEvent mEvent) throws Exception {
 		
-		request = (HttpRequest)mEvent.getMessage();
-				
+		final HttpRequest request = (HttpRequest)mEvent.getMessage();				
 		if (HttpHeaders.is100ContinueExpected(request)) {
 			send100Continue(mEvent);
-		}
-		
-		final String Uri = request.getUri();
-		
-		if ("/favicon.ico".equals(Uri)) {
+		}		
+		final String reqUri = request.getUri();		
+		if ("/favicon.ico".equals(reqUri)) {
 			mEvent.getChannel().close();
 			return;			
 		}
 
 		//Response resp = new ResponseBuilder
 		
-		final Pair<List<String>, String> newUriPair = reqTransformer(Uri);
+		final Pair<List<String>, String> newUriPair = reqTransformer(reqUri);
 		final List<String> VASTList = newUriPair.getFirst();
 		final String newPath = VASTList.isEmpty() ? "" : VASTList.get(0);
 		final String newParams = newUriPair.getSecond();
 
-	    String remoteHost = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getAddress().getHostAddress();
-	    int remotePort = ((InetSocketAddress)ctx.getChannel().getRemoteAddress()).getPort();
-	    LOG.info(String.format("host: %s port: %d", remoteHost, remotePort));						
+		final InetSocketAddress sa = (InetSocketAddress)ctx.getChannel().getRemoteAddress(); 
+	    final String remoteHost = sa.getAddress().getHostAddress();
+	    LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));						
 		
 		if (!newUriPair.getFirst().isEmpty()) {
 			memLogStorage.put(composeLogString(request, newPath + newParams, remoteHost));
@@ -218,57 +213,39 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			return;
 		}
 		
-		boolean injectCookie = true;
-		CookieEncoder ce = new CookieEncoder(false);
-		final Cookie stCookie;
-		Cookie t1 = null;
+		Pair<Cookie, CookieEncoder> ourAndSessionCookPair = CookieFabric.getSessionCookies(request);
+		final Cookie stCookie = ourAndSessionCookPair.getFirst();
+		final CookieEncoder sessionCookieEncoder = ourAndSessionCookPair.getSecond();
 		
-		for (Cookie cookie : getSessionCookies(request)) {
-			if (injectCookie && cookie.getName().equals(OUR_COOKIE_NAME)) {
-				injectCookie = false;
-				t1 = cookie;
-			}
-			ce.addCookie(cookie);
-		}
-		
-		if (injectCookie)
-		{
-			stCookie = getOurCookie();
-			ce.addCookie(stCookie);
-		}
-		else 
-			stCookie = t1;		
-				
 		if (VASTList.size() > 1) {
 			String mast = createMastFromVastList(VASTList);
 			List<CookieEncoder> cookieList = new ArrayList<>();
-			cookieList.add(ce);
+			if (sessionCookieEncoder != null)
+				cookieList.add(sessionCookieEncoder);
 			writeResp0(mEvent, mast, cookieList);
 			return;
 		}
 		
-		LOG.info("\n---------------------------------------------");	
-		
 		BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams)); 
-						
-		rb.addHeader(COOKIE, ce.encode());
-				
-		rb.execute(new AsyncCompletionHandler<Response>(){
+		rb.addHeader(COOKIE, sessionCookieEncoder.encode());
+		rb.execute(new AsyncCompletionHandler<Response>() {
 	
 			StringBuilder buff = new StringBuilder(4096);
 			
 			private void writeResp(MessageEvent e, final List<CookieEncoder> cookieList) {
 				HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-				if (stCookie != null) {
-					CookieEncoder ce = new CookieEncoder(false);
+				CookieEncoder ce = new CookieEncoder(true);
+				if (stCookie != null) {					
 					ce.addCookie(stCookie);	
-					cookieList.add(ce);
+				} else {
+					ce.addCookie(getOurCookie());
 				}
+				cookieList.add(ce);
 				
 				response.setContent(ChannelBuffers.copiedBuffer(buff.toString(), CharsetUtil.UTF_8));
 				response.headers().add(HttpHeaders.Names.CONTENT_TYPE, TEXT_CONTENT_TYPE);
-				for (CookieEncoder ce: cookieList)
-					response.headers().add(HttpHeaders.Names.SET_COOKIE, ce.encode());
+				for (CookieEncoder ce1: cookieList)
+					response.headers().add(HttpHeaders.Names.SET_COOKIE, ce1.encode());
 				response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
 				
 				ChannelFuture future = e.getChannel().write(response);
@@ -283,12 +260,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				else
 					buff.append(EMPTY_VAST);
 				
-				List<CookieEncoder> cookieList = storeADSessionCookie(response);								
+				List<CookieEncoder> cookieList = CookieFabric.getResponseCookies(response);								
 				
 				writeResp(mEvent, cookieList);
 				//VAST v = VASTv2Parser.parse(response.getResponseBody());
-				LOG.info("req incoming : {}, req transformed : {}, new params: {}", Uri, newPath, newParams);
-				LOG.info("status code : {}, request size: {}", response.getStatusCode(), response.getResponseBody().length());
+				LOG.info("req incoming : {}, req transformed : {}, new params: {}", reqUri, newPath, newParams);
+				LOG.info("status code : {}, response size: {}", response.getStatusCode(), response.getResponseBody().length());
 				return response;
 			}
 
@@ -307,48 +284,10 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	}
 	
 	private Cookie getOurCookie() {		
-		Cookie c = new DefaultCookie(OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
+		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
 		c.setMaxAge(60*60*24*30*3);
 		c.setPath("/");
 		c.setDomain(".beintv.ru");
 		return c;
-	}
-	
-	private List<CookieEncoder> storeADSessionCookie(Response request) {		
-		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
-		LOG.debug("SET_COOKIE len: {}", cookieStrings.size());
-		
-		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
-		for (String cookieString : cookieStrings) {
-			if (cookieString != null) {
-				LOG.debug("SET_COOKIE string: {}", cookieString);
-				CookieDecoder cookieDecoder = new CookieDecoder();
-				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-				if (!cookies.isEmpty()) {
-					for (Cookie cookie : cookies) {
-						CookieEncoder ce = new CookieEncoder(false);
-						ce.addCookie(cookie);
-						httpCookieEncoderList.add(ce);
-					}
-				}
-			}
-		}
-		return httpCookieEncoderList;
-	}
-	
-	private List<Cookie> getSessionCookies(HttpRequest request) {
-		List<String> cookieStrings = request.headers().getAll(COOKIE);
-		if (cookieStrings == null)
-			return Collections.emptyList();
-		
-		List<Cookie> httpCookieEncoderList = new ArrayList<>();
-		CookieDecoder cookieDecoder = new CookieDecoder();
-		
-		for (String cookieString : cookieStrings) {
-			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-			httpCookieEncoderList.addAll(cookies);
-		}
-		LOG.debug("getSessionCookies size: {}", httpCookieEncoderList.size());
-		return httpCookieEncoderList;
 	}	
 }

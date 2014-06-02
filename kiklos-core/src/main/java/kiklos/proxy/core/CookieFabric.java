@@ -1,18 +1,36 @@
 package kiklos.proxy.core;
 
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
+
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
+
+import org.jboss.netty.handler.codec.http.Cookie;
+import org.jboss.netty.handler.codec.http.CookieDecoder;
+import org.jboss.netty.handler.codec.http.CookieEncoder;
+import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.ning.http.client.Response;
 
 public class CookieFabric {
 	
 	private final static int byteMask = 0x4f;	
-	private final static SecureRandom random = new SecureRandom();	
+	private final static Random random = new SecureRandom();	
 	private final static String substitunionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";
 	private MessageDigest md;
+	private static final Logger LOG = LoggerFactory.getLogger(CookieFabric.class);
+    public static final String OUR_COOKIE_NAME = "tuid";
 	
 	private CookieFabric() {}
 	
@@ -73,6 +91,53 @@ public class CookieFabric {
 		return new String(uuid);
 	}
 	
+	public static Pair<Cookie, CookieEncoder> getSessionCookies(final HttpRequest request) {		
+		List<String> cookieStrings = request.headers().getAll(COOKIE);
+		if (cookieStrings == null)
+			return new Pair<Cookie, CookieEncoder>(null, null);
+		
+		List<Cookie> httpCookieList = new ArrayList<>();
+		CookieDecoder cookieDecoder = new CookieDecoder();
+		
+		for (String cookieString : cookieStrings) {
+			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+			httpCookieList.addAll(cookies);
+		}
+		LOG.debug("getSessionCookies size: {}", httpCookieList.size());
+		
+		CookieEncoder ce = new CookieEncoder(false);
+		Cookie ourCookie = null;
+		for (Cookie cookie : httpCookieList) {
+			if (cookie.getName().equals(OUR_COOKIE_NAME)) {
+				ourCookie = cookie;
+			}
+			ce.addCookie(cookie);
+		}
+		return new Pair<>(ourCookie, ce);
+	}
+	
+	public static List<CookieEncoder> getResponseCookies(final Response request) {		
+		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
+		LOG.debug("{} len: {}", SET_COOKIE, cookieStrings.size());
+		
+		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
+		for (String cookieString : cookieStrings) {
+			if (cookieString != null) {
+				LOG.debug("{} string: {}", SET_COOKIE, cookieString);
+				CookieDecoder cookieDecoder = new CookieDecoder();
+				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+				if (!cookies.isEmpty()) {
+					for (Cookie cookie : cookies) {
+						CookieEncoder ce = new CookieEncoder(false);
+						ce.addCookie(cookie);
+						httpCookieEncoderList.add(ce);
+					}
+				}
+			}
+		}
+		return httpCookieEncoderList;
+	}		
+	
 	public static void main(String[] arg) {
 		CookieFabric cf = new CookieFabric();
 		Set<String> ss = new HashSet<>();
@@ -88,13 +153,6 @@ public class CookieFabric {
 		System.out.println(cf.generateUserId(System.currentTimeMillis()));
 		System.out.println(cf.generateUserId(System.currentTimeMillis()));
 		System.out.println(cf.generateUserId(System.currentTimeMillis()));*/
-		Boolean b = false;
-		foo(b);
-		System.out.println(b);
-	}
-	
-	private static void foo(Boolean b) {
-		b = true;
 	}
 	
 }

@@ -10,12 +10,7 @@ import javolution.xml.stream.XMLStreamException;
 public class VAST implements XMLSerializable {
 
 	private static final long serialVersionUID = -2528967495131097233L;
-
-	private String version;
-
-	private String xmlns;
-
-	private String xsi;
+	private String version, xmlns, xsi;
 
 	private List<Ad> ads = new ArrayList<Ad>();
 

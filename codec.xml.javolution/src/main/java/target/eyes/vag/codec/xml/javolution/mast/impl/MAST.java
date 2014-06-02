@@ -1,9 +1,5 @@
 package target.eyes.vag.codec.xml.javolution.mast.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import target.eyes.vag.codec.xml.javolution.vast.v2.impl.Creatives;
 import javolution.xml.XMLFormat;
 import javolution.xml.XMLSerializable;
 import javolution.xml.stream.XMLStreamException;
