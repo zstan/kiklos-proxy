@@ -2,6 +2,10 @@ package target.eyes.vag.codec.xml.javolution;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -21,6 +25,9 @@ import target.eyes.vag.codec.xml.javolution.mast.impl.Trigger;
 import target.eyes.vag.codec.xml.javolution.mast.impl.Triggers;
 import target.eyes.vag.codec.xml.javolution.vast.v2.impl.VAST;
 import target.eyes.vag.codec.xml.javolution.vast.v3.impl.VAST3;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 
 public class VASTv2ParserTest {
 
@@ -146,10 +153,23 @@ public class VASTv2ParserTest {
 	}
 	
 	@Test
-	public void t1() throws URISyntaxException {
+	public void testUri() throws URISyntaxException {
 		String u = "http://asg.vidigital.ru/1/50006/c/v/2";
 		URI uri = new URI(u);
 		System.out.println("!!!!" + uri.getPath());
+	}
+
+	@Test
+	public void testVast3WithSeq() throws URISyntaxException {
+		InputStream in = getClass().getResourceAsStream("vast3_with_sequence.xml");
+		try {
+			String content = CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8));
+			VASTv2Parser.parseVast3(content);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
 	}
 
 	
