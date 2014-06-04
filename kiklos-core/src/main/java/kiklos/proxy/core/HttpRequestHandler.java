@@ -180,7 +180,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			List<CookieEncoder> cookieList = new ArrayList<>();
 			if (sessionCookieEncoder != null)
 				cookieList.add(sessionCookieEncoder);
-			List<Pair<ListenableFuture<Response>, StringBuilder>> pool = new ArrayList<>();
+			List<ListenableFuture<Response>> pool = new ArrayList<>();
 			List<String> vastPool = new ArrayList<>();
 			
 			for (String vs : VASTList) {
@@ -188,13 +188,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
 				String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());
 				LOG.debug("path: {}, query {}", path, query);
-				pool.add(createResponse(sessionCookieEncoder, path, query));
+				pool.add(createResponse(sessionCookieEncoder, path, query, 0));
 			}
 			LOG.debug("response pool size: {}", pool.size());
 			while (!pool.isEmpty()) {				
-				Pair<ListenableFuture<Response>, StringBuilder> p = pool.remove(0);
-				if (p.getFirst().isDone() || p.getFirst().isCancelled()) {
-					vastPool.add(p.getSecond().toString());
+				ListenableFuture<Response> p = pool.get(0);
+				if (p.isDone() || p.isCancelled()) {
+					LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
+					final String respVast = p.get().getResponseBody();
+					vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
 					pool.remove(p);
 				}
 				else {
@@ -230,20 +232,14 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 		});
 	}
 	
-	private Pair<ListenableFuture<Response>, StringBuilder> createResponse(final CookieEncoder sessionCookieEncoder, 
-			final String newPath, final String newParams) throws IOException {
-		final StringBuilder buff = new StringBuilder(4096);
+	private ListenableFuture<Response> createResponse(final CookieEncoder sessionCookieEncoder, 
+			final String newPath, final String newParams, final int sequence) throws IOException {
 		final BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams));
 		rb.addHeader(COOKIE, sessionCookieEncoder.encode());
 		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {			
 			
 			@Override
 			public Response onCompleted(Response response) throws Exception {
-				if (!response.getResponseBody().isEmpty())
-					buff.append(response.getResponseBody());
-				else
-					buff.append(EMPTY_VAST);
-				
 				//List<CookieEncoder> cookieList = CookieFabric.getResponseCookies(response); !!!!								
 				
 				LOG.info("req transformed : {}, new params: {}", newPath, newParams);
@@ -252,8 +248,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			}
 
 		});
-		LOG.debug("!!! buff : {}", buff.toString() );
-		return new Pair<>(f, buff);
+		return f;
 	}
 	
 	private void send100Continue(MessageEvent e) {

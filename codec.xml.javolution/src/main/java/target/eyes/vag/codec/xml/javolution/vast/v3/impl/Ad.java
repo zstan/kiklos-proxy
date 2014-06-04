@@ -19,6 +19,7 @@ public class Ad implements XMLSerializable {
 		@Override
 		public void write(Ad ad, OutputElement xml) throws XMLStreamException {
 			xml.setAttribute("id", ad.id);
+			xml.setAttribute("sequence", ad.sequence);
 			xml.add(ad.inLine, "InLine", InLine.class);
 			xml.add(ad.wrapper, "Wrapper", Wrapper.class);
 		}
@@ -26,6 +27,7 @@ public class Ad implements XMLSerializable {
 		@Override
 		public void read(InputElement xml, Ad obj) throws XMLStreamException {
 			obj.setId(xml.getAttribute("id", obj.id));
+			obj.setSequence(xml.getAttribute("sequence", obj.sequence));
 			obj.setInLine(xml.get("InLine", InLine.class));
 			obj.setWrapper(xml.get("Wrapper", Wrapper.class));
 		}
