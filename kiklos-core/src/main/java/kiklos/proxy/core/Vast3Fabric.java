@@ -51,7 +51,7 @@ public class Vast3Fabric {
 		return sw.toString();
 	}
 		
-	public static String Vast2ListToVast3(final List<String> vastList) throws XMLStreamException {
+	public static String Vast2ListToVast3(final List<String> vastList) {
 		VAST3 vast3 = new VAST3();
 		vast3.setVersion("3.0");
 		vast3.setXmlns("http://www.w3.org/2001/XMLSchema-instance");
@@ -61,10 +61,17 @@ public class Vast3Fabric {
 		List<Ad> adList = vast3.getAds();
 		int i = 0;
 		for (final String vast: vastList) {
-			VAST3 v = VASTv2Parser.parseVast3(vast);
-			Ad ad = v.getAds().get(0);
-			ad.setSequence(Integer.toString(i++));
-			adList.add(ad);			
+			VAST3 v;
+			Ad ad = null;
+			try {
+				v = VASTv2Parser.parseVast3(vast);
+				ad = v.getAds().get(0);
+				ad.setSequence(Integer.toString(i++));				
+			} catch (XMLStreamException|IndexOutOfBoundsException e) {
+				//e.printStackTrace(); put zaglushka here !!!!
+			}
+			if (ad != null)
+				adList.add(ad);			
 		}
 		return VastToString(vast3);
 	}

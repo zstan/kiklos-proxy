@@ -118,19 +118,21 @@ public class CookieFabric {
 	
 	public static List<CookieEncoder> getResponseCookies(final Response request) {		
 		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
-		LOG.debug("{} len: {}", SET_COOKIE, cookieStrings.size());
-		
 		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
-		for (String cookieString : cookieStrings) {
-			if (cookieString != null) {
-				LOG.debug("{} string: {}", SET_COOKIE, cookieString);
-				CookieDecoder cookieDecoder = new CookieDecoder();
-				Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-				if (!cookies.isEmpty()) {
-					for (Cookie cookie : cookies) {
-						CookieEncoder ce = new CookieEncoder(false);
-						ce.addCookie(cookie);
-						httpCookieEncoderList.add(ce);
+		
+		if (cookieStrings != null) {
+			LOG.debug("getResponseCookies: {} len: {}", SET_COOKIE, cookieStrings.size());			
+			for (String cookieString : cookieStrings) {
+				if (cookieString != null) {
+					LOG.debug("{} string: {}", SET_COOKIE, cookieString);
+					CookieDecoder cookieDecoder = new CookieDecoder();
+					Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+					if (!cookies.isEmpty()) {
+						for (Cookie cookie : cookies) {
+							CookieEncoder ce = new CookieEncoder(false);
+							ce.addCookie(cookie);
+							httpCookieEncoderList.add(ce);
+						}
 					}
 				}
 			}

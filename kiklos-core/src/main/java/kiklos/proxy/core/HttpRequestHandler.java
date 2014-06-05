@@ -1,7 +1,5 @@
 package kiklos.proxy.core;
 
-import io.netty.handler.codec.http.QueryStringEncoder;
-
 import java.util.Date;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -50,7 +48,7 @@ import com.ning.http.client.Response;
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private final AsyncHttpClient asyncClient;
 	private final PlacementsMapping plMap;
-	private static final String EMPTY_VAST = "<VAST /> ";
+	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
 	private final CookieFabric cookieFabric;
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String TEXT_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
@@ -120,9 +118,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	private void writeResp(MessageEvent e, final String buff, final List<CookieEncoder> cookieList, final Cookie stCookie) {
 		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 		CookieEncoder ce = new CookieEncoder(true);
-		if (stCookie != null) {					
-			ce.addCookie(stCookie);	
-		} else {
+		if (stCookie == null) {					
 			ce.addCookie(getOurCookie());
 		}
 		cookieList.add(ce);
@@ -163,11 +159,9 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 	    final String remoteHost = sa.getAddress().getHostAddress();
 	    LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));						
 		
-		if (!newUriPair.getFirst().isEmpty()) {
+		if (!newPath.isEmpty()) {
 			memLogStorage.put(composeLogString(request, newPath + newParams, remoteHost));
-		}
-		
-		if (newPath.isEmpty()) {
+		} else {
 			mEvent.getChannel().close();
 			return;
 		}
@@ -188,7 +182,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 				String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
 				String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());
 				LOG.debug("path: {}, query {}", path, query);
-				pool.add(createResponse(sessionCookieEncoder, path, query, 0));
+				pool.add(createResponse(sessionCookieEncoder, path, query));
 			}
 			LOG.debug("response pool size: {}", pool.size());
 			while (!pool.isEmpty()) {				
@@ -206,47 +200,32 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 			final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);
 			writeResp(mEvent, compoundVast, cookieList, stCookie);
 			return;
-		}
-		
-		final BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams));
-		rb.addHeader(COOKIE, sessionCookieEncoder.encode());
-		rb.execute(new AsyncCompletionHandler<Response>() {			
-			
-			@Override
-			public Response onCompleted(Response response) throws Exception {
-				final StringBuilder buff = new StringBuilder(4096);
-				if (!response.getResponseBody().isEmpty())
-					buff.append(response.getResponseBody());
-				else
-					buff.append(EMPTY_VAST);
-				
-				List<CookieEncoder> cookieList = CookieFabric.getResponseCookies(response);								
-				
-				writeResp(mEvent, buff.toString(), cookieList, null);
-				//VAST v = VASTv2Parser.parse(response.getResponseBody());
-				LOG.info("req incoming : {}, req transformed : {}, new params: {}", reqUri, newPath, newParams);
-				LOG.info("status code : {}, response size: {}", response.getStatusCode(), response.getResponseBody().length());
-				return response;
+		} else {
+			ListenableFuture<Response> respFut = createResponse(sessionCookieEncoder, newPath, newParams);
+			while (true) {
+				if (respFut.isDone() || respFut.isCancelled()) {
+					Response response = respFut.get();
+					final String body = response.getResponseBody();
+					List<CookieEncoder> cookieList = CookieFabric.getResponseCookies(response);
+					writeResp(mEvent, body.isEmpty() ? EMPTY_VAST : body, cookieList, stCookie);
+					return;
+				}
 			}
-
-		});
+		}		
 	}
 	
 	private ListenableFuture<Response> createResponse(final CookieEncoder sessionCookieEncoder, 
-			final String newPath, final String newParams, final int sequence) throws IOException {
+			final String newPath, final String newParams) throws IOException {
 		final BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams));
 		rb.addHeader(COOKIE, sessionCookieEncoder.encode());
 		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {			
 			
 			@Override
 			public Response onCompleted(Response response) throws Exception {
-				//List<CookieEncoder> cookieList = CookieFabric.getResponseCookies(response); !!!!								
-				
 				LOG.info("req transformed : {}, new params: {}", newPath, newParams);
 				LOG.info("status code : {}, response size: {}", response.getStatusCode(), response.getResponseBody().length());
 				return response;
 			}
-
 		});
 		return f;
 	}
