@@ -8,16 +8,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import org.jboss.netty.handler.codec.http.Cookie;
-import org.jboss.netty.handler.codec.http.CookieDecoder;
-import org.jboss.netty.handler.codec.http.CookieEncoder;
-import org.jboss.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.CookieDecoder;
+import io.netty.handler.codec.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,53 +89,45 @@ public class CookieFabric {
 		return new String(uuid);
 	}
 	
-	public static Pair<Cookie, CookieEncoder> getSessionCookies(final HttpRequest request) {		
+	public static Pair<Cookie, List<Cookie>> getSessionCookies(final HttpRequest request) {		
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
 		if (cookieStrings == null)
-			return new Pair<Cookie, CookieEncoder>(null, null);
+			return new Pair<Cookie, List<Cookie>>(null, null);
 		
 		List<Cookie> httpCookieList = new ArrayList<>();
-		CookieDecoder cookieDecoder = new CookieDecoder();
 		
 		for (String cookieString : cookieStrings) {
-			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+			Set<Cookie> cookies = CookieDecoder.decode(cookieString);
 			httpCookieList.addAll(cookies);
 		}
 		LOG.debug("getSessionCookies size: {}", httpCookieList.size());
 		
-		CookieEncoder ce = new CookieEncoder(false);
 		Cookie ourCookie = null;
 		for (Cookie cookie : httpCookieList) {
 			if (cookie.getName().equals(OUR_COOKIE_NAME)) {
 				ourCookie = cookie;
 			}
-			ce.addCookie(cookie);
 		}
-		return new Pair<>(ourCookie, ce);
+		return new Pair<>(ourCookie, httpCookieList);
 	}
 	
-	public static List<CookieEncoder> getResponseCookies(final Response request) {		
+	public static List<Cookie> getResponseCookies(final Response request) {		
 		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
-		List<CookieEncoder> httpCookieEncoderList = new ArrayList<>();
+		List<Cookie> httpCookieList = new ArrayList<>();
 		
 		if (cookieStrings != null) {
 			LOG.debug("getResponseCookies: {} len: {}", SET_COOKIE, cookieStrings.size());			
 			for (String cookieString : cookieStrings) {
 				if (cookieString != null) {
 					LOG.debug("{} string: {}", SET_COOKIE, cookieString);
-					CookieDecoder cookieDecoder = new CookieDecoder();
-					Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+					Set<Cookie> cookies = CookieDecoder.decode(cookieString);
 					if (!cookies.isEmpty()) {
-						for (Cookie cookie : cookies) {
-							CookieEncoder ce = new CookieEncoder(false);
-							ce.addCookie(cookie);
-							httpCookieEncoderList.add(ce);
-						}
+						httpCookieList.addAll(cookies);
 					}
 				}
 			}
 		}
-		return httpCookieEncoderList;
+		return httpCookieList;
 	}		
 	
 	public static void main(String[] arg) {

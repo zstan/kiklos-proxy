@@ -1,13 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
       <groupId>kiklos.ad</groupId>
       <artifactId>kiklos-http-project</artifactId>
-      <version>0.2-SNAPSHOT</version>
+      <version>0.4-SNAPSHOT</version>
   </parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>kiklos.core</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>kiklos.core</name>
@@ -65,16 +65,33 @@
 	</build>
 
 	<dependencies>
+		
 		<dependency>
 			<groupId>io.netty</groupId>
-			<artifactId>netty</artifactId>
-			<scope>compile</scope>
+			<artifactId>netty-common</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-handler</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec-http</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec</artifactId>
+		</dependency>
+		
 		
 		<dependency>
 		  <groupId>com.ning</groupId>
 		  <artifactId>async-http-client</artifactId>
-		  <version>1.8.4</version>
+		  <version>1.8.10</version>
  	    	<exclusions>
 		    <exclusion>
 			    <groupId>org.slf4j</groupId>
@@ -86,7 +103,7 @@
 		<dependency>
 		   <groupId>org.redisson</groupId>
 		   <artifactId>redisson</artifactId>
-		   <version>1.0.3</version>
+		   <version>1.1.0</version>
  	    	<exclusions>
 		    <exclusion>
 			    <groupId>org.slf4j</groupId>
