@@ -18,7 +18,6 @@ import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultCookie;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -118,11 +117,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		ByteBuf bb = Unpooled.wrappedBuffer(buff.getBytes());
 		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
 		if (stCookie == null) {					
-			cookieList.add(getOurCookie());
+			cookieList.add(getOurCookie());			
 		}
 				
-		for (Cookie c: cookieList)
+		for (Cookie c: cookieList) {
+			c.setDomain(".beintv.ru");
 			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
+			LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
+		}
 		
 		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length);
 		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, XML_CONTENT_TYPE);
@@ -172,7 +174,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				return;
 			}
 			
-			Pair<Cookie, List<Cookie>> ourAndSessionCookPair = CookieFabric.getSessionCookies(request);
+			Pair<Cookie, List<Cookie>> ourAndSessionCookPair = CookieFabric.getUserSessionCookies(request);
 			final Cookie stCookie = ourAndSessionCookPair.getFirst();
 			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getSecond();
 			

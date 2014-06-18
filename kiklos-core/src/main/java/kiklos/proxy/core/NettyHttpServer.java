@@ -1,10 +1,6 @@
 package kiklos.proxy.core;
 
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.net.URLEncoder;
-import java.util.concurrent.Executors;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -35,26 +31,14 @@ public class NettyHttpServer
         
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
-        .channel(NioServerSocketChannel.class)
-        .handler(new LoggingHandler(LogLevel.INFO))
-        .childHandler(new HttpServerPipelineFactory());
+        	.channel(NioServerSocketChannel.class)
+        	.handler(new LoggingHandler(LogLevel.INFO))
+        	.childHandler(new HttpServerPipelineFactory());
 		
-/*		ServerBootstrap bootstrap = new ServerBootstrap(
-				new NioServerSocketChannelFactory(
-						Executors.newCachedThreadPool(),
-						Executors.newCachedThreadPool(),
-						procCount * 2));		
-*/		
-		//bootstrap.han setPipelineFactory(new HttpServerPipelineFactory());
-		
-		//bootstrap.bind(new InetSocketAddress(80));
-        
-        Channel ch;
 		try {
-			ch = bootstrap.bind(80).sync().channel();
+			Channel ch = bootstrap.bind(80).sync().channel();
 			ch.closeFuture().sync();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}                		
 	}

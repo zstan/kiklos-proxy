@@ -89,7 +89,7 @@ public class CookieFabric {
 		return new String(uuid);
 	}
 	
-	public static Pair<Cookie, List<Cookie>> getSessionCookies(final HttpRequest request) {		
+	public static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {		
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
 		if (cookieStrings == null)
 			return new Pair<Cookie, List<Cookie>>(null, null);
@@ -100,7 +100,7 @@ public class CookieFabric {
 			Set<Cookie> cookies = CookieDecoder.decode(cookieString);
 			httpCookieList.addAll(cookies);
 		}
-		LOG.debug("getSessionCookies size: {}", httpCookieList.size());
+		LOG.debug("getUserSessionCookies size: {}", httpCookieList.size());
 		
 		Cookie ourCookie = null;
 		for (Cookie cookie : httpCookieList) {
