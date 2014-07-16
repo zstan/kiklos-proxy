@@ -38,15 +38,20 @@ public class MediaFiles implements XMLSerializable {
 
 		private static final long serialVersionUID = 2461059389204500331L;
 
+		private String id = null;
+		
 		private String delivery = null;
 
 		private String type = null;
+		
+		private String bitrate = "500";
+		
+		private String maintainAspectRatio = "false", scalable = "true";
 
 		private int height = 100;
 
 		private int width = 100;
-
-		private int bitrate = 500;
+		
 
 		private String url;
 
@@ -55,22 +60,30 @@ public class MediaFiles implements XMLSerializable {
 			@Override
 			public void write(MediaFile obj, OutputElement xml)
 					throws XMLStreamException {
+				xml.setAttribute("id", obj.getId());
 				xml.setAttribute("delivery", obj.getDelivery());
 				xml.setAttribute("type", obj.getType());
-				xml.setAttribute("height", obj.getHeight());
-				xml.setAttribute("width", obj.getWidth());
 				xml.setAttribute("bitrate", obj.getBitrate());
+				xml.setAttribute("maintainAspectRatio", obj.getAsRatio());
+				xml.setAttribute("scalable", obj.getScalable());
+				
+				xml.setAttribute("width", obj.getWidth());
+				xml.setAttribute("height", obj.getHeight());								
 				xml.getStreamWriter().writeCData(obj.url);
 			}
 
 			@Override
 			public void read(InputElement xml, MediaFile obj)
 					throws XMLStreamException {
+				obj.setId(xml.getAttribute("id", obj.id));
 				obj.setDelivery(xml.getAttribute("delivery", obj.delivery));
 				obj.setType(xml.getAttribute("type", obj.type));
+				obj.setBitrate(xml.getAttribute("bitrate", obj.bitrate));				
+				obj.setMaintainAspectRatio(xml.getAttribute("maintainAspectRatio", obj.maintainAspectRatio));
+				obj.setScalable(xml.getAttribute("scalable", obj.scalable));
+				
+				obj.setWidth(xml.getAttribute("width", obj.width));		
 				obj.setHeight(xml.getAttribute("height", obj.height));
-				obj.setWidth(xml.getAttribute("width", obj.width));
-				obj.setBitrate(xml.getAttribute("bitrate", obj.bitrate));
 				obj.setURL(xml.getText().toString());
 			}
 
@@ -79,7 +92,27 @@ public class MediaFiles implements XMLSerializable {
 		public String getDelivery() {
 			return delivery;
 		}
+		
+		public String getId() {
+			return id;
+		}	
+		
+		public String getAsRatio() {
+			return maintainAspectRatio;	
+		}
+		
+		public String getScalable() {
+			return scalable;	
+		}
+		
+		public void setMaintainAspectRatio(String maintainAspectRatio) {
+			this.maintainAspectRatio = maintainAspectRatio;
+		}
 
+		public void setScalable(String scalable) {
+			this.scalable = scalable;
+		}
+		
 		public void setDelivery(String delivery) {
 			this.delivery = delivery;
 		}
@@ -99,7 +132,11 @@ public class MediaFiles implements XMLSerializable {
 		public void setHeight(int height) {
 			this.height = height;
 		}
-
+		
+		public void setId(String id) {
+			this.id = id;
+		}
+		
 		public int getWidth() {
 			return width;
 		}
@@ -108,11 +145,11 @@ public class MediaFiles implements XMLSerializable {
 			this.width = width;
 		}
 
-		public int getBitrate() {
+		public String getBitrate() {
 			return bitrate;
 		}
 
-		public void setBitrate(int bitrate) {
+		public void setBitrate(String bitrate) {
 			this.bitrate = bitrate;
 		}
 

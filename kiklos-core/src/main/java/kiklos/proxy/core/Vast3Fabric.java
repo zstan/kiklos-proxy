@@ -46,7 +46,7 @@ public class Vast3Fabric {
 			ow.write(v, "VAST", VAST3.class);
 			ow.flush();			
 		} catch (XMLStreamException e) {
-			e.printStackTrace();
+			LOG.debug("111" + e.getMessage());
 		}
 		return sw.toString();
 	}
@@ -64,15 +64,20 @@ public class Vast3Fabric {
 			VAST3 v;
 			Ad ad = null;
 			try {
+				LOG.debug("!!!!!1");
 				v = VASTv2Parser.parseVast3(vast);
+				LOG.debug("!!!!!2");
 				ad = v.getAds().get(0);
-				ad.setSequence(Integer.toString(i++));				
+				LOG.debug("!!!!!3");
+				ad.setSequence(Integer.toString(i++));
+				LOG.debug("!!!!!4");
 			} catch (XMLStreamException|IndexOutOfBoundsException e) {
-				//e.printStackTrace(); put zaglushka here !!!!
+				LOG.debug("222" + e.getMessage()); //put zaglushka here !!!!
 			}
 			if (ad != null)
 				adList.add(ad);			
 		}
+		LOG.debug("Vast2ListToVast3 adList {}", adList.size());
 		return VastToString(vast3);
 	}
 }

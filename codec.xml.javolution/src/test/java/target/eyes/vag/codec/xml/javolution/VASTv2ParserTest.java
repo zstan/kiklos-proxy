@@ -32,62 +32,65 @@ import com.google.common.io.CharStreams;
 public class VASTv2ParserTest {
 
 	String arg0outv2ext =
-			"<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"vast.xsd\">" +
-			"<Ad id=\"5348167055596078337\">" +
-			"<InLine>" +
-			"<Description>video ad</Description>" +
-			"<Error>http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=cxcxlnm&lts=eohriex&pm=u</Error>" +
-			"<AdSystem version=\"2.0\">adnxs</AdSystem>" +
-			"<AdTitle>VideoAd</AdTitle>" +
-			"<Impression>" +
-			"<![CDATA[http://fra1.ib.adnxs.com/it?enc=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPA_AAAAAAAAAAAAAAAAAAAAAAFFQOyZgThKIPw5-QvcsFBGpUpTAAAAAL03JgD4BwAA-AcAAAIAAABCztkAOw4FAAAAAQBVU0QAVVNEAAEAAQCllgAAQo0BBAMCAQIAAIoAyBPyvAAAAAA.&cnd=%21QxzRSgiF3d0BEMKc5wYYACC7nBQwBDilrRZABEj4D1C975gBWABgwAFoAHAAeACAAQCIAQCQAQGYAQGgARKoAQOwAQC5AQAAAAAAAAAAwQEAAAAAAAAAAMkB6KRLB6cFAUDZAQAAAAAAAPA_4AEA9QEAAAAA&ccd=%21Swb_OwiF3d0BEMKc5wYYu5wUIAQ.&udj=uf%28%27a%27%2C+307401%2C+1397400902%29%3Buf%28%27r%27%2C+14274114%2C+1397400902%29%3B&vpid=962&custom_macro=CP_ID%5E3632773&media_subtypes=1&ct=17&dlo=1]]>" +
-			"</Impression>" +
-			"<Impression>" +
-			"</Impression>" +
-			"<Impression>" +
-			"</Impression>" +
-			"<Creatives><Creative id=\"14274114\" sequence=\"0\" AdID=\"5348167055596078337\">" +
-			"<Linear><Duration>00:00:30</Duration>" +
-			"<TrackingEvents>" +
-			"<Tracking event=\"start\">" +
-			"</Tracking>" +
-			"<Tracking event=\"start\">" +
-			"</Tracking>" +
-			"<Tracking event=\"firstQuartile\">" +
-			"</Tracking>" +
-			"<Tracking event=\"firstQuartile\">" +
-			"</Tracking>" +
-			"<Tracking event=\"midpoint\">" +
-			"</Tracking>" +
-			"<Tracking event=\"midpoint\">" +
-			"</Tracking>" +
-			"<Tracking event=\"thirdQuartile\">" +
-			"</Tracking>" +
-			"<Tracking event=\"thirdQuartile\">" +
-			"</Tracking>" +
-			"<Tracking event=\"complete\">" +
-			"</Tracking>" +
-			"<Tracking event=\"complete\">" +
-			"</Tracking>" +
-			"</TrackingEvents>" +
-			"<VideoClicks>" +
-			"<ClickThrough>" +
-			"<![CDATA[http://fra1.ib.adnxs.com/click?AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPA_AAAAAAAAAAAAAAAAAAAAAAFFQOyZgThKIPw5-QvcsFBGpUpTAAAAAL03JgD4BwAA-AcAAAIAAABCztkAOw4FAAAAAQBVU0QAVVNEAAEAAQCllgAAQo0BBAMCAQIAAIoAyBPyvAAAAAA./cnd=%21Swb_OwiF3d0BEMKc5wYYu5wUIAQ./clickenc=http%3A%2F%2Fvi.ru]]>" +
-			"</ClickThrough>" +
-			"</VideoClicks>" +
-			"<MediaFiles>" +
-			"<MediaFile delivery=\"progressive\" type=\"video/mp4\" height=\"400\" width=\"720\" bitrate=\"1640\">" +
-			"http://cdn.vidigital.ru/media/m/VGTRK/Wargaming/0404/imho_WOT_WGL_Finals_2014.mp4?___vi_and=14274114/3632773/ " +
-			"</MediaFile>" +
-			"</MediaFiles>" +
+			"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" +
+			"<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"vast.xsd\">\n" +
+			"<Ad id=\"5348167055596078337\">\n" +
+			"<InLine>\n" +
+			"<AdSystem version=\"2.0\">adnxs</AdSystem>\n" +
+			"<AdTitle>VideoAd</AdTitle>\n" +
+			"<Description>video ad</Description>\n" +					
+			"<Error><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=cxcxlnm&lts=eohriex&pm=u]]></Error>\n" +						
+			"<Impression>\n" +
+			"<![CDATA[http://fra1.ib.adnxs.com/it?enc=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPA_AAAAAAAAAAAAAAAAAAAAAAFFQOyZgThKIPw5-QvcsFBGpUpTAAAAAL03JgD4BwAA-AcAAAIAAABCztkAOw4FAAAAAQBVU0QAVVNEAAEAAQCllgAAQo0BBAMCAQIAAIoAyBPyvAAAAAA.&cnd=%21QxzRSgiF3d0BEMKc5wYYACC7nBQwBDilrRZABEj4D1C975gBWABgwAFoAHAAeACAAQCIAQCQAQGYAQGgARKoAQOwAQC5AQAAAAAAAAAAwQEAAAAAAAAAAMkB6KRLB6cFAUDZAQAAAAAAAPA_4AEA9QEAAAAA&ccd=%21Swb_OwiF3d0BEMKc5wYYu5wUIAQ.&udj=uf%28%27a%27%2C+307401%2C+1397400902%29%3Buf%28%27r%27%2C+14274114%2C+1397400902%29%3B&vpid=962&custom_macro=CP_ID%5E3632773&media_subtypes=1&ct=17&dlo=1]]>\n" +
+			"</Impression>\n" +
+			"<Impression>\n" +
+			"</Impression>\n" +
+			"<Impression>\n" +
+			"</Impression>\n" +
+			"<Creatives><Creative id=\"14274114\" sequence=\"0\" AdID=\"5348167055596078337\">\n" +
+			"<Linear><Duration>00:00:30</Duration>\n" +
+			"<TrackingEvents>\n" +
+			"<Tracking event=\"start\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"start\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"firstQuartile\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"firstQuartile\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"midpoint\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"midpoint\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"thirdQuartile\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"thirdQuartile\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"complete\">\n" +
+			"</Tracking>\n" +
+			"<Tracking event=\"complete\">\n" +
+			"</Tracking>\n" +
+			"</TrackingEvents>\n" +
+			"<AdParameters/>\n" +
+			"<VideoClicks>\n" +
+			"<ClickThrough>\n" +
+			"<![CDATA[http://fra1.ib.adnxs.com/click?AAAAAAAAAAAAAAAAAAAAAAAAAAAAAPA_AAAAAAAAAAAAAAAAAAAAAAFFQOyZgThKIPw5-QvcsFBGpUpTAAAAAL03JgD4BwAA-AcAAAIAAABCztkAOw4FAAAAAQBVU0QAVVNEAAEAAQCllgAAQo0BBAMCAQIAAIoAyBPyvAAAAAA./cnd=%21Swb_OwiF3d0BEMKc5wYYu5wUIAQ./clickenc=http%3A%2F%2Fvi.ru]]>\n" +
+			"</ClickThrough>\n" +
+			"</VideoClicks>\n" +
+			"<MediaFiles>\n" +
+			"<MediaFile delivery=\"progressive\" type=\"video/mp4\" height=\"400\" width=\"720\" bitrate=\"1640\">\n" +
+			"http://cdn.vidigital.ru/media/m/VGTRK/Wargaming/0404/imho_WOT_WGL_Finals_2014.mp4?___vi_and=14274114/3632773/\n" +
+			"</MediaFile>\n" +
+			"</MediaFiles>\n" +
 			"</Linear>" +
 			"</Creative>" +
 			"</Creatives>" +
 			"<Extensions>" +
+			//"<Extension type=\"skipTime2\">00:10</Extension>" +
 			"<Extension type=\"Urlmod\" scope=\"block\" method=\"append\" final=\"false\">" +
-			"<urlpart>" +
+			//"<urlpart>" +
 			"<![CDATA[&k=14274114]]>" +
-			"</urlpart>" +
+			//"</urlpart>" +
 			"</Extension>" +				
 			"</Extensions>" +
 			"</InLine>" +
@@ -173,7 +176,21 @@ public class VASTv2ParserTest {
 			e.printStackTrace();
 		}
 	}
-
+	
+	@Test
+	public void testVast3WithSeq2() throws URISyntaxException {
+		InputStream in = getClass().getResourceAsStream("getCode.xml");
+		try {
+			String content = CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8));
+			VAST3 v = VASTv2Parser.parseVast3(content);
+			v.getAds().get(0);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 /*	private static final String[] tests = { "adnxs.vast2.1", "adnxs.vast2.2", "adnxs.vast2.3", "adnxs.vast2.4" };
 	

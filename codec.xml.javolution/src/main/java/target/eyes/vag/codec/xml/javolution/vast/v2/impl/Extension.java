@@ -7,6 +7,8 @@ import javolution.xml.stream.XMLStreamException;
 import java.util.LinkedList;
 import java.util.List;
 
+import target.eyes.vag.codec.xml.javolution.vast.impl.SingleValueTag;
+
 /**
  * User: arevkov
  * Date: 4/15/13
@@ -20,6 +22,7 @@ public class Extension implements XMLSerializable {
     private String scope;
     private String method;
     private String ffinal;
+    private String data;
     private List<Urlpart> urlparts = new LinkedList<>();
     private List<Tracking> trackings = new LinkedList<>();
 
@@ -40,6 +43,7 @@ public class Extension implements XMLSerializable {
             for (Urlpart u : obj.urlparts) {
                 xml.add(u, "urlpart", Urlpart.class);
             }
+            xml.getStreamWriter().writeCData(obj.data);
         }
 
         @Override
@@ -50,14 +54,16 @@ public class Extension implements XMLSerializable {
                     obj.type = ExtensionType.CustomTracking; break;
                 case "Urlmod":
                     obj.type = ExtensionType.Urlmod; break;
+                default:
+                   	obj.type = ExtensionType.Urlmod; break;
             }
             if (obj.type == null) return;
             obj.scope = xml.getAttribute("scope", null);
             obj.method = xml.getAttribute("method", null);
             obj.ffinal = xml.getAttribute("final", null);
 
-            // Read nested tags
-            while (xml.hasNext()) {
+            // Read nested tags 
+            /*while (xml.hasNext()) {
                 switch (obj.type) {
                     case Urlmod:
                         Urlpart e = xml.get("urlpart", Urlpart.class);
@@ -72,9 +78,14 @@ public class Extension implements XMLSerializable {
                         else obj.trackings.add(e2);
                         break;
                 }
-            }
+            }*/
+            obj.setData(xml.getText().toString());
         }
     };
+    
+	public void setData(String data) {
+		this.data = data;
+	}    
 
     public Extension() {
         // do nothing

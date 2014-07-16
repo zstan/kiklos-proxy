@@ -1,5 +1,7 @@
 package target.eyes.vag.codec.xml.javolution.vast.v2.impl;
 
+import javax.xml.stream.XMLStreamException;
+
 import javolution.xml.XMLFormat;
 import javolution.xml.XMLSerializable;
 import target.eyes.vag.codec.xml.javolution.vast.impl.SingleValueTag;
@@ -9,6 +11,8 @@ import target.eyes.vag.codec.xml.javolution.vast.v2.impl.TrackingEvents;
 public class Linear implements XMLSerializable {
 
 	private SingleValueTag duration;
+	
+	private SingleValueTag adParameters;
 
 	private TrackingEvents trackingEvents;
 
@@ -26,6 +30,8 @@ public class Linear implements XMLSerializable {
 			if (obj.duration != null)
 				xml.add(obj.duration, "Duration", SingleValueTag.class);
 			xml.add(obj.trackingEvents, "TrackingEvents", TrackingEvents.class);
+			if (obj.adParameters != null)
+				xml.add(obj.adParameters, "AdParameters", SingleValueTag.class);						
 			xml.add(obj.videoClicks, "VideoClicks", VideoClicks.class);
 			xml.add(obj.mediaFiles, "MediaFiles", MediaFiles.class);
 		};
@@ -37,6 +43,7 @@ public class Linear implements XMLSerializable {
 
 			obj.setTrackingEvents(xml.get("TrackingEvents",
 					TrackingEvents.class));
+			obj.setAdParameters(xml.get("AdParameters", SingleValueTag.class));			
 			obj.setVideoClicks(xml.get("VideoClicks", VideoClicks.class));
 
 			obj.setMediaFiles(xml.get("MediaFiles", MediaFiles.class));
@@ -47,6 +54,10 @@ public class Linear implements XMLSerializable {
 	public String getDuration() {
 		return duration.getText();
 	}
+	
+	public String getAdParameters() {
+		return adParameters.getText();
+	}	
 
 	public void setDuration(String duration) {
 		this.duration = new SingleValueTag();
@@ -57,7 +68,17 @@ public class Linear implements XMLSerializable {
 		if (duration != null)
 			setDuration(duration.getText().toString());
 	}
+	
+	public void setAdParameters(String adParameters) {
+		this.adParameters = new SingleValueTag();
+		this.adParameters.setText(adParameters);
+	}	
 
+	public void setAdParameters(SingleValueTag adParameters) {
+		if (adParameters != null)
+			setAdParameters(adParameters.getText().toString());
+	}
+	
 	public TrackingEvents getTrackingEvents() {
 		return trackingEvents;
 	}

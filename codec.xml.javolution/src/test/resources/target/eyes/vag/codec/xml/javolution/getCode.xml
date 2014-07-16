@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<VAST version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://specs.adfox.ru/uploads/vast.xsd">
+<Ad id="1015023">
+<InLine>
+<AdSystem>AdFox.Ru</AdSystem>
+<AdTitle>NTV</AdTitle>
+<Description>video ad</Description>
+<Error><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=u]]></Error>
+<Impression><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=b]]></Impression>
+<Creatives>
+
+<Creative>
+
+<Linear>
+
+<Duration>00:00:30</Duration>
+
+<TrackingEvents>
+
+<Tracking event="creativeView"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=c]]></Tracking>
+<Tracking event="start"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=d]]></Tracking>
+<Tracking event="midpoint"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=f]]></Tracking>
+<Tracking event="firstQuartile"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=e]]></Tracking>
+<Tracking event="thirdQuartile"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=g]]></Tracking>
+<Tracking event="complete"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=h]]></Tracking>
+<Tracking event="mute"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=i]]></Tracking>
+<Tracking event="unmute"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=j]]></Tracking>
+<Tracking event="pause"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=k]]></Tracking>
+<Tracking event="rewind"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=l]]></Tracking>
+<Tracking event="resume"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=m]]></Tracking>
+<Tracking event="fullscreen"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=n]]></Tracking>
+<Tracking event="expand"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=o]]></Tracking>
+<Tracking event="collapse"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=p]]></Tracking>
+<Tracking event="acceptInvitation"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=q]]></Tracking>
+<Tracking event="close"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=r]]></Tracking>
+
+</TrackingEvents>
+
+<AdParameters/>
+
+<VideoClicks>
+<ClickThrough><![CDATA[http://ads.adfox.ru/216891/goLink?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc@http://mostmediaonline.com]]></ClickThrough>
+</VideoClicks>
+
+<MediaFiles>
+
+<MediaFile id="1" delivery="progressive" type="video/MP2T" bitrate="" maintainAspectRatio="false" scalable="true" width="720" height="480">
+<![CDATA[http://cdn.vidigital.ru/media/m/test/barnaul_x264.m2ts?rnd=1406346268]]>
+
+</MediaFile>
+</MediaFiles>
+</Linear>
+</Creative>
+</Creatives>
+
+<Extensions>
+<Extension type="skipTime2"><![CDATA[00:10]]></Extension>
+<Extension type="linkTxt"><![CDATA[&#1087;&#1077;&#1088;&#1077;&#1081;&#1090;&#1080; &#1085;&#1072; &#1089;&#1072;&#1081;&#1090; &#1088;&#1077;&#1082;&#1083;&#1072;&#1084;&#1086;&#1076;&#1072;&#1090;&#1077;&#1083;&#1103;]]></Extension>
+<Extension type="isClickable"><![CDATA[1]]></Extension>
+<Extension type="addClick"><![CDATA[http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=eojndxc&lts=eohrnzu&pm=t]]></Extension>
+</Extensions> 
+
+<!--
+<Extensions>
+<Extension type="Urlmod" scope="block" method="append" final="false">
+<urlpart>
+<![CDATA[&k=14274114]]>
+</urlpart>
+</Extension>
+</Extensions>
+-->
+</InLine>
+</Ad>
+</VAST>
