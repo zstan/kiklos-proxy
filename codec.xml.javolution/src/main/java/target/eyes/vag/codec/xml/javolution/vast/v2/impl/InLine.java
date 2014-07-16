@@ -16,6 +16,10 @@ public class InLine implements XMLSerializable {
 	private SingleValueTag adSystem = new SingleValueTag("version");
 
 	private SingleValueTag adTitle = new SingleValueTag();
+	
+	private SingleValueTag description = new SingleValueTag();
+	
+	private SingleValueTag error = new SingleValueTag();
 
 	private List<Impression> impressions = new ArrayList<Impression>();
 
@@ -30,6 +34,8 @@ public class InLine implements XMLSerializable {
 		public void write(InLine obj, OutputElement xml)
 				throws XMLStreamException {
 			xml.add(obj.adSystem, "AdSystem", SingleValueTag.class);
+			xml.add(obj.description, "Description", SingleValueTag.class);
+			xml.add(obj.error, "Error", SingleValueTag.class);
 			xml.add(obj.adTitle, "AdTitle", SingleValueTag.class);
 			for (Impression i : obj.getImpressions()) {
 				xml.add(i, "Impression", Impression.class);
@@ -45,6 +51,10 @@ public class InLine implements XMLSerializable {
 					.toString());
 			obj.setAdTitle(xml.get("AdTitle", SingleValueTag.class).getText()
 					.toString());
+			obj.setDescription(xml.get("Description", SingleValueTag.class).getText()
+					.toString());
+			obj.setError(xml.get("Error", SingleValueTag.class).getText()
+					.toString());			
 
 			obj.impressions.add(xml.get("Impression", Impression.class)); // at
 																			// least
@@ -74,7 +84,15 @@ public class InLine implements XMLSerializable {
 	public String getAdTitle() {
 		return adTitle.getText();
 	}
+	
+	public String getDescription() {
+		return description.getText();
+	}	
 
+	public String getError() {
+		return error.getText();
+	}		
+	
 	public void setAdSystemVersion(String version) {
 		this.adSystem.setAttribute(version);
 	}
@@ -82,7 +100,15 @@ public class InLine implements XMLSerializable {
 	public void setAdTitle(String adTitle) {
 		this.adTitle.setText(adTitle);
 	}
+	
+	public void setDescription(String desc) {
+		this.description.setText(desc);
+	}
 
+	public void setError(String desc) {
+		this.error.setText(desc);
+	}
+		
 	public List<Impression> getImpressions() {
 		return impressions;
 	}

@@ -35,6 +35,8 @@ public class VASTv2ParserTest {
 			"<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"vast.xsd\">" +
 			"<Ad id=\"5348167055596078337\">" +
 			"<InLine>" +
+			"<Description>video ad</Description>" +
+			"<Error>http://ads.adfox.ru/216891/event?p2=euhw&p1=blhhs&p5=cftnj&pr=cxcxlnm&lts=eohriex&pm=u</Error>" +
 			"<AdSystem version=\"2.0\">adnxs</AdSystem>" +
 			"<AdTitle>VideoAd</AdTitle>" +
 			"<Impression>" +
