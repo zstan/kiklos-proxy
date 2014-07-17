@@ -51,17 +51,14 @@ public class InLine implements XMLSerializable {
 					.toString());
 			obj.setAdTitle(xml.get("AdTitle", SingleValueTag.class).getText()
 					.toString());
-			obj.setDescription(xml.get("Description", SingleValueTag.class).getText()
-					.toString());
-			obj.setError(xml.get("Error", SingleValueTag.class).getText()
-					.toString());			
+			SingleValueTag st = xml.get("Description", SingleValueTag.class);
+			if (st != null)
+				obj.setDescription(st.getText());
+			st = xml.get("Error", SingleValueTag.class);
+			if (st != null)
+				obj.setDescription(st.getText());			
 
-			obj.impressions.add(xml.get("Impression", Impression.class)); // at
-																			// least
-																			// one
-																			// is
-																			// required
-
+			obj.impressions.add(xml.get("Impression", Impression.class)); // at least one is required
 			Impression i;
 			while ((i = xml.get("Impression", Impression.class)) != null)
 				obj.impressions.add(i);

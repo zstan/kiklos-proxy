@@ -43,7 +43,8 @@ public class Extension implements XMLSerializable {
             for (Urlpart u : obj.urlparts) {
                 xml.add(u, "urlpart", Urlpart.class);
             }
-            xml.getStreamWriter().writeCData(obj.data);
+            if (obj.data != null)
+            	xml.getStreamWriter().writeCData(obj.data);
         }
 
         @Override
@@ -55,7 +56,7 @@ public class Extension implements XMLSerializable {
                 case "Urlmod":
                     obj.type = ExtensionType.Urlmod; break;
                 default:
-                   	obj.type = ExtensionType.Urlmod; break;
+                   	obj.type = ExtensionType.Other; break;
             }
             if (obj.type == null) return;
             obj.scope = xml.getAttribute("scope", null);
@@ -63,23 +64,25 @@ public class Extension implements XMLSerializable {
             obj.ffinal = xml.getAttribute("final", null);
 
             // Read nested tags 
-            /*while (xml.hasNext()) {
-                switch (obj.type) {
-                    case Urlmod:
-                        Urlpart e = xml.get("urlpart", Urlpart.class);
-                        // If not <urlpart> -> try to read & skip
-                        if (e == null) xml.getNext();
-                        else obj.urlparts.add(e);
-                        break;
-                    case CustomTracking:
-                        Tracking e2 = xml.get("Tracking", Tracking.class);
-                        // If not <tracking> -> try to read & skip
-                        if (e2 == null) xml.getNext();
-                        else obj.trackings.add(e2);
-                        break;
-                }
-            }*/
-            obj.setData(xml.getText().toString());
+            if (obj.type.equals(ExtensionType.Urlmod) || obj.type.equals(ExtensionType.CustomTracking))
+	            while (xml.hasNext()) {
+	                switch (obj.type) {
+	                    case Urlmod:
+	                        Urlpart e = xml.get("urlpart", Urlpart.class);
+	                        // If not <urlpart> -> try to read & skip
+	                        if (e == null) xml.getNext();
+	                        else obj.urlparts.add(e);
+	                        break;
+	                    case CustomTracking:
+	                        Tracking e2 = xml.get("Tracking", Tracking.class);
+	                        // If not <tracking> -> try to read & skip
+	                        if (e2 == null) xml.getNext();
+	                        else obj.trackings.add(e2);
+	                        break;
+	                }
+	            }
+            else
+            	obj.setData(xml.getText().toString());
         }
     };
     
@@ -210,6 +213,7 @@ public class Extension implements XMLSerializable {
 
     public static enum ExtensionType {
         Urlmod,
-        CustomTracking
+        CustomTracking,
+        Other
     }
 }
