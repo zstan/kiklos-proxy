@@ -17,7 +17,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 
 public class NettyHttpServer
 {
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{		
 	    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 	    StatusPrinter.print(lc);
@@ -38,8 +38,12 @@ public class NettyHttpServer
 		try {
 			Channel ch = bootstrap.bind(80).sync().channel();
 			ch.closeFuture().sync();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}                		
+		 } finally {
+		        bossGroup.shutdownGracefully();
+		        workerGroup.shutdownGracefully();
+
+		        bossGroup.terminationFuture().sync();
+		        workerGroup.terminationFuture().sync();
+		 }          		
 	}
 }

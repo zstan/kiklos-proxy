@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import kiklos.planner.AbstractStrategy;
+import kiklos.planner.DurationSettings;
+import kiklos.planner.SimpleStrategy;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultCookie;
@@ -45,20 +48,37 @@ import com.ning.http.client.Response;
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private final AsyncHttpClient asyncClient;
 	private final PlacementsMapping plMap;
+	private final DurationSettings durationSettings;
 	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
 	private final CookieFabric cookieFabric;
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
+	private static final String DURATION = "dur";
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
-    private final MemoryLogStorage memLogStorage;     
+    private final MemoryLogStorage memLogStorage;
+    private final AbstractStrategy durationStrategy = new SimpleStrategy();
 	
 	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
-			final CookieFabric cf) {
+			final CookieFabric cf, final DurationSettings ds) {
 		asyncClient = c;
 		plMap = placements;
 		memLogStorage = logStorage;
 		cookieFabric = cf;
+		durationSettings = ds;
+	}
+	
+	private int getRequiredAdDuration(final String req) {
+		Map<String, List<String>> params = (new QueryStringDecoder(req)).parameters();
+		List<String> dur = params.get(DURATION); 
+		if (dur != null) {
+			try {
+				return Integer.parseInt(dur.get(0));
+			} catch (NumberFormatException e) {
+				return -1;
+			}			
+		} else
+			return -1;
 	}
 	
 	private Pair<List<String>, String> reqTransformer(final String req) {
@@ -157,6 +177,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				ctx.channel().close();
 				return;			
 			}		
+			
+			/*if (this.getRequiredAdDuration(reqUri) == -1) {
+				return empty vast
+			}*/
 			
 			final Pair<List<String>, String> newUriPair = reqTransformer(reqUri);
 			final List<String> VASTList = newUriPair.getFirst();
