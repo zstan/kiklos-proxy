@@ -1,8 +1,7 @@
 package kiklos.planner;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -10,21 +9,66 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleStrategy implements AbstractStrategy {
 	private static final Logger LOG = LoggerFactory.getLogger(SimpleStrategy.class);
+	private static List<Integer> durationsList;
 	
-	@Override
-	public List<String> getTimeTable(final DurationSettings settings, final int summaryDuration) {
-		Integer[] durationsList = (Integer[]) settings.getDurationsSet().toArray();
-		Arrays.sort(durationsList);
-		LOG.debug("duration list size: {}, summary duration: {}", Array.getLength(durationsList), summaryDuration);
-		if (summaryDuration == -1) {
-			List<String> l = new ArrayList<>();
-			String defaultPlacement = settings.getPlacement(durationsList[0]);
-			l.add(defaultPlacement);
-			l.add(defaultPlacement);
-			return l;
+	public static List<String> formAdList(final DurationSettings settings, final int summaryDuration) {
+		durationsList = settings.getDurationsList();
+		if (summaryDuration < durationsList.get(0) && summaryDuration != -1)
+			return Collections.emptyList();
+		LOG.debug("duration list size: {}, summary duration: {}", durationsList.size(), summaryDuration);
+		List<String> lOut = new ArrayList<>();
+		if (summaryDuration == -1) {			
+			String defaultPlacement = settings.getPlacement(durationsList.get(0));
+			lOut.add(defaultPlacement);
+			lOut.add(defaultPlacement);			
 		} else {
-			return null;
+			List<Integer> ttList = getTimeTable(summaryDuration); 
+			for (int i: ttList)
+				lOut.add(settings.getPlacement(i));
+		}
+		return lOut;
+	}
+	
+	// вставляем длительности по очереди 5, 10, 15 пока вставляется, когда не всатвляется - вставляем минимальные.
+	private static List<Integer> getTimeTable(final int summaryDuration) {		
+		List<Integer> lOut = new ArrayList<>();
+		int remain = summaryDuration;
+		int pos = 0;
+		while (true) {
+			int item = durationsList.get(pos++);
+			if (pos == durationsList.size())
+				pos = 0;
+			if (remain - item >= 0) {
+				remain -= item;
+				lOut.add(item);
+			} else {
+				if (remain == 0)
+					break;
+				else {
+					int minDuration = durationsList.get(0);
+					while (remain >= minDuration) {
+						lOut.add(minDuration);
+						remain -= minDuration;
+					}
+					break;
+				}
+			}
+		}
+		if (LOG.isDebugEnabled()) {
+			String sOut = "";
+			for (int i: lOut) {
+				sOut += (i + " ");				
+			}
+			LOG.debug("SimpleStrategy durations: {}", sOut);
+		}
+		return lOut;
+	}
+	
+/*	public static void main(String[] args) {
+		SimpleStrategy.durationsList = Arrays.asList(5, 10, 15, 20);
+		for (int i: getTimeTable(115)) {
+			System.out.print(i + " ");
 		}
 	}
-
+*/
 }

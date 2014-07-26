@@ -53,11 +53,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private final CookieFabric cookieFabric;
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
-	private static final String DURATION = "dur";
+	private static final String DURATION = "t";
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
-    private final AbstractStrategy durationStrategy = new SimpleStrategy();
 	
 	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
 			final CookieFabric cf, final DurationSettings ds) {
@@ -183,7 +182,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			}*/
 			
 			final Pair<List<String>, String> newUriPair = reqTransformer(reqUri);
-			final List<String> VASTList = newUriPair.getFirst();
+			List<String> VASTList = newUriPair.getFirst();
+			if (VASTList.isEmpty()) {
+				int reqDuration = this.getRequiredAdDuration(reqUri);
+				LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
+				VASTList = SimpleStrategy.formAdList(durationSettings, reqDuration);
+			}
 			final String newPath = VASTList.isEmpty() ? "" : VASTList.get(0);
 			final String newParams = newUriPair.getSecond();
 	

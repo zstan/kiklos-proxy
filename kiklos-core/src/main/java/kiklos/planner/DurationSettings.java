@@ -1,10 +1,10 @@
 package kiklos.planner;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.redisson.Redisson;
@@ -16,11 +16,11 @@ public class DurationSettings {
     private static final Logger LOG = LoggerFactory.getLogger(DurationSettings.class);
     private volatile Map<Integer, String> durationsMap;
     private Map<Integer, String> durExternal;
+    private volatile List<Integer> keyList = new ArrayList<>();
     
 	public DurationSettings(final Redisson memStorage) {
 		
 		durExternal = memStorage.getMap(DURATIONS_MAP_NAME);
-		durExternal.put(1, "value");
 		durationsMap = getRemoteCollection();
 		Thread t = new Thread(new DurationsUpdater());
 		t.setPriority(Thread.MIN_PRIORITY);
@@ -30,11 +30,21 @@ public class DurationSettings {
 	private Map<Integer, String> getRemoteCollection() {
 		Map<Integer, String> tmp = new HashMap<>(durExternal.size());
 		tmp.putAll(durExternal);
+		List<Integer> tmpL = new ArrayList<>(); 
+		tmpL.addAll(tmp.keySet());
+		keyList = tmpL;
+		Collections.sort(keyList);
 		return Collections.unmodifiableMap(tmp);
 	}
 	
-	public Set<Integer> getDurationsSet() {
-		return durationsMap.keySet();
+	public List<Integer> getDurationsList() {
+		if (LOG.isDebugEnabled()) {
+			String sOut = "";
+			for (int i: keyList)
+				sOut += i + " ";
+			LOG.debug("getDurationsList: {}", sOut);
+		}
+		return keyList;
 	}
 	
 	public String getPlacement(final Integer duration) {
@@ -48,7 +58,7 @@ public class DurationSettings {
 	            LOG.debug("Read new durations config");
 	            durationsMap = getRemoteCollection();
 	            try {
-					TimeUnit.MINUTES.sleep(2);
+					TimeUnit.MINUTES.sleep(10);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
