@@ -80,41 +80,43 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			return -1;
 	}
 	
-	private Pair<List<String>, String> reqTransformer(final String req) {
-		String trans = ""; 
-		String main = "";
-		List<String> vastList = Collections.emptyList();
+	private List<String> reqTransformer(final String req) {
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
 		
 		Map<String, List<String>> params = decoder.parameters(); 
 		if (!params.isEmpty())
 			if (!params.get("id").isEmpty() && !params.get("id").get(0).isEmpty()) {
 				final String id = params.get("id").get(0);
-				vastList =  plMap.getMappingVASTList(id);
+				List<String> vastList =  plMap.getMappingVASTList(id);
+				if (vastList.isEmpty()) {
+					int reqDuration = this.getRequiredAdDuration(req);
+					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
+					vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
+				}				
 				if (!vastList.isEmpty()) {
+					LOG.debug("reqTransformer vastList size: {}", vastList.size());
+					List<String> vastUriList = new ArrayList<>(vastList.size());
 					params.remove("id");
-					
-					// stub !!!
-					
-					main = vastList.get(0);
-					// no need params now !!!
-					/*
-					if (new QueryStringDecoder(main).getParameters().isEmpty()) // TODO: fix it
-						trans = "?";
-					else
-						trans = "&";
-					
-					for (Map.Entry<String, List<String>> e: params.entrySet()) {
-						trans += e.getKey();
-						for (String val: e.getValue())
-							trans += "=" + val;
-						trans += "&"; 
+					params.remove("t");
+					for (String v: vastList) {
+						String newUri = "";
+						for (Map.Entry<String, List<String>> e: params.entrySet()) {
+							if (new QueryStringDecoder(v).parameters().isEmpty())
+								v += "?";
+							else	
+								v += "&";
+							v += e.getKey();							
+							for (String val: e.getValue())
+								newUri += "=" + val;
+							newUri += "&";
+							LOG.debug("proxy params to vast req: {}", newUri);							
+						}
+						vastUriList.add(v + newUri);
 					}
-					*/
+					return vastUriList;
 				}
-		}
-		LOG.debug("main: {}, params: {}", main, trans);
-		return new Pair<List<String>, String>(vastList, trans);
+		}		
+		return Collections.emptyList();
 	}
 	
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
@@ -181,22 +183,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				return empty vast
 			}*/
 			
-			final Pair<List<String>, String> newUriPair = reqTransformer(reqUri);
-			List<String> VASTList = newUriPair.getFirst();
-			if (VASTList.isEmpty()) {
-				int reqDuration = this.getRequiredAdDuration(reqUri);
-				LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
-				VASTList = SimpleStrategy.formAdList(durationSettings, reqDuration);
-			}
-			final String newPath = VASTList.isEmpty() ? "" : VASTList.get(0);
-			final String newParams = newUriPair.getSecond();
-	
+			final List<String> VASTUrlList = reqTransformer(reqUri);
+			LOG.debug("VASTUrlList size: {}", VASTUrlList.size());
+			
 			final InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress(); 
 		    final String remoteHost = sa.getAddress().getHostAddress();
 		    LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));						
 			
-			if (!newPath.isEmpty()) {
-				memLogStorage.put(composeLogString(request, newPath + newParams, remoteHost));
+			if (!VASTUrlList.isEmpty()) {
+				memLogStorage.put(composeLogString(request, "", remoteHost));
 			} else {
 				ctx.channel().close();
 				return;
@@ -206,11 +201,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final Cookie stCookie = ourAndSessionCookPair.getFirst();
 			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getSecond();
 			
-			if (VASTList.size() > 1) {
+			if (VASTUrlList.size() > 1) {
 				List<ListenableFuture<Response>> pool = new ArrayList<>();
 				List<String> vastPool = new ArrayList<>();
 				
-				for (String vs : VASTList) {
+				for (String vs : VASTUrlList) {
 					URI decoder = new URI(vs);								
 					String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
 					String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());
@@ -234,7 +229,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);
 				return;
 			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
-				ListenableFuture<Response> respFut = createResponse(sessionCookieList, newPath, newParams);
+				ListenableFuture<Response> respFut = createResponse(sessionCookieList, "newPath", "newParams");
 				while (true) {
 					if (respFut.isDone() || respFut.isCancelled()) {
 						Response response = respFut.get();
