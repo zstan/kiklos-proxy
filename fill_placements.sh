@@ -9,5 +9,13 @@ redis-cli HSET "\".placements\"" "\"113\"" "[\"java.util.ArrayList\",[\"http://a
 #hz1
 redis-cli HSET "\".placements\"" "\"114\"" "[\"java.util.ArrayList\",[\"http://ads.adfox.ru/216891/getCodeTest?p1=blhhs&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\"]
 
+redis-cli HSET "\".durations\"" "5" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+redis-cli HSET "\".durations\"" "10" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvp&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+redis-cli HSET "\".durations\"" "15" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvq&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+redis-cli HSET "\".durations\"" "20" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvr&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+redis-cli HSET "\".durations\"" "25" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvs&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+redis-cli HSET "\".durations\"" "30" "\"http://ads.adfox.ru/216891/getCode?p1=bpvxm&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+redis-cli HSET "\".durations\"" "35" "\"http://ads.adfox.ru/216891/getCode?p1=bpvyo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+
 redis-cli HSET "\".placements\"" "\"222\"" "[\"java.util.ArrayList\",[\"http://asg.vidigital.ru/1/50006/c/v/2\", \"http://ib.adnxs.com/ptv?id=2504637\"]]"
 #redis-cli HSET "\".placements\"" "\"222\"" "[\"java.util.ArrayList\",[\"33445566\",\"some comment1\"]]"
