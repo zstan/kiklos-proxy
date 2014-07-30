@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<VAST version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="data/vast.xsd">
+<Ad id="empty">
+<InLine>
+<AdSystem version="2.0">VAG</AdSystem>
+<AdTitle>empty</AdTitle>
+<Impression><![CDATA[http://asg.vidigital.ru/?v=1&p=50006&t=m&f=x&i=589379001406666462540000000001281553]]></Impression>
+<Creatives>
+<Creative AdID="empty">
+<Linear>
+<Duration>00:00:00</Duration>
+<TrackingEvents>
+<Tracking event="complete"><![CDATA[http://asg.vidigital.ru/?v=1&p=50006&t=z&f=x&i=589379001406666462540000000001281553]]></Tracking>
+<Tracking event="midpoint"><![CDATA[http://asg.vidigital.ru/?v=1&p=50006&t=h&f=x&i=589379001406666462540000000001281553]]></Tracking>
+<Tracking event="firstQuartile"><![CDATA[http://asg.vidigital.ru/?v=1&p=50006&t=q&f=x&i=589379001406666462540000000001281553]]></Tracking>
+<Tracking event="start"><![CDATA[http://asg.vidigital.ru/?v=1&p=50006&t=y&f=x&i=589379001406666462540000000001281553]]></Tracking>
+<Tracking event="thirdQuartile"><![CDATA[http://asg.vidigital.ru/?v=1&p=50006&t=r&f=x&i=589379001406666462540000000001281553]]></Tracking>
+</TrackingEvents>
+<VideoClicks>
+<ClickTracking><![CDATA[http://asg.vidigital.ru/?v=1&p=50006&t=k&f=x&i=589379001406666462540000000001281553]]></ClickTracking>
+</VideoClicks>
+</Linear>
+</Creative>
+</Creatives>
+<Extensions>
+<Extension type="CustomTracking">
+<Tracking event="onVastLoad"><![CDATA[http://ib.adnxs.com/getuid?http://asg.vidigital.ru/?v=1&a=111&s=F&e=$UID]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://ib.adnxs.com/getuid?http://dmg.digitaltarget.ru/?v=1&a=111&s=r&e=$UID]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://dmg.digitaltarget.ru/1/106/s/h?i=589379001406666462540000000001281553&c=50006..&a=106&e=2kQqgN5sHRuV5555C7cG&s=e&m=12&d=-%2025%2090%20-/-%20-%20-]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://advombat.ru/api/id?label=DIGITALTARGET&url=http://dmg.digitaltarget.ru/?v=1&a=12&e=$UID]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://x.ulogix.ru/match/digitaltarget?http://dmg.digitaltarget.ru/?v=1&a=24&e=$UID]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://bcp.crwdcntrl.net/5/c=2962?http://ad.crwdcntrl.net/5/c=2962/pe=y?http://dmg.digitaltarget.ru/?v=1&a=101&e=%24%7Bprofile_id%7D]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://dmg.digitaltarget.ru/1/416/i/h?i=589379001406666462540000000001281553]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://ib.adnxs.com/getuid?http%3a%2f%2ftags.bluekai.com/site/5400%3fret%3Dhtml%26limit%3D0%26phint%3DANID%253D$UID]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://ib.adnxs.com/getuid?http://bcp.crwdcntrl.net/map/c=281/rand=589379001406666462540000000001281553/tpid=$UID/tp=ANXS]]></Tracking>
+<Tracking event="onVastLoad"><![CDATA[http://www.tns-counter.ru/V13a****vitpc_ad/ru/CP1251/tmsec=vitpc_unknown-2544/589379001406666462540000000001281553]]></Tracking>
+</Extension>
+</Extensions>
+</InLine>
+</Ad>
+</VAST>

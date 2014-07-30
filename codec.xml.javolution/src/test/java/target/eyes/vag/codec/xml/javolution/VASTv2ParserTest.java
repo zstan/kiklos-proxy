@@ -201,6 +201,18 @@ public class VASTv2ParserTest {
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
 		}		
+		System.out.println("getCode_asg2.xml");
+		in = getClass().getResourceAsStream("getCode_asg2.xml");
+		try {
+			String content = CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8));
+			VAST3 v = VASTv2Parser.parseVast3(content);
+			v.getAds().get(0);
+			System.out.println("getExtensions: " + v.getAds().get(0).getInLine().getExtensions().getExtensions().get(0).getTrackings().size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	

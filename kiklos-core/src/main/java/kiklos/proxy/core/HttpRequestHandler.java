@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +27,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -98,21 +101,35 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					List<String> vastUriList = new ArrayList<>(vastList.size());
 					params.remove("id");
 					params.remove("t");
-					for (String v: vastList) {
-						String newUri = "";
-						for (Map.Entry<String, List<String>> e: params.entrySet()) {
+					
+					QueryStringEncoder enc = new QueryStringEncoder(""); 
+					for (Map.Entry<String, List<String>> e: params.entrySet()) {
+						for (String val: e.getValue()) {
+							enc.addParam(e.getKey(), val);
+						}													
+					}
+
+					String query = "";
+					try {
+						query = enc.toUri().getQuery();
+					} catch (URISyntaxException e1) {
+						e1.printStackTrace();
+					}					
+					
+					LOG.debug("proxy params to vast req: {}", query);
+					
+					if (query != null) {
+						for (String v: vastList) {
 							if (new QueryStringDecoder(v).parameters().isEmpty())
 								v += "?";
 							else	
 								v += "&";
-							v += e.getKey();							
-							for (String val: e.getValue())
-								newUri += "=" + val;
-							newUri += "&";
-							LOG.debug("proxy params to vast req: {}", newUri);							
-						}
-						vastUriList.add(v + newUri);
+							vastUriList.add(v + query);
+						}				
+					} else {
+						vastUriList = vastList;	
 					}
+					
 					return vastUriList;
 				}
 		}		
@@ -274,5 +291,27 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		c.setDomain(".beintv.ru");
 		c.setHttpOnly(true);
 		return c;
-	}	
+	}
+	
+	public static void main(String[] a) {
+		Map<String, List<String>> params = new HashMap<>();
+		List<String> ls = new ArrayList<>();
+		ls.add("1"); ls.add("2"); ls.add("3");
+		params.put("k1", ls);
+		params.put("k2", ls);
+		
+		QueryStringEncoder enc = new QueryStringEncoder(""); 
+		for (Map.Entry<String, List<String>> e: params.entrySet()) {
+			for (String val: e.getValue()) {
+				enc.addParam(e.getKey(), val);
+			}													
+		}
+		System.out.println(enc.toString());
+		try {
+			System.out.println(enc.toUri().getQuery());
+		} catch (URISyntaxException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
 }
