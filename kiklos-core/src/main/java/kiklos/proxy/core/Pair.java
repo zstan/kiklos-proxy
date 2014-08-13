@@ -1,6 +1,6 @@
 package kiklos.proxy.core;
 
-public class Pair<F, S> {
+public class Pair<F, S> implements Comparable<Pair<F, S>> {
 
     private F first;
     private S second;
@@ -58,4 +58,13 @@ public class Pair<F, S> {
     public void setSecond(S second) {
         this.second = second;
     }
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public int compareTo(Pair<F, S> o) { 
+		if (o.getFirst() instanceof Comparable && o.getSecond() instanceof Comparable) {
+			return ((Comparable)this.getFirst()).compareTo(o.getFirst());
+		}
+		return 0;
+	}
 }
