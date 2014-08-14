@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
@@ -24,8 +25,8 @@ public class TvTimetableParser {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TvTimetableParser.class);
 	
-	private static final SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-	private static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
+	private static SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+	private static SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
 	private static final byte TV_ITEMS_COUNT = 6;
 
 	private static long dateHMToSeconds(final Date d) {
@@ -34,8 +35,12 @@ public class TvTimetableParser {
 		return c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE) * 60 + c.get(Calendar.SECOND);
 	}	
 	
-	public static Map<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final InputStream in) throws IOException {
-		Map<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new TreeMap<>();
+	public static TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final InputStream in) throws IOException {
+		
+		//DATE_TV_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT+4"));
+		//TIME_TV_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT+4"));
+		
+		TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new TreeMap<>();
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));				
 		String line = reader.readLine();

@@ -19,8 +19,8 @@
 	<build>
 	
 	
-		<resources>
-			<!-- standard Maven folder -->
+<!-- 		<resources>
+			standard Maven folder
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>false</filtering>
@@ -29,7 +29,7 @@
 				</includes>				
 			</resource>
 		</resources>
-			
+ -->			
 		<plugins>
 <!--		
             <plugin>
