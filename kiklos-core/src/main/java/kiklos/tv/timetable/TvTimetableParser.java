@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
@@ -25,8 +25,8 @@ public class TvTimetableParser {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TvTimetableParser.class);
 	
-	private static SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-	private static SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
+	static final SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+	private static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
 	private static final byte TV_ITEMS_COUNT = 6;
 
 	private static long dateHMToSeconds(final Date d) {
@@ -36,9 +36,6 @@ public class TvTimetableParser {
 	}	
 	
 	public static TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final InputStream in) throws IOException {
-		
-		//DATE_TV_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT+4"));
-		//TIME_TV_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT+4"));
 		
 		TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new TreeMap<>();
 		
@@ -86,5 +83,17 @@ public class TvTimetableParser {
 			line = reader.readLine();
 		}
 		return tOut;
+	}
+	
+	public static Pair<Short, List<Short>> getWindow(Pair<Long, Long> key, TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> m) {		
+		SortedMap<Pair<Long, Long>, Pair<Short, List<Short>>> head = m.headMap(key);
+		Pair <Long, Long> tmp = null;
+		for (Map.Entry<Pair<Long, Long>, Pair<Short, List<Short>>> e : head.entrySet()) {
+			if (key.getFirst() > e.getKey().getFirst() && key.getFirst() < e.getKey().getSecond()) {
+				tmp = e.getKey();
+				break;
+			}
+		}
+		return tmp == null ? null : head.get(tmp);
 	}
 }

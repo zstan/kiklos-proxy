@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import kiklos.planner.AbstractStrategy;
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
 import io.netty.handler.codec.http.Cookie;
@@ -57,6 +56,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final String DURATION = "t";
+	private static short MAX_DURATION_BLOCK = 900;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
@@ -75,7 +75,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		List<String> dur = params.get(DURATION); 
 		if (dur != null) {
 			try {
-				return Integer.parseInt(dur.get(0));
+				int d = Integer.parseInt(dur.get(0)); 
+				return d > MAX_DURATION_BLOCK ? MAX_DURATION_BLOCK : d;
 			} catch (NumberFormatException e) {
 				return -1;
 			}			

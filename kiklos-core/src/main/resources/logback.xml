@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
 
-    <property name="log.dir" value="${mrtl.log.dir:-.}" />
-    <property name="log.file" value="${mrtl.log.file:-topics-loader-mr.log}" />
+    <property name="log.dir" value="${mrtl.log.dir:-./logs}" />
+    <property name="log.file" value="${mrtl.log.file:-kiklos-proxy.log}" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
