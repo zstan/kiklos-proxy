@@ -56,6 +56,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final String DURATION = "t";
+	private static final String CHANNEL = "ch";
 	private static short MAX_DURATION_BLOCK = 900;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
@@ -227,7 +228,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					URI decoder = new URI(vs);								
 					String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
 					String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());
-					LOG.debug("path: {}, query {}", path, query);
+					LOG.debug("path: {}, query {}", path, query);					
 					pool.add(createResponse(sessionCookieList, path, query));
 				}
 				LOG.debug("response pool size: {}", pool.size());
@@ -294,25 +295,4 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		return c;
 	}
 	
-	public static void main(String[] a) {
-		Map<String, List<String>> params = new HashMap<>();
-		List<String> ls = new ArrayList<>();
-		ls.add("1"); ls.add("2"); ls.add("3");
-		params.put("k1", ls);
-		params.put("k2", ls);
-		
-		QueryStringEncoder enc = new QueryStringEncoder(""); 
-		for (Map.Entry<String, List<String>> e: params.entrySet()) {
-			for (String val: e.getValue()) {
-				enc.addParam(e.getKey(), val);
-			}													
-		}
-		System.out.println(enc.toString());
-		try {
-			System.out.println(enc.toUri().getQuery());
-		} catch (URISyntaxException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
 }

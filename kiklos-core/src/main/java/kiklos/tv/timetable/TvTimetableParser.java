@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -35,7 +36,7 @@ public class TvTimetableParser {
 		return c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE) * 60 + c.get(Calendar.SECOND);
 	}	
 	
-	public static TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final InputStream in) throws IOException {
+	public static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final InputStream in) throws IOException {
 		
 		TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new TreeMap<>();
 		
@@ -85,7 +86,7 @@ public class TvTimetableParser {
 		return tOut;
 	}
 	
-	public static Pair<Short, List<Short>> getWindow(Pair<Long, Long> key, TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> m) {		
+	public static Pair<Short, List<Short>> getWindow(Pair<Long, Long> key, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m) {		
 		SortedMap<Pair<Long, Long>, Pair<Short, List<Short>>> head = m.headMap(key);
 		Pair <Long, Long> tmp = null;
 		for (Map.Entry<Pair<Long, Long>, Pair<Short, List<Short>>> e : head.entrySet()) {
