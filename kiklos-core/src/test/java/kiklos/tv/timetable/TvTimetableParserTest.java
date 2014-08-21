@@ -6,10 +6,10 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import static org.junit.Assert.*;
-
 import kiklos.proxy.core.Pair;
 
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class TvTimetableParserTest {
 		long now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 		
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
-		TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseTimeTable(in);
+		NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseTimeTable(in);
 		
 		Pair<Long, Long> p = new Pair<Long, Long>(now, 0L);
 		Pair<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);

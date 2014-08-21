@@ -224,11 +224,17 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				List<ListenableFuture<Response>> pool = new ArrayList<>();
 				List<String> vastPool = new ArrayList<>();
 				
+				int cnt = 0;
+				
 				for (String vs : VASTUrlList) {
 					URI decoder = new URI(vs);								
 					String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
 					String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());
-					LOG.debug("path: {}, query {}", path, query);					
+					LOG.debug("path: {}, query {}", path, query);
+					cnt += 1;
+					if (cnt % 2 == 0) {
+						TimeUnit.MILLISECONDS.sleep(10);  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+					}
 					pool.add(createResponse(sessionCookieList, path, query));
 				}
 				LOG.debug("response pool size: {}", pool.size());
@@ -238,6 +244,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 						LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
 						final String respVast = p.get().getResponseBody();
 						vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
+						sessionCookieList.addAll(CookieFabric.getResponseCookies(p.get())); // !!!!!!!!!!!!!!!!!!!!!
 						pool.remove(p);
 					}
 					else {
@@ -248,7 +255,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);
 				return;
 			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
-				ListenableFuture<Response> respFut = createResponse(sessionCookieList, "newPath", "newParams");
+				URI decoder = new URI(VASTUrlList.get(0));								
+				String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
+				String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());				
+				ListenableFuture<Response> respFut = createResponse(sessionCookieList, path, query); /// !!!!! no comments !!!!
 				while (true) {
 					if (respFut.isDone() || respFut.isCancelled()) {
 						Response response = respFut.get();
