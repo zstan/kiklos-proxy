@@ -4,13 +4,11 @@ import java.util.Date;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +55,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final String DURATION = "t";
 	private static final String CHANNEL = "ch";
+	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	private static short MAX_DURATION_BLOCK = 900;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
@@ -227,15 +226,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				int cnt = 0;
 				
 				for (String vs : VASTUrlList) {
-					URI decoder = new URI(vs);								
-					String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
-					String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());
-					LOG.debug("path: {}, query {}", path, query);
+					LOG.debug("try to create request: {}", vs);
 					cnt += 1;
 					if (cnt % 2 == 0) {
 						TimeUnit.MILLISECONDS.sleep(10);  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 					}
-					pool.add(createResponse(sessionCookieList, path, query));
+					pool.add(createResponse(sessionCookieList, vs));
 				}
 				LOG.debug("response pool size: {}", pool.size());
 				while (!pool.isEmpty()) {				
@@ -255,10 +251,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);
 				return;
 			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
-				URI decoder = new URI(VASTUrlList.get(0));								
-				String path = String.format("%s://%s", decoder.getScheme(), decoder.getHost());
-				String query = String.format("%s?%s", decoder.getPath(), decoder.getQuery() == null ? "" : decoder.getQuery());				
-				ListenableFuture<Response> respFut = createResponse(sessionCookieList, path, query); /// !!!!! no comments !!!!
+				ListenableFuture<Response> respFut = createResponse(sessionCookieList, VASTUrlList.get(0));
 				while (true) {
 					if (respFut.isDone() || respFut.isCancelled()) {
 						Response response = respFut.get();
@@ -273,8 +266,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	}
 	
 	private ListenableFuture<Response> createResponse(final List<Cookie> sessionCookieList, 
-			final String newPath, final String newParams) throws IOException {
-		final BoundRequestBuilder rb = asyncClient.prepareGet(String.format("%s%s", newPath, newParams));
+			final String newPath) throws IOException {
+		final BoundRequestBuilder rb = asyncClient.prepareGet(newPath);
 		for (Cookie c : sessionCookieList) {
 			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c));
 		}
@@ -282,8 +275,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			
 			@Override
 			public Response onCompleted(Response response) throws Exception {
-				LOG.info("req transformed : {}, new params: {}", newPath, newParams);
-				LOG.info("status code : {}, response size: {}", response.getStatusCode(), response.getResponseBody().length());
+				LOG.info("req completed : {} status code : {}, response size: {}", newPath, response.getStatusCode(), response.getResponseBody().length());
 				return response;
 			}
 		});
@@ -298,7 +290,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
 	private Cookie getOurCookie() {	
 		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
-		c.setMaxAge(60*60*24*30*3);
+		c.setMaxAge(COOKIE_MAX_AGE);
 		c.setPath("/");
 		c.setDomain(".beintv.ru");
 		c.setHttpOnly(true);

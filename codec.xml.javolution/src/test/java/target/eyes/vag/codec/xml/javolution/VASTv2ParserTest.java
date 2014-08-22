@@ -162,6 +162,7 @@ public class VASTv2ParserTest {
 		String u = "http://asg.vidigital.ru/1/50006/c/v/2";
 		URI uri = new URI(u);
 		System.out.println("!!!!" + uri.getPath());
+		System.out.println(uri);
 	}
 
 	@Test
