@@ -91,7 +91,10 @@ public class CookieFabric {
 	
 	public static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {		
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
-		if (cookieStrings == null)
+		
+		LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
+		
+		if (cookieStrings.isEmpty())
 			return new Pair<Cookie, List<Cookie>>(null, null);
 		
 		List<Cookie> httpCookieList = new ArrayList<>();

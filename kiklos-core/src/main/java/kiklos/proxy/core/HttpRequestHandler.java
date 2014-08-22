@@ -223,14 +223,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				List<ListenableFuture<Response>> pool = new ArrayList<>();
 				List<String> vastPool = new ArrayList<>();
 				
-				int cnt = 0;
-				
 				for (String vs : VASTUrlList) {
 					LOG.debug("try to create request: {}", vs);
-					cnt += 1;
-					if (cnt % 2 == 0) {
-						TimeUnit.MILLISECONDS.sleep(10);  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-					}
 					pool.add(createResponse(sessionCookieList, vs));
 				}
 				LOG.debug("response pool size: {}", pool.size());
@@ -269,7 +263,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final String newPath) throws IOException {
 		final BoundRequestBuilder rb = asyncClient.prepareGet(newPath);
 		for (Cookie c : sessionCookieList) {
-			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c));
+			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
 		}
 		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {			
 			

@@ -55,11 +55,7 @@ public class SimpleStrategy implements AbstractStrategy {
 			}
 		}
 		if (LOG.isDebugEnabled()) {
-			String sOut = "";
-			for (int i: lOut) {
-				sOut += (i + " ");				
-			}
-			LOG.debug("SimpleStrategy durations: {}", sOut);
+			LOG.debug("SimpleStrategy durations: {}", lOut);
 		}
 		return lOut;
 	}
