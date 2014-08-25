@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
+import kiklos.tv.timetable.DirWatchDog;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultCookie;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
@@ -60,14 +62,16 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
+    private final DirWatchDog watchDog;
 	
 	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
-			final CookieFabric cf, final DurationSettings ds) {
+			final CookieFabric cf, final DurationSettings ds, final DirWatchDog wd) {
 		asyncClient = c;
 		plMap = placements;
 		memLogStorage = logStorage;
 		cookieFabric = cf;
 		durationSettings = ds;
+		watchDog = wd;
 	}
 	
 	private int getRequiredAdDuration(final String req) {
@@ -265,7 +269,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		for (Cookie c : sessionCookieList) {
 			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
 		}
-		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {			
+		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {
 			
 			@Override
 			public Response onCompleted(Response response) throws Exception {

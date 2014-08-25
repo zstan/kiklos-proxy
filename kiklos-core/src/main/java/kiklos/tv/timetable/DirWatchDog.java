@@ -3,14 +3,9 @@ package kiklos.tv.timetable;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,7 +29,7 @@ public class DirWatchDog {
     private volatile Map<Pair<String, String>, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> mapInternal;
 	
 	public DirWatchDog(final Redisson memStorage) {
-		if (!timeTableFolder.exists())
+/*		if (!timeTableFolder.exists())
 			timeTableFolder.mkdirs();
 		mapExternal = memStorage.getMap(TIMETABLE_MAP_NAME);
 		mapInternal = watchDogIt();
@@ -43,7 +38,7 @@ public class DirWatchDog {
 		t1.setPriority(Thread.MIN_PRIORITY);
 		t1.start();
 		t2.setPriority(Thread.MIN_PRIORITY);
-		t2.start();		
+		t2.start();*/		
 	}
 	
 	private Map<Pair<String, String>, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> watchDogIt() {
@@ -59,12 +54,13 @@ public class DirWatchDog {
 			}
 			String channel = name.substring(0, name.indexOf("_"));
 			String date = name.substring(name.indexOf("_") + 1, name.indexOf("."));
-			LOG.debug("DirWatchDog channel: {}, date: {}", channel, date);
+			LOG.debug("DirWatchDog found timetable channel: {}, date: {}", channel, date);
 			Date d;
 			try {
 				d = TIME_TABLE_DATE.parse(date);
 				if (now.before(d) || now.equals(d)) {
 					tmp.put(new Pair<String, String>(channel, date), TvTimetableParser.parseTimeTable(new BufferedInputStream(new FileInputStream(path))));
+					LOG.debug("put new timetable :{}", path);
 				}				
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
@@ -83,7 +79,8 @@ public class DirWatchDog {
 	            LOG.debug("check timetable dir");
             	mapInternal = watchDogIt();
 	            try {
-					TimeUnit.MINUTES.sleep(1);
+					//TimeUnit.MINUTES.sleep(1);
+	            	TimeUnit.SECONDS.sleep(30);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
