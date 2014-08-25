@@ -1,8 +1,13 @@
 package kiklos.tv.timetable;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
-import java.nio.file.Files;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DirWatchDog {	
-	private static final String TIMETABLE_DIR = "./timetable";
+	private final File timeTableFolder = new File("./timetable");
 	private static final String TIMETABLE_MAP_NAME = ".timetable";
 	private static final String FILE_MASK = ".txt"; 
     private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
@@ -32,19 +37,29 @@ public class DirWatchDog {
 		t.start();
 	}
 	
-	private void listFilesForFolder(final File folder) {
-		List <String> files;
-	    for (final File fileEntry : folder.listFiles()) {
-	        if (fileEntry.isFile() && fileEntry.getName().endsWith(FILE_MASK)) {
-	            System.out.println();
+	private List <Pair<String, String>> listFilesForFolder() {		
+		List <Pair<String, String>> files = new ArrayList<>();
+		if (!timeTableFolder.exists())
+			timeTableFolder.mkdirs();
+	    for (final File fileEntry : timeTableFolder.listFiles()) {
+	        if (fileEntry.isFile() && fileEntry.getName().matches("\\w+_\\d{6}\\.txt")) { // sts_210814.txt
+	        	files.add(new Pair<>(fileEntry.getName() , fileEntry.getAbsolutePath()));
 	        }
 	    }
+	    return files;
 	}	
 	
-	private Map<String, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> getRemoteCollection() {
-		Map<String, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> tmp = new HashMap<>();
-		tmp.putAll(mapExternal);
-		return Collections.unmodifiableMap(tmp);
+	private Map<String, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> getRemoteCollection() throws FileNotFoundException, IOException {
+		Map<String, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> tmp;
+		//tmp.putAll(mapExternal);
+		//return Collections.unmodifiableMap(tmp);
+		List <Pair<String, String>> files = listFilesForFolder();
+		for (Pair<String, String> fp : listFilesForFolder()) {
+			final String name = fp.getFirst();
+			String channel = name.substring(0, name.indexOf("_"));
+			LOG.debug("DirWatchDog channel: {}", channel);
+			//tmp = TvTimetableParser.parseTimeTable(new BufferedInputStream(new FileInputStream(f)));			
+		}
 	}
 	
     private class MapUpdater implements Runnable {
