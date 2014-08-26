@@ -163,6 +163,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			cookieList.add(getOurCookie());			
 		}
 				
+		LOG.debug(cookieList.toString());
 		for (Cookie c: cookieList) {
 			c.setDomain(".beintv.ru");
 			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
@@ -236,10 +237,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					ListenableFuture<Response> p = pool.get(0);
 					if (p.isDone() || p.isCancelled()) {
 						LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
-						final String respVast = p.get().getResponseBody();
+						Response resp = p.get();
+						final String respVast = resp.getResponseBody();
 						vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
-						sessionCookieList.addAll(CookieFabric.getResponseCookies(p.get())); // !!!!!!!!!!!!!!!!!!!!!
+						sessionCookieList.addAll(CookieFabric.getResponseCookies(resp));
 						pool.remove(p);
+						LOG.debug("response pool remove");
 					}
 					else {
 						TimeUnit.MILLISECONDS.sleep(1);

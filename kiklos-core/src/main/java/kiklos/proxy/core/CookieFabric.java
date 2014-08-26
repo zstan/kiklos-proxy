@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -16,6 +17,7 @@ import java.util.Set;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,10 +96,10 @@ public class CookieFabric {
 		
 		LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
 		
-		if (cookieStrings.isEmpty())
-			return new Pair<Cookie, List<Cookie>>(null, null);
-		
 		List<Cookie> httpCookieList = new ArrayList<>();
+		
+		if (cookieStrings.isEmpty())
+			return new Pair<Cookie, List<Cookie>>(null, httpCookieList);		
 		
 		for (String cookieString : cookieStrings) {
 			Set<Cookie> cookies = CookieDecoder.decode(cookieString);
