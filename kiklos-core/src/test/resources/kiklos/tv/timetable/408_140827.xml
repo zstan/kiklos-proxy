@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<Schedule Date="140827" ChannelID="0408" ChannelName="ЭСМИ _Первый развлекательный СТС_  Тверь" ChannelOffset="0" MontName="Тверь СТС (врезка)" ParentChannel="0016">
+	<Program number="1" OnAir="06:00:00" Name="Р/б до м/ф">
+		<Break number="1" OrigID="36388934" BreakID="1533107572" OnAir="06:01:00" Duration="00:01:00" DurationDelta="0" IndexNumber="1" MinutesList="1" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="06:01:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646781117" ID="00700789089" OnAir="06:01:05" Duration="00:00:05" Name="Окна Просто август 3"/>
+			<Spot number="2" SpotID="1646776696" ID="00700757056" OnAir="06:01:10" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="3" SpotID="1646781178" ID="00700789091" OnAir="06:01:20" Duration="00:00:05" Name="Окна Просто август 4"/>
+			<Spot number="4" SpotID="1646785929" ID="00700792856" OnAir="06:01:25" Duration="00:00:10" Name="Сбор средств"/>
+			<Spot number="5" SpotID="1646786626" ID="00700504105" OnAir="06:01:35" Duration="00:00:10" Name="Материнский"/>
+			<Spot number="6" SpotID="1646781057" ID="00700788319" OnAir="06:01:45" Duration="00:00:05" Name="Окна Просто август 1"/>
+			<Spot number="7" SpotID="1646776600" ID="00700756369" OnAir="06:01:50" Duration="00:00:10" Name="Спартак честные цены"/>
+			<Spot number="8" SpotID="1646784683" ID="00700644329" OnAir="06:02:00" Duration="00:00:05" Name="Обои настроение в доме"/>
+		</Break>
+	</Program>
+	<Program number="2" OnAir="06:35:00" Name="Р/б до м/ф">
+		<Break number="1" OrigID="36388946" BreakID="1533107605" OnAir="06:35:53" Duration="00:01:15" DurationDelta="0" IndexNumber="3" MinutesList="5-6" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="06:35:53" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646781135" ID="00700789089" OnAir="06:35:58" Duration="00:00:05" Name="Окна Просто август 3"/>
+			<Spot number="2" SpotID="1646776706" ID="00700757056" OnAir="06:36:03" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="3" SpotID="1646784698" ID="00700644320" OnAir="06:36:13" Duration="00:00:05" Name="Обои пано"/>
+			<Spot number="4" SpotID="1646782926" ID="00700785840" OnAir="06:36:18" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+			<Spot number="5" SpotID="1646784126" ID="00700783367" OnAir="06:36:28" Duration="00:00:10" Name="Дисамбар август 14"/>
+			<Spot number="6" SpotID="1646781204" ID="00700789091" OnAir="06:36:38" Duration="00:00:05" Name="Окна Просто август 4"/>
+			<Spot number="7" SpotID="1646785942" ID="00700792856" OnAir="06:36:43" Duration="00:00:10" Name="Сбор средств"/>
+			<Spot number="8" SpotID="1646776650" ID="00700756369" OnAir="06:36:53" Duration="00:00:10" Name="Спартак честные цены"/>
+			<Spot number="9" SpotID="1646781079" ID="00700789088" OnAir="06:37:03" Duration="00:00:05" Name="Окна Просто август 2"/>
+			<Spot number="10" SpotID="1646772810" ID="00700777181" OnAir="06:37:08" Duration="00:00:05" Name="Антураж влюбился 5 июль 14"/>
+		</Break>
+	</Program>
+	<Program number="3" OnAir="07:08:00" Name="Р/б до &amp;quot;Мультфильм&amp;quot;">
+		<Break number="1" OrigID="36388958" BreakID="1533107639" OnAir="07:09:00" Duration="00:01:00" DurationDelta="0" IndexNumber="5" MinutesList="10" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="07:09:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1643965725" ID="00000446823" OnAir="07:09:05" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="2" SpotID="1642562240" ID="00700789372" OnAir="07:09:20" Duration="00:00:15" Name="Глобус школа"/>
+			<Spot number="3" SpotID="1644374320" ID="00700780658" OnAir="07:09:35" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="4" SpotID="1646061458" ID="00700785840" OnAir="07:09:55" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+		</Break>
+	</Program>
+	<Program number="4" OnAir="07:30:00" Name="Р/б до &amp;quot;мультфильма&amp;quot; 6+">
+		<Break number="1" OrigID="36388742" BreakID="1533107234" OnAir="07:30:53" Duration="00:01:15" DurationDelta="0" IndexNumber="7" MinutesList="14-15" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="07:30:53" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646772802" ID="00700777181" OnAir="07:30:58" Duration="00:00:05" Name="Антураж влюбился 5 июль 14"/>
+			<Spot number="2" SpotID="1638297556" ID="00700559138" OnAir="07:31:03" Duration="00:00:10" Name="Окна плюс 1"/>
+			<Spot number="3" SpotID="1642298874" ID="00700788638" OnAir="07:31:13" Duration="00:00:10" Name="Селигер 1"/>
+			<Spot number="4" SpotID="1642537312" ID="00700789380" OnAir="07:31:23" Duration="00:00:10" Name="Бобачевка авг 14"/>
+			<Spot number="5" SpotID="1643965701" ID="00000446823" OnAir="07:31:33" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="6" SpotID="1644610078" ID="00700794982" OnAir="07:31:48" Duration="00:00:10" Name="Телеконтакт поиск авг 14"/>
+			<Spot number="7" SpotID="1646769750" ID="00700797308" OnAir="07:31:58" Duration="00:00:10" Name="Антропология 10 авг 14"/>
+			<Spot number="8" SpotID="1642585579" ID="00700751771" OnAir="07:32:08" Duration="00:00:05" Name="Резиденция мебели июнь 14"/>
+		</Break>
+	</Program>
+	<Program number="5" OnAir="08:00:00" Name="Даёшь молодёжь!">
+		<Break number="1" OrigID="36388970" BreakID="1533106832" OnAir="08:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="9" MinutesList="18" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="08:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1638745797" ID="00000439050" OnAir="08:07:05" Duration="00:00:10" Name="Леруа Мерлен 2014"/>
+			<Spot number="2" SpotID="1640667135" ID="00000441852" OnAir="08:07:15" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="3" SpotID="1640911593" ID="00700764495" OnAir="08:07:35" Duration="00:00:05" Name="Дельфины"/>
+			<Spot number="4" SpotID="1641328064" ID="00700772015" OnAir="08:07:40" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="5" SpotID="1642337354" ID="00700788591" OnAir="08:07:45" Duration="00:00:15" Name="Чикен ленд август 14"/>
+			<Spot number="6" SpotID="1645407545" ID="00700787995" OnAir="08:08:00" Duration="00:00:05" Name="Балконов 2014"/>
+		</Break>
+		<Break number="2" OrigID="36388972" BreakID="1533106834" OnAir="08:37:15" Duration="00:01:15" DurationDelta="0" IndexNumber="11" MinutesList="21" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="08:37:15" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1616778994" ID="00000416032" OnAir="08:37:20" Duration="00:00:10" Name="Емеля"/>
+			<Spot number="2" SpotID="1644807754" ID="00000448171" OnAir="08:37:30" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="3" SpotID="1639790472" ID="00700673840" OnAir="08:37:55" Duration="00:00:15" Name="ПРББ бизнес колумб"/>
+			<Spot number="4" SpotID="1642537319" ID="00700789380" OnAir="08:38:10" Duration="00:00:10" Name="Бобачевка авг 14"/>
+			<Spot number="5" SpotID="1643328267" ID="00700791233" OnAir="08:38:20" Duration="00:00:05" Name="Элит шубы"/>
+			<Spot number="6" SpotID="1646059488" ID="00700797857" OnAir="08:38:25" Duration="00:00:10" Name="Бон Шанс акция август 14"/>
+		</Break>
+	</Program>
+	<Program number="6" OnAir="09:00:00" Name="М/О: Сериал (Воронины 137 серия)">
+		<Break number="1" OrigID="36388994" BreakID="1533107716" OnAir="09:10:00" Duration="00:02:00" DurationDelta="0" IndexNumber="13" MinutesList="24-26" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="09:10:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1642035656" ID="00700786476" OnAir="09:10:05" Duration="00:00:10" Name="Дюна осенний сезон"/>
+			<Spot number="2" SpotID="1642307737" ID="00700788775" OnAir="09:10:15" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="3" SpotID="1638745802" ID="00000439050" OnAir="09:10:25" Duration="00:00:10" Name="Леруа Мерлен 2014"/>
+			<Spot number="4" SpotID="1641327788" ID="00700772015" OnAir="09:10:35" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="5" SpotID="1646770108" ID="00700797312" OnAir="09:10:40" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="6" SpotID="1644807793" ID="00000448171" OnAir="09:10:45" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="7" SpotID="1643084335" ID="00700790842" OnAir="09:11:10" Duration="00:00:10" Name="ТМК сад рев"/>
+			<Spot number="8" SpotID="1643965676" ID="00000446823" OnAir="09:11:20" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="9" SpotID="1645453608" ID="00700796640" OnAir="09:11:35" Duration="00:00:05" Name="Маэстро"/>
+			<Spot number="10" SpotID="1643693018" ID="00000446197" OnAir="09:11:40" Duration="00:00:10" Name="Эльмех"/>
+			<Spot number="11" SpotID="1642562745" ID="00700789372" OnAir="09:11:50" Duration="00:00:15" Name="Глобус школа"/>
+		</Break>
+		<Break number="2" OrigID="36388995" BreakID="1533107717" OnAir="09:20:00" Duration="00:02:30" DurationDelta="0" IndexNumber="14" MinutesList="26-29" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="09:20:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646776717" ID="00700757056" OnAir="09:20:05" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="2" SpotID="1640667159" ID="00000441852" OnAir="09:20:15" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="3" SpotID="1642715068" ID="00000445662" OnAir="09:20:35" Duration="00:00:20" Name="Техносила"/>
+			<Spot number="4" SpotID="1643692905" ID="00700788775" OnAir="09:20:55" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="5" SpotID="1646772591" ID="00700777179" OnAir="09:21:05" Duration="00:00:15" Name="Антураж влюбился июль 14"/>
+			<Spot number="6" SpotID="1643965672" ID="00000446823" OnAir="09:21:20" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="7" SpotID="1644374332" ID="00700780658" OnAir="09:21:35" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="8" SpotID="1638115101" ID="00000419096" OnAir="09:21:55" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="9" SpotID="1646179996" ID="00700691326" OnAir="09:22:15" Duration="00:00:10" Name="Джинсмаркет весна"/>
+			<Spot number="10" SpotID="1646776674" ID="00700756369" OnAir="09:22:25" Duration="00:00:10" Name="Спартак честные цены"/>
+		</Break>
+	</Program>
+	<Program number="7" OnAir="09:42:00" Name="Р/б после &amp;quot;6 кадров&amp;quot;">
+		<Break number="1" OrigID="36388706" BreakID="1533106697" OnAir="09:43:00" Duration="00:01:00" DurationDelta="0" IndexNumber="15" MinutesList="29-30" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="09:43:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1642063535" ID="00000442003" OnAir="09:43:05" Duration="00:00:20" Name="Техносила"/>
+			<Spot number="2" SpotID="1643966151" ID="00000446824" OnAir="09:43:25" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="3" SpotID="1644146184" ID="00700769214" OnAir="09:43:35" Duration="00:00:25" Name="Живая сказка фильм"/>
+			<Spot number="4" SpotID="1645082156" ID="00700770413" OnAir="09:44:00" Duration="00:00:05" Name="Савчикова июль 2 14"/>
+		</Break>
+	</Program>
+	<Program number="8" OnAir="09:45:00" Name="Сериал (Сериал &amp;quot;ВОРОНИНЫ&amp;quot;. 307 серия)">
+		<Break number="1" OrigID="36388708" BreakID="1533106699" OnAir="10:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="17" MinutesList="33" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="10:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1638312285" ID="00700559140" OnAir="10:07:05" Duration="00:00:10" Name="Окна плюс 2"/>
+			<Spot number="2" SpotID="1643692937" ID="00700788775" OnAir="10:07:15" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="3" SpotID="1641328029" ID="00700772015" OnAir="10:07:25" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="4" SpotID="1643965648" ID="00000446823" OnAir="10:07:30" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="5" SpotID="1617629971" ID="00000416034" OnAir="10:07:45" Duration="00:00:05" Name="Емеля"/>
+			<Spot number="6" SpotID="1638745807" ID="00000439050" OnAir="10:07:50" Duration="00:00:10" Name="Леруа Мерлен 2014"/>
+			<Spot number="7" SpotID="1646770085" ID="00700797312" OnAir="10:08:00" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+		</Break>
+	</Program>
+	<Program number="9" OnAir="10:15:00" Name="Сериал на СТС (Сериал &amp;quot;ПОСЛЕДНИЙ ИЗ МАГИКЯН&amp;quot;. 27 серия)">
+		<Break number="1" OrigID="36389006" BreakID="1533105121" OnAir="10:37:00" Duration="00:01:15" DurationDelta="0" IndexNumber="19" MinutesList="36" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="10:37:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646770114" ID="00700797312" OnAir="10:37:05" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="2" SpotID="1637846036" ID="00000419096" OnAir="10:37:10" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="3" SpotID="1640911596" ID="00700764495" OnAir="10:37:30" Duration="00:00:05" Name="Дельфины"/>
+			<Spot number="4" SpotID="1643862318" ID="00700722300" OnAir="10:37:35" Duration="00:00:05" Name="Тверьнефтегаз верный"/>
+			<Spot number="5" SpotID="1644374351" ID="00700780658" OnAir="10:37:40" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="6" SpotID="1646772774" ID="00700777181" OnAir="10:38:00" Duration="00:00:05" Name="Антураж влюбился 5 июль 14"/>
+			<Spot number="7" SpotID="1616783161" ID="00000416032" OnAir="10:38:05" Duration="00:00:10" Name="Емеля"/>
+			<Spot number="8" SpotID="1643693341" ID="00000446202" OnAir="10:38:15" Duration="00:00:05" Name="Эльмех"/>
+		</Break>
+	</Program>
+	<Program number="10" OnAir="10:45:00" Name="Сериал на СТС (Сериал &amp;quot;ПОСЛЕДНИЙ ИЗ МАГИКЯН&amp;quot;. 28 серия)">
+		<Break number="1" OrigID="36389009" BreakID="1533105124" OnAir="11:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="21" MinutesList="39-40" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="11:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1642714975" ID="00000445662" OnAir="11:07:05" Duration="00:00:20" Name="Техносила"/>
+			<Spot number="2" SpotID="1643966161" ID="00000446824" OnAir="11:07:25" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="3" SpotID="1641327822" ID="00700772015" OnAir="11:07:35" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="4" SpotID="1646061479" ID="00700785840" OnAir="11:07:40" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+			<Spot number="5" SpotID="1646769770" ID="00700797308" OnAir="11:07:50" Duration="00:00:10" Name="Антропология 10 авг 14"/>
+			<Spot number="6" SpotID="1646772745" ID="00700777181" OnAir="11:08:00" Duration="00:00:05" Name="Антураж влюбился 5 июль 14"/>
+		</Break>
+	</Program>
+	<Program number="11" OnAir="11:15:00" Name="Сериал на СТС (Сериал &amp;quot;ВОСЬМИДЕСЯТЫЕ&amp;quot;. 20 серия)">
+		<Break number="1" OrigID="36389011" BreakID="1533105126" OnAir="11:37:00" Duration="00:01:15" DurationDelta="0" IndexNumber="23" MinutesList="43-45" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="11:37:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1617634946" ID="00000416032" OnAir="11:37:05" Duration="00:00:10" Name="Емеля"/>
+			<Spot number="2" SpotID="1644807761" ID="00000448171" OnAir="11:37:15" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="3" SpotID="1644374373" ID="00700780658" OnAir="11:37:40" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="4" SpotID="1646059495" ID="00700797857" OnAir="11:38:00" Duration="00:00:10" Name="Бон Шанс акция август 14"/>
+			<Spot number="5" SpotID="1646770133" ID="00700797312" OnAir="11:38:10" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="6" SpotID="1646772778" ID="00700777181" OnAir="11:38:15" Duration="00:00:05" Name="Антураж влюбился 5 июль 14"/>
+		</Break>
+	</Program>
+	<Program number="12" OnAir="11:45:00" Name="Анимационный фильм 12+ (M/ф &amp;quot;Шрек - 2&amp;quot;)">
+		<Break number="1" OrigID="36389014" BreakID="1533105129" OnAir="12:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="25" MinutesList="48" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="12:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1640667154" ID="00000441852" OnAir="12:07:05" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="2" SpotID="1643966143" ID="00000446824" OnAir="12:07:25" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="3" SpotID="1643084565" ID="00700790841" OnAir="12:07:35" Duration="00:00:10" Name="ТМК сад спб"/>
+			<Spot number="4" SpotID="1642537413" ID="00700789380" OnAir="12:07:45" Duration="00:00:10" Name="Бобачевка авг 14"/>
+			<Spot number="5" SpotID="1645079969" ID="00700769921" OnAir="12:07:55" Duration="00:00:05" Name="Савчикова июль 14"/>
+			<Spot number="6" SpotID="1646770064" ID="00700797312" OnAir="12:08:00" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+		</Break>
+		<Break number="2" OrigID="36389066" BreakID="1533108188" OnAir="12:31:00" Duration="00:01:15" DurationDelta="0" IndexNumber="27" MinutesList="50" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="12:31:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1617630026" ID="00000416034" OnAir="12:31:05" Duration="00:00:05" Name="Емеля"/>
+			<Spot number="2" SpotID="1645453845" ID="00700796640" OnAir="12:31:10" Duration="00:00:05" Name="Маэстро"/>
+			<Spot number="3" SpotID="1644374371" ID="00700780658" OnAir="12:31:15" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="4" SpotID="1641327869" ID="00700772015" OnAir="12:31:35" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="5" SpotID="1644807953" ID="00700783367" OnAir="12:31:40" Duration="00:00:10" Name="Дисамбар август 14"/>
+			<Spot number="6" SpotID="1643966139" ID="00000446824" OnAir="12:31:50" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="7" SpotID="1640667086" ID="00000441852" OnAir="12:32:00" Duration="00:00:20" Name="Останкино"/>
+		</Break>
+		<Break number="3" OrigID="36389068" BreakID="1533108190" OnAir="13:07:00" Duration="00:01:15" DurationDelta="0" IndexNumber="30" MinutesList="55-56" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="13:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1644807789" ID="00000448171" OnAir="13:07:05" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="2" SpotID="1646180320" ID="00700691326" OnAir="13:07:30" Duration="00:00:10" Name="Джинсмаркет весна"/>
+			<Spot number="3" SpotID="1643966168" ID="00000446824" OnAir="13:07:40" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="4" SpotID="1640911606" ID="00700764495" OnAir="13:07:50" Duration="00:00:05" Name="Дельфины"/>
+			<Spot number="5" SpotID="1645408027" ID="00700787995" OnAir="13:07:55" Duration="00:00:05" Name="Балконов 2014"/>
+			<Spot number="6" SpotID="1642300288" ID="00700788639" OnAir="13:08:00" Duration="00:00:10" Name="Селигер 2"/>
+			<Spot number="7" SpotID="1642035780" ID="00700786476" OnAir="13:08:10" Duration="00:00:10" Name="Дюна осенний сезон"/>
+		</Break>
+	</Program>
+	<Program number="13" OnAir="13:30:00" Name="М/О: Сериал (Восьмидесятые 52 серия)">
+		<Break number="1" OrigID="36389090" BreakID="1533106912" OnAir="13:40:00" Duration="00:02:00" DurationDelta="0" IndexNumber="32" MinutesList="59-61" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="13:40:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1644807785" ID="00000448171" OnAir="13:40:05" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="2" SpotID="1638297574" ID="00700559138" OnAir="13:40:30" Duration="00:00:10" Name="Окна плюс 1"/>
+			<Spot number="3" SpotID="1639790427" ID="00700673840" OnAir="13:40:40" Duration="00:00:15" Name="ПРББ бизнес колумб"/>
+			<Spot number="4" SpotID="1640667141" ID="00000441852" OnAir="13:40:55" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="5" SpotID="1643380271" ID="00700791294" OnAir="13:41:15" Duration="00:00:10" Name="Башмачок август 2014"/>
+			<Spot number="6" SpotID="1643965637" ID="00000446823" OnAir="13:41:25" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="7" SpotID="1646783150" ID="00700785840" OnAir="13:41:40" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+			<Spot number="8" SpotID="1642563715" ID="00700789372" OnAir="13:41:50" Duration="00:00:15" Name="Глобус школа"/>
+		</Break>
+		<Break number="2" OrigID="36389091" BreakID="1533106913" OnAir="13:50:00" Duration="00:02:30" DurationDelta="0" IndexNumber="33" MinutesList="61-64" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="13:50:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1643317487" ID="00700791238" OnAir="13:50:05" Duration="00:00:05" Name="Элит жилетки"/>
+			<Spot number="2" SpotID="1646772613" ID="00700777181" OnAir="13:50:10" Duration="00:00:05" Name="Антураж влюбился 5 июль 14"/>
+			<Spot number="3" SpotID="1638115292" ID="00000419096" OnAir="13:50:15" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="4" SpotID="1643735169" ID="00000445106" OnAir="13:50:35" Duration="00:00:30" Name="TELE 2"/>
+			<Spot number="5" SpotID="1642307749" ID="00700788775" OnAir="13:51:05" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="6" SpotID="1643862413" ID="00700722300" OnAir="13:51:15" Duration="00:00:05" Name="Тверьнефтегаз верный"/>
+			<Spot number="7" SpotID="1643965636" ID="00000446823" OnAir="13:51:20" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="8" SpotID="1644374392" ID="00700780658" OnAir="13:51:35" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="9" SpotID="1646770141" ID="00700797312" OnAir="13:51:55" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="10" SpotID="1646084069" ID="00700789173" OnAir="13:52:00" Duration="00:00:15" Name="Пармезан 2014"/>
+			<Spot number="11" SpotID="1646781258" ID="00700789092" OnAir="13:52:15" Duration="00:00:05" Name="Окна Просто август 5"/>
+			<Spot number="12" SpotID="1642585661" ID="00700751771" OnAir="13:52:20" Duration="00:00:05" Name="Резиденция мебели июнь 14"/>
+			<Spot number="13" SpotID="1643693233" ID="00000446199" OnAir="13:52:25" Duration="00:00:10" Name="Эльмех"/>
+		</Break>
+	</Program>
+	<Program number="14" OnAir="14:00:00" Name="Шоу &amp;quot;Уральских пельменей&amp;quot;">
+		<Break number="1" OrigID="36389102" BreakID="1533106212" OnAir="14:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="34" MinutesList="64" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="14:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1616791734" ID="00000416032" OnAir="14:07:05" Duration="00:00:10" Name="Емеля"/>
+			<Spot number="2" SpotID="1642063531" ID="00000442003" OnAir="14:07:15" Duration="00:00:20" Name="Техносила"/>
+			<Spot number="3" SpotID="1643084349" ID="00700790842" OnAir="14:07:35" Duration="00:00:10" Name="ТМК сад рев"/>
+			<Spot number="4" SpotID="1640911599" ID="00700764495" OnAir="14:07:45" Duration="00:00:05" Name="Дельфины"/>
+			<Spot number="5" SpotID="1641327900" ID="00700772015" OnAir="14:07:50" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="6" SpotID="1646769812" ID="00700797308" OnAir="14:07:55" Duration="00:00:10" Name="Антропология 10 авг 14"/>
+		</Break>
+		<Break number="2" OrigID="36389104" BreakID="1533106214" OnAir="14:31:00" Duration="00:01:15" DurationDelta="0" IndexNumber="36" MinutesList="66" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="14:31:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1637845983" ID="00000419096" OnAir="14:31:05" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="2" SpotID="1643965653" ID="00000446823" OnAir="14:31:25" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="3" SpotID="1643693033" ID="00700788775" OnAir="14:31:40" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="4" SpotID="1644374401" ID="00700780658" OnAir="14:31:50" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="5" SpotID="1646061514" ID="00700785840" OnAir="14:32:10" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+		</Break>
+	</Program>
+	<Program number="15" OnAir="15:00:00" Name="Шоу &amp;quot;Уральских пельменей&amp;quot;">
+		<Break number="1" OrigID="36389126" BreakID="1533106340" OnAir="15:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="39" MinutesList="71-72" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="15:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1640667050" ID="00000441852" OnAir="15:07:05" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="2" SpotID="1643966127" ID="00000446824" OnAir="15:07:25" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="3" SpotID="1640912121" ID="00700764495" OnAir="15:07:35" Duration="00:00:05" Name="Дельфины"/>
+			<Spot number="4" SpotID="1644374402" ID="00700780658" OnAir="15:07:40" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="5" SpotID="1646770005" ID="00700797312" OnAir="15:08:00" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+		</Break>
+		<Break number="2" OrigID="36389128" BreakID="1533106342" OnAir="15:31:00" Duration="00:01:15" DurationDelta="0" IndexNumber="41" MinutesList="74-75" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="15:31:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1642564605" ID="00700789372" OnAir="15:31:05" Duration="00:00:15" Name="Глобус школа"/>
+			<Spot number="2" SpotID="1644610501" ID="00700794982" OnAir="15:31:20" Duration="00:00:10" Name="Телеконтакт поиск авг 14"/>
+			<Spot number="3" SpotID="1643683412" ID="00000443446" OnAir="15:31:30" Duration="00:00:05" Name="Эльмех"/>
+			<Spot number="4" SpotID="1642537896" ID="00700789380" OnAir="15:31:35" Duration="00:00:10" Name="Бобачевка авг 14"/>
+			<Spot number="5" SpotID="1641327927" ID="00700772015" OnAir="15:31:45" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="6" SpotID="1637845979" ID="00000419096" OnAir="15:31:50" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="7" SpotID="1645004997" ID="00000447989" OnAir="15:32:10" Duration="00:00:10" Name="Магнит"/>
+		</Break>
+		<Break number="3" OrigID="36389130" BreakID="1533106344" OnAir="16:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="44" MinutesList="79-80" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="16:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646770242" ID="00700797312" OnAir="16:07:05" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="2" SpotID="1643084541" ID="00700790841" OnAir="16:07:10" Duration="00:00:10" Name="ТМК сад спб"/>
+			<Spot number="3" SpotID="1638312288" ID="00700559140" OnAir="16:07:20" Duration="00:00:10" Name="Окна плюс 2"/>
+			<Spot number="4" SpotID="1644807769" ID="00000448171" OnAir="16:07:30" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="5" SpotID="1617634905" ID="00000416034" OnAir="16:07:55" Duration="00:00:05" Name="Емеля"/>
+			<Spot number="6" SpotID="1643328282" ID="00700791233" OnAir="16:08:00" Duration="00:00:05" Name="Элит шубы"/>
+		</Break>
+	</Program>
+	<Program number="16" OnAir="16:30:00" Name="Сериал (Сериал &amp;quot;КУХНЯ&amp;quot;. 54 серия)">
+		<Break number="1" OrigID="36389132" BreakID="1533106346" OnAir="16:37:00" Duration="00:01:15" DurationDelta="0" IndexNumber="46" MinutesList="83-85" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="16:37:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646769977" ID="00700797312" OnAir="16:37:05" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="2" SpotID="1642537243" ID="00700789380" OnAir="16:37:10" Duration="00:00:10" Name="Бобачевка авг 14"/>
+			<Spot number="3" SpotID="1642337778" ID="00700788640" OnAir="16:37:20" Duration="00:00:10" Name="Селигер 3"/>
+			<Spot number="4" SpotID="1639790465" ID="00700673840" OnAir="16:37:30" Duration="00:00:15" Name="ПРББ бизнес колумб"/>
+			<Spot number="5" SpotID="1646657297" ID="00000448484" OnAir="16:37:45" Duration="00:00:10" Name="Магнит"/>
+			<Spot number="6" SpotID="1642714979" ID="00000445662" OnAir="16:37:55" Duration="00:00:20" Name="Техносила"/>
+			<Spot number="7" SpotID="1643693364" ID="00000446202" OnAir="16:38:15" Duration="00:00:05" Name="Эльмех"/>
+		</Break>
+	</Program>
+	<Program number="17" OnAir="17:00:00" Name="Сериал на СТС (Сериал &amp;quot;ВОСЬМИДЕСЯТЫЕ&amp;quot;. 21 серия)">
+		<Break number="1" OrigID="36389174" BreakID="1533106978" OnAir="17:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="48" MinutesList="88-89" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="17:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1637845977" ID="00000419096" OnAir="17:07:05" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="2" SpotID="1634597389" ID="00000436491" OnAir="17:07:25" Duration="00:00:10" Name="Напитки из Черноголовки"/>
+			<Spot number="3" SpotID="1638297590" ID="00700559138" OnAir="17:07:35" Duration="00:00:10" Name="Окна плюс 1"/>
+			<Spot number="4" SpotID="1642337817" ID="00700788591" OnAir="17:07:45" Duration="00:00:15" Name="Чикен ленд август 14"/>
+			<Spot number="5" SpotID="1645082168" ID="00700770413" OnAir="17:08:00" Duration="00:00:05" Name="Савчикова июль 2 14"/>
+		</Break>
+	</Program>
+	<Program number="18" OnAir="17:30:00" Name="Сериал (Сериал &amp;quot;ВОСЬМИДЕСЯТЫЕ&amp;quot;. 22 серия)">
+		<Break number="1" OrigID="36389186" BreakID="1533107020" OnAir="17:37:00" Duration="00:01:15" DurationDelta="0" IndexNumber="50" MinutesList="92-94" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="17:37:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1641442449" ID="00700785840" OnAir="17:37:05" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+			<Spot number="2" SpotID="1644374432" ID="00700780658" OnAir="17:37:15" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="3" SpotID="1641327984" ID="00700772015" OnAir="17:37:35" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="4" SpotID="1644807779" ID="00000448171" OnAir="17:37:40" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="5" SpotID="1638745815" ID="00000439050" OnAir="17:38:05" Duration="00:00:10" Name="Леруа Мерлен 2014"/>
+			<Spot number="6" SpotID="1640911614" ID="00700764495" OnAir="17:38:15" Duration="00:00:05" Name="Дельфины"/>
+		</Break>
+	</Program>
+	<Program number="19" OnAir="18:00:00" Name="Сериал (Сериал &amp;quot;ВОРОНИНЫ&amp;quot;. 138 серия)">
+		<Break number="1" OrigID="36389198" BreakID="1533108340" OnAir="18:07:00" Duration="00:01:15" DurationDelta="0" IndexNumber="52" MinutesList="97-98" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="18:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1640667072" ID="00000441852" OnAir="18:07:05" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="2" SpotID="1643965908" ID="00000446823" OnAir="18:07:25" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="3" SpotID="1642295056" ID="00700788638" OnAir="18:07:40" Duration="00:00:10" Name="Селигер 1"/>
+			<Spot number="4" SpotID="1644374469" ID="00700780658" OnAir="18:07:50" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="5" SpotID="1646059503" ID="00700797857" OnAir="18:08:10" Duration="00:00:10" Name="Бон Шанс акция август 14"/>
+		</Break>
+	</Program>
+	<Program number="20" OnAir="18:30:00" Name="М/О: Сериал (Воронины 139 серия)">
+		<Break number="1" OrigID="36389210" BreakID="1533106045" OnAir="18:40:00" Duration="00:02:00" DurationDelta="0" IndexNumber="54" MinutesList="101-103" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="18:40:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1642545957" ID="00700789372" OnAir="18:40:05" Duration="00:00:15" Name="Глобус школа"/>
+			<Spot number="2" SpotID="1640191465" ID="00700673840" OnAir="18:40:20" Duration="00:00:15" Name="ПРББ бизнес колумб"/>
+			<Spot number="3" SpotID="1643693028" ID="00000446197" OnAir="18:40:35" Duration="00:00:10" Name="Эльмех"/>
+			<Spot number="4" SpotID="1643735172" ID="00000445106" OnAir="18:40:45" Duration="00:00:30" Name="TELE 2"/>
+			<Spot number="5" SpotID="1643965657" ID="00000446823" OnAir="18:41:15" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="6" SpotID="1644374448" ID="00700780658" OnAir="18:41:30" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="7" SpotID="1645454144" ID="00700796640" OnAir="18:41:50" Duration="00:00:05" Name="Маэстро"/>
+			<Spot number="8" SpotID="1642034779" ID="00700786476" OnAir="18:41:55" Duration="00:00:10" Name="Дюна осенний сезон"/>
+		</Break>
+		<Break number="2" OrigID="36389211" BreakID="1533106046" OnAir="18:50:00" Duration="00:02:30" DurationDelta="0" IndexNumber="55" MinutesList="103-106" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="18:50:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1643692504" ID="00000446197" OnAir="18:50:05" Duration="00:00:10" Name="Эльмех"/>
+			<Spot number="2" SpotID="1646059517" ID="00700797857" OnAir="18:50:15" Duration="00:00:10" Name="Бон Шанс акция август 14"/>
+			<Spot number="3" SpotID="1640911601" ID="00700764495" OnAir="18:50:25" Duration="00:00:05" Name="Дельфины"/>
+			<Spot number="4" SpotID="1643735170" ID="00000445106" OnAir="18:50:30" Duration="00:00:30" Name="TELE 2"/>
+			<Spot number="5" SpotID="1642307762" ID="00700788775" OnAir="18:51:00" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="6" SpotID="1643965659" ID="00000446823" OnAir="18:51:10" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="7" SpotID="1644374481" ID="00700780658" OnAir="18:51:25" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="8" SpotID="1644911311" ID="00700795784" OnAir="18:51:45" Duration="00:00:10" Name="Ухо 2 август 2014"/>
+			<Spot number="9" SpotID="1646770251" ID="00700797312" OnAir="18:51:55" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="10" SpotID="1645408444" ID="00700787995" OnAir="18:52:00" Duration="00:00:05" Name="Балконов 2014"/>
+			<Spot number="11" SpotID="1645454596" ID="00700796640" OnAir="18:52:05" Duration="00:00:05" Name="Маэстро"/>
+			<Spot number="12" SpotID="1640706213" ID="00000436487" OnAir="18:52:10" Duration="00:00:10" Name="Напитки из Черноголовки"/>
+			<Spot number="13" SpotID="1646772707" ID="00700777181" OnAir="18:52:20" Duration="00:00:05" Name="Антураж влюбился 5 июль 14"/>
+			<Spot number="14" SpotID="1643692751" ID="00000446199" OnAir="18:52:25" Duration="00:00:10" Name="Эльмех"/>
+		</Break>
+	</Program>
+	<Program number="21" OnAir="19:00:00" Name="Сериал 19.00 (Сериал &amp;quot;ВОРОНИНЫ&amp;quot;. 307 серия)">
+		<Break number="1" OrigID="36388730" BreakID="1533106767" OnAir="19:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="56" MinutesList="106-107" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="19:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1642585626" ID="00700751771" OnAir="19:07:05" Duration="00:00:05" Name="Резиденция мебели июнь 14"/>
+			<Spot number="2" SpotID="1646180412" ID="00700691326" OnAir="19:07:10" Duration="00:00:10" Name="Джинсмаркет весна"/>
+			<Spot number="3" SpotID="1645004995" ID="00000447989" OnAir="19:07:20" Duration="00:00:10" Name="Магнит"/>
+			<Spot number="4" SpotID="1640667075" ID="00000441852" OnAir="19:07:30" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="5" SpotID="1646787209" ID="00700670743" OnAir="19:07:50" Duration="00:00:15" Name="Тегрини февр 14"/>
+		</Break>
+	</Program>
+	<Program number="22" OnAir="19:30:00" Name="Сериал 19:30 (Сериал &amp;quot;ВОРОНИНЫ&amp;quot;. 308 серия)">
+		<Break number="1" OrigID="36388688" BreakID="1533106615" OnAir="19:37:00" Duration="00:01:15" DurationDelta="0" IndexNumber="58" MinutesList="110-111" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="19:37:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1638745817" ID="00000439050" OnAir="19:37:05" Duration="00:00:10" Name="Леруа Мерлен 2014"/>
+			<Spot number="2" SpotID="1644807809" ID="00000448171" OnAir="19:37:15" Duration="00:00:25" Name="Карусель"/>
+			<Spot number="3" SpotID="1641271477" ID="00700602572" OnAir="19:37:40" Duration="00:00:05" Name="Акватория короткий"/>
+			<Spot number="4" SpotID="1641280161" ID="00700504095" OnAir="19:37:45" Duration="00:00:10" Name="Мечтайте"/>
+			<Spot number="5" SpotID="1642340389" ID="00700788591" OnAir="19:37:55" Duration="00:00:15" Name="Чикен ленд август 14"/>
+			<Spot number="6" SpotID="1643316942" ID="00700791238" OnAir="19:38:10" Duration="00:00:05" Name="Элит жилетки"/>
+			<Spot number="7" SpotID="1645408904" ID="00700787995" OnAir="19:38:15" Duration="00:00:05" Name="Балконов 2014"/>
+		</Break>
+	</Program>
+	<Program number="23" OnAir="20:00:00" Name="Сериал 20.00 (Сериал &amp;quot;ВОРОНИНЫ&amp;quot;. 311 серия)">
+		<Break number="1" OrigID="36388676" BreakID="1533107133" OnAir="20:07:00" Duration="00:01:00" DurationDelta="0" IndexNumber="60" MinutesList="114-115" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="20:07:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646787166" ID="00700670743" OnAir="20:07:05" Duration="00:00:15" Name="Тегрини февр 14"/>
+			<Spot number="2" SpotID="1641271478" ID="00700602572" OnAir="20:07:20" Duration="00:00:05" Name="Акватория короткий"/>
+			<Spot number="3" SpotID="1643965952" ID="00000446823" OnAir="20:07:25" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="4" SpotID="1642307768" ID="00700788775" OnAir="20:07:40" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="5" SpotID="1644807957" ID="00700783367" OnAir="20:07:50" Duration="00:00:10" Name="Дисамбар август 14"/>
+			<Spot number="6" SpotID="1645082171" ID="00700770413" OnAir="20:08:00" Duration="00:00:05" Name="Савчикова июль 2 14"/>
+		</Break>
+	</Program>
+	<Program number="24" OnAir="20:30:00" Name="Сериал 20:30 будни (Сериал &amp;quot;ВОРОНИНЫ&amp;quot;. 312 серия)">
+		<Break number="1" OrigID="36389222" BreakID="1533106544" OnAir="20:37:15" Duration="00:01:15" DurationDelta="0" IndexNumber="62" MinutesList="118-119" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="20:37:15" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1643966223" ID="00000446824" OnAir="20:37:20" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="2" SpotID="1645408694" ID="00700787995" OnAir="20:37:30" Duration="00:00:05" Name="Балконов 2014"/>
+			<Spot number="3" SpotID="1644374447" ID="00700780658" OnAir="20:37:35" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="4" SpotID="1641271479" ID="00700602572" OnAir="20:37:55" Duration="00:00:05" Name="Акватория короткий"/>
+			<Spot number="5" SpotID="1637845963" ID="00000419096" OnAir="20:38:00" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="6" SpotID="1642340484" ID="00700788591" OnAir="20:38:20" Duration="00:00:15" Name="Чикен ленд август 14"/>
+		</Break>
+	</Program>
+	<Program number="25" OnAir="21:00:00" Name="Анимационный фильм (M/ф &amp;quot;Шрек - 3&amp;quot;)">
+		<Break number="1" OrigID="36388750" BreakID="1533105676" OnAir="21:29:15" Duration="00:01:15" DurationDelta="0" IndexNumber="66" MinutesList="126-128" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="21:29:15" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1642546026" ID="00700789372" OnAir="21:29:20" Duration="00:00:15" Name="Глобус школа"/>
+			<Spot number="2" SpotID="1640667165" ID="00000441852" OnAir="21:29:35" Duration="00:00:20" Name="Останкино"/>
+			<Spot number="3" SpotID="1643693671" ID="00700788775" OnAir="21:29:55" Duration="00:00:10" Name="Мода Мех август 14"/>
+			<Spot number="4" SpotID="1643084430" ID="00700790842" OnAir="21:30:05" Duration="00:00:10" Name="ТМК сад рев"/>
+			<Spot number="5" SpotID="1636246345" ID="00700772015" OnAir="21:30:15" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="6" SpotID="1617630053" ID="00000416034" OnAir="21:30:20" Duration="00:00:05" Name="Емеля"/>
+			<Spot number="7" SpotID="1645850633" ID="00000448485" OnAir="21:30:25" Duration="00:00:10" Name="Магнит"/>
+		</Break>
+		<Break number="2" OrigID="36388752" BreakID="1533105678" OnAir="21:55:00" Duration="00:01:00" DurationDelta="0" IndexNumber="68" MinutesList="130-131" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="21:55:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1634600673" ID="00000436489" OnAir="21:55:05" Duration="00:00:10" Name="Напитки из Черноголовки"/>
+			<Spot number="2" SpotID="1646787939" ID="00700670743" OnAir="21:55:15" Duration="00:00:15" Name="Тегрини февр 14"/>
+			<Spot number="3" SpotID="1642063527" ID="00000442003" OnAir="21:55:30" Duration="00:00:20" Name="Техносила"/>
+			<Spot number="4" SpotID="1641270198" ID="00700602572" OnAir="21:55:50" Duration="00:00:05" Name="Акватория короткий"/>
+			<Spot number="5" SpotID="1646059526" ID="00700797857" OnAir="21:55:55" Duration="00:00:10" Name="Бон Шанс акция август 14"/>
+		</Break>
+		<Break number="3" OrigID="36388792" BreakID="1533105337" OnAir="22:29:00" Duration="00:01:15" DurationDelta="0" IndexNumber="71" MinutesList="135-136" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="22:29:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1643692792" ID="00000446199" OnAir="22:29:05" Duration="00:00:10" Name="Эльмех"/>
+			<Spot number="2" SpotID="1642341439" ID="00700788591" OnAir="22:29:15" Duration="00:00:15" Name="Чикен ленд август 14"/>
+			<Spot number="3" SpotID="1644374492" ID="00700780658" OnAir="22:29:30" Duration="00:00:20" Name="Зенден авг-сент 14"/>
+			<Spot number="4" SpotID="1636246358" ID="00700772015" OnAir="22:29:50" Duration="00:00:05" Name="ИК набор 2014"/>
+			<Spot number="5" SpotID="1643965923" ID="00000446823" OnAir="22:29:55" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="6" SpotID="1643692576" ID="00000446197" OnAir="22:30:10" Duration="00:00:10" Name="Эльмех"/>
+		</Break>
+	</Program>
+	<Program number="26" OnAir="22:40:00" Name="Шоу &amp;quot;Уральских пельменей&amp;quot;">
+		<Break number="1" OrigID="36388794" BreakID="1533105339" OnAir="22:55:00" Duration="00:01:00" DurationDelta="5" IndexNumber="73" MinutesList="138-139" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="22:55:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1643965901" ID="00000446823" OnAir="22:55:05" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="2" SpotID="1646787913" ID="00700722300" OnAir="22:55:20" Duration="00:00:05" Name="Тверьнефтегаз верный"/>
+			<Spot number="3" SpotID="1644292055" ID="00700785840" OnAir="22:55:25" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+			<Spot number="4" SpotID="1644610987" ID="00700794982" OnAir="22:55:35" Duration="00:00:10" Name="Телеконтакт поиск авг 14"/>
+			<Spot number="5" SpotID="1642342195" ID="00700788591" OnAir="22:55:45" Duration="00:00:15" Name="Чикен ленд август 14"/>
+		</Break>
+		<Break number="2" OrigID="36388797" BreakID="1533105342" OnAir="23:29:00" Duration="00:01:15" DurationDelta="0" IndexNumber="76" MinutesList="143-145" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="23:29:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646769860" ID="00700797308" OnAir="23:29:05" Duration="00:00:10" Name="Антропология 10 авг 14"/>
+			<Spot number="2" SpotID="1646781408" ID="00700789089" OnAir="23:29:15" Duration="00:00:05" Name="Окна Просто август 3"/>
+			<Spot number="3" SpotID="1646772657" ID="00700777179" OnAir="23:29:20" Duration="00:00:15" Name="Антураж влюбился июль 14"/>
+			<Spot number="4" SpotID="1645727800" ID="00700791294" OnAir="23:29:35" Duration="00:00:10" Name="Башмачок август 2014"/>
+			<Spot number="5" SpotID="1642714977" ID="00000445662" OnAir="23:29:45" Duration="00:00:20" Name="Техносила"/>
+			<Spot number="6" SpotID="1616789802" ID="00000416032" OnAir="23:30:05" Duration="00:00:10" Name="Емеля"/>
+			<Spot number="7" SpotID="1643683476" ID="00000443446" OnAir="23:30:15" Duration="00:00:05" Name="Эльмех"/>
+		</Break>
+		<Break number="3" OrigID="36388799" BreakID="1533105344" OnAir="23:55:00" Duration="00:01:00" DurationDelta="0" IndexNumber="78" MinutesList="147-148" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="23:55:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646776862" ID="00700756369" OnAir="23:55:05" Duration="00:00:10" Name="Спартак честные цены"/>
+			<Spot number="2" SpotID="1646781335" ID="00700788319" OnAir="23:55:15" Duration="00:00:05" Name="Окна Просто август 1"/>
+			<Spot number="3" SpotID="1643966133" ID="00000446824" OnAir="23:55:20" Duration="00:00:10" Name="Бургер Кинг"/>
+			<Spot number="4" SpotID="1637846000" ID="00000419096" OnAir="23:55:30" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="5" SpotID="1646772666" ID="00700777179" OnAir="23:55:50" Duration="00:00:15" Name="Антураж влюбился июль 14"/>
+		</Break>
+	</Program>
+	<Program number="27" OnAir="00:00:00" Name="М/О: ДАЁШЬ МОЛОДЁЖЬ!">
+		<Break number="1" OrigID="36388778" BreakID="1533105823" OnAir="00:10:00" Duration="00:02:30" DurationDelta="0" IndexNumber="79" MinutesList="148-150" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="00:10:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646781392" ID="00700789088" OnAir="00:10:05" Duration="00:00:05" Name="Окна Просто август 2"/>
+			<Spot number="2" SpotID="1646776948" ID="00700757056" OnAir="00:10:10" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="3" SpotID="1643965705" ID="00000446823" OnAir="00:10:20" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="4" SpotID="1646784753" ID="00700644325" OnAir="00:10:35" Duration="00:00:05" Name="Обои производители"/>
+			<Spot number="5" SpotID="1643590473" ID="00000419096" OnAir="00:10:40" Duration="00:00:20" Name="Домик в деревне"/>
+			<Spot number="6" SpotID="1646777087" ID="00700775285" OnAir="00:11:00" Duration="00:00:20" Name="Дом кухни мульт"/>
+			<Spot number="7" SpotID="1646781480" ID="00700789091" OnAir="00:11:20" Duration="00:00:05" Name="Окна Просто август 4"/>
+			<Spot number="8" SpotID="1646782865" ID="00700785840" OnAir="00:11:25" Duration="00:00:10" Name="Сопрано Турецкого авг-сент 14"/>
+			<Spot number="9" SpotID="1646785962" ID="00700792856" OnAir="00:11:35" Duration="00:00:10" Name="Сбор средств"/>
+			<Spot number="10" SpotID="1646777032" ID="00700627707" OnAir="00:11:45" Duration="00:00:10" Name="Спартак Коминтерна"/>
+			<Spot number="11" SpotID="1646085840" ID="00000439050" OnAir="00:11:55" Duration="00:00:10" Name="Леруа Мерлен 2014"/>
+			<Spot number="12" SpotID="1643965990" ID="00000446823" OnAir="00:12:05" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="13" SpotID="1646776855" ID="00700756369" OnAir="00:12:20" Duration="00:00:10" Name="Спартак честные цены"/>
+			<Spot number="14" SpotID="1646781573" ID="00700788319" OnAir="00:12:30" Duration="00:00:05" Name="Окна Просто август 1"/>
+		</Break>
+		<Break number="2" OrigID="36388779" BreakID="1533105824" OnAir="00:20:00" Duration="00:02:00" DurationDelta="0" IndexNumber="80" MinutesList="150-152" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="00:20:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646776845" ID="00700756369" OnAir="00:20:05" Duration="00:00:10" Name="Спартак честные цены"/>
+			<Spot number="2" SpotID="1646781527" ID="00700789092" OnAir="00:20:15" Duration="00:00:05" Name="Окна Просто август 5"/>
+			<Spot number="3" SpotID="1643965716" ID="00000446823" OnAir="00:20:20" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="4" SpotID="1644300268" ID="00000445106" OnAir="00:20:35" Duration="00:00:30" Name="TELE 2"/>
+			<Spot number="5" SpotID="1646777144" ID="00700695507" OnAir="00:21:05" Duration="00:00:15" Name="Виста 2014 1"/>
+			<Spot number="6" SpotID="1646781609" ID="00700789088" OnAir="00:21:20" Duration="00:00:05" Name="Окна Просто август 2"/>
+			<Spot number="7" SpotID="1646769897" ID="00700797312" OnAir="00:21:25" Duration="00:00:05" Name="Антропология 5 авг 14"/>
+			<Spot number="8" SpotID="1646777044" ID="00700627707" OnAir="00:21:30" Duration="00:00:10" Name="Спартак Коминтерна"/>
+			<Spot number="9" SpotID="1646784219" ID="00700783367" OnAir="00:21:40" Duration="00:00:10" Name="Дисамбар август 14"/>
+			<Spot number="10" SpotID="1646781415" ID="00700789089" OnAir="00:21:50" Duration="00:00:05" Name="Окна Просто август 3"/>
+			<Spot number="11" SpotID="1646776937" ID="00700757056" OnAir="00:21:55" Duration="00:00:10" Name="Стройплит дом кухни"/>
+		</Break>
+	</Program>
+	<Program number="28" OnAir="00:30:00" Name="Большой Вопрос">
+		<Break number="1" OrigID="36388851" BreakID="1533107356" OnAir="00:55:00" Duration="00:01:15" DurationDelta="0" IndexNumber="82" MinutesList="156-157" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="00:55:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646777136" ID="00700695507" OnAir="00:55:05" Duration="00:00:15" Name="Виста 2014 1"/>
+			<Spot number="2" SpotID="1643965998" ID="00000446823" OnAir="00:55:20" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="3" SpotID="1646777061" ID="00700627707" OnAir="00:55:35" Duration="00:00:10" Name="Спартак Коминтерна"/>
+			<Spot number="4" SpotID="1646776909" ID="00700757056" OnAir="00:55:45" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="5" SpotID="1643965822" ID="00000446823" OnAir="00:55:55" Duration="00:00:15" Name="Бургер Кинг"/>
+			<Spot number="6" SpotID="1646776836" ID="00700756369" OnAir="00:56:10" Duration="00:00:10" Name="Спартак честные цены"/>
+		</Break>
+	</Program>
+	<Program number="29" OnAir="01:00:00" Name="Кино на СТС (Х/ф &amp;quot;ПОБЕГ ИЗ ВЕГАСА&amp;quot;)">
+		<Break number="1" OrigID="36388854" BreakID="1533107359" OnAir="01:29:00" Duration="00:01:15" DurationDelta="5" IndexNumber="85" MinutesList="161-163" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="01:29:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646776889" ID="00700757056" OnAir="01:29:05" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="2" SpotID="1646781473" ID="00700789091" OnAir="01:29:15" Duration="00:00:05" Name="Окна Просто август 4"/>
+			<Spot number="3" SpotID="1646777006" ID="00700627707" OnAir="01:29:20" Duration="00:00:10" Name="Спартак Коминтерна"/>
+			<Spot number="4" SpotID="1646785969" ID="00700792856" OnAir="01:29:30" Duration="00:00:10" Name="Сбор средств"/>
+			<Spot number="5" SpotID="1646777130" ID="00700695507" OnAir="01:29:40" Duration="00:00:15" Name="Виста 2014 1"/>
+			<Spot number="6" SpotID="1646781350" ID="00700788319" OnAir="01:29:55" Duration="00:00:05" Name="Окна Просто август 1"/>
+			<Spot number="7" SpotID="1646776790" ID="00700756369" OnAir="01:30:00" Duration="00:00:10" Name="Спартак честные цены"/>
+			<Spot number="8" SpotID="1646781514" ID="00700789092" OnAir="01:30:10" Duration="00:00:05" Name="Окна Просто август 5"/>
+		</Break>
+		<Break number="2" OrigID="36388856" BreakID="1533107361" OnAir="01:55:00" Duration="00:01:00" DurationDelta="0" IndexNumber="87" MinutesList="165-166" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="01:55:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646777096" ID="00700775285" OnAir="01:55:05" Duration="00:00:20" Name="Дом кухни мульт"/>
+			<Spot number="2" SpotID="1646781540" ID="00700789092" OnAir="01:55:25" Duration="00:00:05" Name="Окна Просто август 5"/>
+			<Spot number="3" SpotID="1646776988" ID="00700627707" OnAir="01:55:30" Duration="00:00:10" Name="Спартак Коминтерна"/>
+			<Spot number="4" SpotID="1646776923" ID="00700757056" OnAir="01:55:40" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="5" SpotID="1646781383" ID="00700789088" OnAir="01:55:50" Duration="00:00:05" Name="Окна Просто август 2"/>
+			<Spot number="6" SpotID="1646776831" ID="00700756369" OnAir="01:55:55" Duration="00:00:10" Name="Спартак честные цены"/>
+		</Break>
+		<Break number="3" OrigID="36388859" BreakID="1533107364" OnAir="02:29:00" Duration="00:01:15" DurationDelta="0" IndexNumber="90" MinutesList="170-172" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="02:29:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646776884" ID="00700757056" OnAir="02:29:05" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="2" SpotID="1646781497" ID="00700789092" OnAir="02:29:15" Duration="00:00:05" Name="Окна Просто август 5"/>
+			<Spot number="3" SpotID="1646785976" ID="00700792856" OnAir="02:29:20" Duration="00:00:10" Name="Сбор средств"/>
+			<Spot number="4" SpotID="1646777122" ID="00700695507" OnAir="02:29:30" Duration="00:00:15" Name="Виста 2014 1"/>
+			<Spot number="5" SpotID="1646784777" ID="00700644313" OnAir="02:29:45" Duration="00:00:05" Name="Обои американские"/>
+			<Spot number="6" SpotID="1646777070" ID="00700627707" OnAir="02:29:50" Duration="00:00:10" Name="Спартак Коминтерна"/>
+			<Spot number="7" SpotID="1646781433" ID="00700789089" OnAir="02:30:00" Duration="00:00:05" Name="Окна Просто август 3"/>
+			<Spot number="8" SpotID="1646776812" ID="00700756369" OnAir="02:30:05" Duration="00:00:10" Name="Спартак честные цены"/>
+			<Spot number="9" SpotID="1646781563" ID="00700788319" OnAir="02:30:15" Duration="00:00:05" Name="Окна Просто август 1"/>
+		</Break>
+		<Break number="4" OrigID="36388861" BreakID="1533107366" OnAir="02:55:00" Duration="00:01:00" DurationDelta="0" IndexNumber="92" MinutesList="174-175" PervyiBlokNumber="000">
+			<Spot number="0" SpotID="0" ID="00000000000" OnAir="02:55:00" Duration="00:00:05" Name="H0STA05"/>
+			<Spot number="1" SpotID="1646777107" ID="00700775285" OnAir="02:55:05" Duration="00:00:20" Name="Дом кухни мульт"/>
+			<Spot number="2" SpotID="1646781463" ID="00700789091" OnAir="02:55:25" Duration="00:00:05" Name="Окна Просто август 4"/>
+			<Spot number="3" SpotID="1646777020" ID="00700627707" OnAir="02:55:30" Duration="00:00:10" Name="Спартак Коминтерна"/>
+			<Spot number="4" SpotID="1646776871" ID="00700757056" OnAir="02:55:40" Duration="00:00:10" Name="Стройплит дом кухни"/>
+			<Spot number="5" SpotID="1646781368" ID="00700789088" OnAir="02:55:50" Duration="00:00:05" Name="Окна Просто август 2"/>
+			<Spot number="6" SpotID="1646776783" ID="00700756369" OnAir="02:55:55" Duration="00:00:10" Name="Спартак честные цены"/>
+		</Break>
+	</Program>
+</Schedule>

@@ -17,8 +17,20 @@ import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 
@@ -49,7 +61,43 @@ public class TvTimetableParser {
 		}
 	}
 	
-	private static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseXmlTimeTable(final InputStream in) throws IOException {
+	static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseXmlTimeTable(final InputStream in) throws IOException {
+		
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		Document dom = null;
+		
+		try {
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			dom = db.parse(in);
+		} catch(ParserConfigurationException | SAXException pce) {
+			pce.printStackTrace();
+		}
+		
+		if (dom == null)
+			return null;
+		
+		Element elem = dom.getDocumentElement();
+		elem.normalize();
+		
+		XPath xPath = XPathFactory.newInstance().newXPath();
+		
+		NodeList nodeList = null;
+		
+		try {
+			nodeList = (NodeList) xPath.compile("/Schedule/Program/Break").evaluate(dom, XPathConstants.NODESET);
+		} catch (XPathExpressionException e) {
+			e.printStackTrace();
+		}
+		
+		if(nodeList != null && nodeList.getLength() > 0) {
+			for(int i = 0 ; i < nodeList.getLength(); ++i) {
+				Element el = (Element)nodeList.item(i);
+				System.out.println(el.getAttribute("OnAir"));				
+				//Employee e = getEmployee(el);
+				//myEmpls.add(e);
+			}
+		}		
+		
 		return null;
 	}
 	

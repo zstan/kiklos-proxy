@@ -41,5 +41,8 @@ public class TvTimetableParserTest {
 		Pair<Long, Long> p = new Pair<Long, Long>(now, 0L);
 		Pair<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);
 		assertTrue(pp.getFirst() == 65);
+		
+		in = getClass().getResourceAsStream("408_140827.xml");
+		m = TvTimetableParser.parseXmlTimeTable(in);
 	}	
 }
