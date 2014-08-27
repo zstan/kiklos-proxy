@@ -1,6 +1,8 @@
 package kiklos.tv.timetable;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -36,7 +38,22 @@ public class TvTimetableParser {
 		return c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE) * 60 + c.get(Calendar.SECOND);
 	}	
 	
-	public static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final InputStream in) throws IOException {
+	public static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final String path) throws IOException {
+		InputStream in;
+		if (path.endsWith("txt")) { // vimb
+			in = new BufferedInputStream(new FileInputStream(path));
+			return parseVimbTimeTable(in);
+		} else {
+			in = new BufferedInputStream(new FileInputStream(path));
+			return parseXmlTimeTable(in);
+		}
+	}
+	
+	private static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseXmlTimeTable(final InputStream in) throws IOException {
+		return null;
+	}
+	
+	static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseVimbTimeTable(final InputStream in) throws IOException {
 		
 		TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new TreeMap<>();
 		

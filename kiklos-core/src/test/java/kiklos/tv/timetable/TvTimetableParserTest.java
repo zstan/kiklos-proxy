@@ -19,7 +19,7 @@ public class TvTimetableParserTest {
 	//@Test
 	public void testTimeTable() throws URISyntaxException, IOException, ParseException {
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
-		Map<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseTimeTable(in);
+		Map<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseVimbTimeTable(in);
 		for (Map.Entry<Pair<Long, Long>, Pair<Short, List<Short>>> e : m.entrySet()) {
 			System.out.println("window: " + e.getKey().getFirst() + " to: " + e.getKey().getSecond() + " duration summary: " + e.getValue().getFirst());
 			for (short dur: e.getValue().getSecond()) {
@@ -36,7 +36,7 @@ public class TvTimetableParserTest {
 		long now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 		
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
-		NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseTimeTable(in);
+		NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseVimbTimeTable(in);
 		
 		Pair<Long, Long> p = new Pair<Long, Long>(now, 0L);
 		Pair<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);
