@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 
 import static org.junit.Assert.*;
 import kiklos.proxy.core.Pair;
@@ -43,6 +43,10 @@ public class TvTimetableParserTest {
 		assertTrue(pp.getFirst() == 65);
 		
 		in = getClass().getResourceAsStream("408_140827.xml");
-		m = TvTimetableParser.parseXmlTimeTable(in);
+		m = TvTimetableParser.parseXmlTimeTable(in, TvTimetableParser.getDateFromFileName("408_140827.xml"));
+		//DATE_FILE_FORMAT
+		Date d = TvTimetableParser.TIME_TV_FORMAT.parse("00:01:00");
+		System.out.println(d.getTime());
+		System.out.println(TvTimetableParser.dateHMToSeconds(d));
 	}	
 }
