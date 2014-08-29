@@ -4,14 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TimeZone;
+import java.util.TreeMap;
 
 import static org.junit.Assert.*;
-import kiklos.proxy.core.Pair;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
 public class TvTimetableParserTest {
@@ -21,8 +26,8 @@ public class TvTimetableParserTest {
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
 		Map<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseVimbTimeTable(in);
 		for (Map.Entry<Pair<Long, Long>, Pair<Short, List<Short>>> e : m.entrySet()) {
-			System.out.println("window: " + e.getKey().getFirst() + " to: " + e.getKey().getSecond() + " duration summary: " + e.getValue().getFirst());
-			for (short dur: e.getValue().getSecond()) {
+			System.out.println("window: " + e.getKey().getKey() + " to: " + e.getKey().getValue() + " duration summary: " + e.getValue().getKey());
+			for (short dur: e.getValue().getValue()) {
 				System.out.println("    duration: " + dur);
 			}
 			System.out.println();
@@ -36,17 +41,22 @@ public class TvTimetableParserTest {
 		long now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 		
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
-		NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseVimbTimeTable(in);
+		NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m = new TreeMap<>(TvTimetableParser.parseVimbTimeTable(in));
 		
-		Pair<Long, Long> p = new Pair<Long, Long>(now, 0L);
+		Pair<Long, Long> p = Pair.of(now, 0L);
 		Pair<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);
-		assertTrue(pp.getFirst() == 65);
+		assertTrue(pp.getKey() == 65);
+		
+		// --------------------
+		
+		final String sd2 = "2014.08.27 07:09:30";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
 		
 		in = getClass().getResourceAsStream("408_140827.xml");
-		m = TvTimetableParser.parseXmlTimeTable(in, TvTimetableParser.getDateFromFileName("408_140827.xml"));
-		//DATE_FILE_FORMAT
-		Date d = TvTimetableParser.TIME_TV_FORMAT.parse("00:01:00");
-		System.out.println(d.getTime());
-		System.out.println(TvTimetableParser.dateHMToSeconds(d));
-	}	
+		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(in, TvTimetableParser.getDateFromFileName("408_140827.xml")));
+		
+		p = Pair.of(now, 0L);
+		pp = TvTimetableParser.getWindow(p, m);
+		System.out.println(pp);
+	}
 }

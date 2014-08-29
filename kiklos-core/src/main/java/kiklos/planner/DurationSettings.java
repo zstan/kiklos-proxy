@@ -55,8 +55,9 @@ public class DurationSettings {
         @Override
         public void run() {
         	while (true) {
-	            LOG.debug("Read new durations config");
+	            LOG.debug("Read new durations config start");	            
 	            durationsMap = getRemoteCollection();
+	            LOG.debug("Read new durations config finish");
 	            try {
 					TimeUnit.MINUTES.sleep(10);
 				} catch (InterruptedException e) {

@@ -37,6 +37,7 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -221,8 +222,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			}
 			
 			Pair<Cookie, List<Cookie>> ourAndSessionCookPair = CookieFabric.getUserSessionCookies(request);
-			final Cookie stCookie = ourAndSessionCookPair.getFirst();
-			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getSecond();
+			final Cookie stCookie = ourAndSessionCookPair.getKey();
+			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getValue();
 			
 			if (VASTUrlList.size() > 1) {
 				List<ListenableFuture<Response>> pool = new ArrayList<>();
@@ -233,6 +234,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					pool.add(createResponse(sessionCookieList, vs));
 				}
 				LOG.debug("response pool size: {}", pool.size());
+				
+				boolean cookieAccepted = false;
+				
 				while (!pool.isEmpty()) {				
 					ListenableFuture<Response> p = pool.get(0);
 					if (p.isDone() || p.isCancelled()) {
@@ -240,12 +244,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 						Response resp = p.get();
 						final String respVast = resp.getResponseBody();
 						vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
-						sessionCookieList.addAll(CookieFabric.getResponseCookies(resp));
+						if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
+							sessionCookieList.addAll(CookieFabric.getResponseCookies(resp));
+							cookieAccepted = true;
+						}						
 						pool.remove(p);
 						LOG.debug("response pool remove");
 					}
 					else {
-						TimeUnit.MILLISECONDS.sleep(1);
+						//TimeUnit.MILLISECONDS.sleep(1);
 					}
 				}
 				final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);

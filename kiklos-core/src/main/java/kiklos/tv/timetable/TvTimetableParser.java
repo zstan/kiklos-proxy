@@ -2,7 +2,6 @@ package kiklos.tv.timetable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +10,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -29,16 +28,16 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
-
-import kiklos.proxy.core.Pair;
 
 public class TvTimetableParser {
 	
@@ -50,45 +49,63 @@ public class TvTimetableParser {
 	static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
 	static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
 	private static final byte TV_ITEMS_COUNT = 6;
+	private static Calendar calendar = Calendar.getInstance();  
 
 	static long dateHMToSeconds(final Date d) {
-		Calendar c = Calendar.getInstance();
-		c.setTime(d);
-		return c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE) * 60 + c.get(Calendar.SECOND);
+		calendar.setTime(d);
+		return calendar.get(Calendar.HOUR_OF_DAY) * 3600 + calendar.get(Calendar.MINUTE) * 60 + calendar.get(Calendar.SECOND);
 	}	
 	
 	/*
      * @param filename  the filename to query pattern: \d+_\d{6}\.xml, null returns ""
      * @return the name of the file without the path, or an empty string if none exists 
 	 */
-	static Date getDateFromFileName(final String filename) {
+	static Calendar getDateFromFileName(final String filename) {
 		if (filename.isEmpty() || filename.indexOf('_') == -1)
 			return null;
 		else {
-			final String dateStr = FilenameUtils.getBaseName(filename).substring(filename.indexOf('_') + 1);
-			Date d;
+			String dateStr = FilenameUtils.getBaseName(filename);
+			dateStr = dateStr.substring(dateStr.indexOf('_') + 1);
+			LOG.debug("dateStr: {}", dateStr);
+			Date date;
 			try {
-				d = DATE_FILE_FORMAT.parse(dateStr);
+				date = DATE_FILE_FORMAT.parse(dateStr);
 			} catch (ParseException e) {
 				e.printStackTrace();
 				return null;
 			}
-			return d;
+			final Calendar c = Calendar.getInstance();
+			c.setTime(date);
+			return c;
 		}
 	}
 	
-	public static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final String path) throws IOException {
+	public static Map<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final String path) throws IOException {
 		InputStream in;
+		LOG.debug("parseTimeTable: {}", path);
 		if (path.endsWith("txt")) { // vimb
 			in = new BufferedInputStream(new FileInputStream(path));
 			return parseVimbTimeTable(in);
-		} else {
+		} else if (path.endsWith("xml")) {
 			in = new BufferedInputStream(new FileInputStream(path));
 			return parseXmlTimeTable(in, getDateFromFileName(path));
-		}
+		} else
+			return null;
 	}
 	
-	static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseXmlTimeTable(final InputStream in, final Date date) throws IOException {
+	private static Calendar updateCalendar(Calendar dst, final Calendar c) {
+		dst.set(Calendar.HOUR, c.get(Calendar.HOUR_OF_DAY));
+		dst.set(Calendar.MINUTE, c.get(Calendar.MINUTE));
+		dst.set(Calendar.SECOND, c.get(Calendar.SECOND));
+		return dst;
+	}
+	
+	static Map<Pair<Long, Long>, Pair<Short, List<Short>>> parseXmlTimeTable(final InputStream in, 
+			final Calendar calendar) throws IOException {
+		
+		if (calendar == null) {
+			return null;
+		}
 		
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		Document dom = null;
@@ -116,7 +133,8 @@ public class TvTimetableParser {
 			return null;
 		}
 		
-		TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new TreeMap<>();
+		Map<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new HashMap<>();
+		Calendar onAirCalendar = Calendar.getInstance(); 
 		
 		if(nodeList.getLength() > 0) {
 			Pair<Long, Long> window;
@@ -127,30 +145,31 @@ public class TvTimetableParser {
 				long onAir;
 				try {
 					duration = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(el.getAttribute("Duration")));
-					onAir = TIME_TV_FORMAT.parse(el.getAttribute("OnAir")).getTime();
-					window = new Pair<>(onAir + date.getTime(), 0L);
-					NodeList spots = el.getChildNodes();
+					System.out.println("---" + (short)dateHMToSeconds(TIME_TV_FORMAT.parse(el.getAttribute("Duration"))));
+					onAirCalendar.setTime(TIME_TV_FORMAT.parse(el.getAttribute("OnAir")));
+					onAir = updateCalendar(calendar, onAirCalendar).getTimeInMillis();
+					window = Pair.of(onAir, onAir + duration * 1000);
+					NodeList spots = el.getElementsByTagName("Spot");
 					List<Short> durationsList = new ArrayList<>(spots.getLength());
 					for (int j = 0; j < spots.getLength(); ++j) {
-						Element spot = (Element)nodeList.item(i);
-						final String dur = spot.getAttribute("Duration");
+						Element spot = (Element)spots.item(j);
+						final String dur = spot. getAttribute("Duration");
 						durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(dur)));
+						System.out.println((short)dateHMToSeconds(TIME_TV_FORMAT.parse(dur)));
 					}
-					tOut.put(window, new Pair<>(duration, durationsList));
+					tOut.put(window, Pair.of(duration, durationsList));
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}				
-				//Employee e = getEmployee(el);
-				//myEmpls.add(e);
 			}
 		}		
 		
-		return null;
+		return tOut;
 	}
 	
-	static NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> parseVimbTimeTable(final InputStream in) throws IOException {
+	static Map<Pair<Long, Long>, Pair<Short, List<Short>>> parseVimbTimeTable(final InputStream in) throws IOException {
 		// <start, end>, <duration, <spot1_duration, spot2_duration, spot3_duration ....>>
-		TreeMap<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new TreeMap<>();
+		Map<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new HashMap<>();
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));				
 		String line = reader.readLine();
@@ -172,7 +191,7 @@ public class TvTimetableParser {
 					wStart = DATE_TV_FORMAT.parse(items[0]);
 					wEnd = DATE_TV_FORMAT.parse(items[1]);
 					
-					window = new Pair<>(wStart.getTime(), wEnd.getTime());
+					window = Pair.of(wStart.getTime(), wEnd.getTime());
 					block = tOut.get(window);
 					
 					if (block == null) {
@@ -187,10 +206,10 @@ public class TvTimetableParser {
 				if (block == null) {
 					List<Short> l = new ArrayList<>();
 					l.add(adBlockTime);
-					block = new Pair<>(summary, l);
+					block = Pair.of(summary, l);
 					tOut.put(window, block);
 				} else {
-					block.getSecond().add(adBlockTime);
+					block.getValue().add(adBlockTime);
 				}				
 			}
 			line = reader.readLine();
@@ -202,7 +221,7 @@ public class TvTimetableParser {
 		SortedMap<Pair<Long, Long>, Pair<Short, List<Short>>> head = m.headMap(key);
 		Pair <Long, Long> tmp = null;
 		for (Map.Entry<Pair<Long, Long>, Pair<Short, List<Short>>> e : head.entrySet()) {
-			if (key.getFirst() > e.getKey().getFirst() && key.getFirst() < e.getKey().getSecond()) {
+			if (key.getKey() > e.getKey().getKey() && key.getKey() < e.getKey().getValue()) {
 				tmp = e.getKey();
 				break;
 			}

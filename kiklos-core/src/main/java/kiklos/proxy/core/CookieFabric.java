@@ -18,6 +18,7 @@ import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpRequest;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +100,7 @@ public class CookieFabric {
 		List<Cookie> httpCookieList = new ArrayList<>();
 		
 		if (cookieStrings.isEmpty())
-			return new Pair<Cookie, List<Cookie>>(null, httpCookieList);		
+			return Pair.of(null, httpCookieList);		
 		
 		for (String cookieString : cookieStrings) {
 			Set<Cookie> cookies = CookieDecoder.decode(cookieString);
@@ -113,7 +114,7 @@ public class CookieFabric {
 				ourCookie = cookie;
 			}
 		}
-		return new Pair<>(ourCookie, httpCookieList);
+		return Pair.of(ourCookie, httpCookieList);
 	}
 	
 	public static List<Cookie> getResponseCookies(final Response request) {		

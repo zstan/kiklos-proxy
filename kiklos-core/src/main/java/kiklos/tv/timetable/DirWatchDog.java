@@ -1,13 +1,10 @@
 package kiklos.tv.timetable;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -16,13 +13,10 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import kiklos.proxy.core.Pair;
-
+import org.apache.commons.lang3.tuple.Pair;
 import org.redisson.Redisson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.core.pattern.color.YellowCompositeConverter;
 
 public class DirWatchDog {	
 	private final File timeTableFolder = new File("./timetable");
@@ -33,19 +27,21 @@ public class DirWatchDog {
     private volatile Map<Pair<String, String>, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> mapInternal;
 	
 	public DirWatchDog(final Redisson memStorage) {
+		LOG.debug("DirWatchDog initialization start");
 		if (!timeTableFolder.exists())
 			timeTableFolder.mkdirs();
 		mapExternal = memStorage.getMap(TIMETABLE_MAP_NAME);
-		mapInternal = map2TreeMapCopy(mapExternal);
+		//mapInternal = map2TreeMapCopy(mapExternal);
 		Thread t1 = new Thread(new MapUpdater());
 		Thread t2 = new Thread(new MapCleaner());
 		t1.setPriority(Thread.MIN_PRIORITY);
 		t1.start();
 		t2.setPriority(Thread.MIN_PRIORITY);
-		t2.start();		
+		t2.start();
+		LOG.debug("DirWatchDog initialization complete");
 	}
 	
-	private Map<Pair<String, String>, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> map2TreeMapCopy(final Map<Pair<String, String>, Map<Pair<Long, Long>, Pair<Short, List<Short>>>> mIn) {
+	private static Map<Pair<String, String>, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> map2TreeMapCopy(final Map<Pair<String, String>, Map<Pair<Long, Long>, Pair<Short, List<Short>>>> mIn) {
 		Map<Pair<String, String>, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
 		for (Map.Entry<Pair<String, String>, Map<Pair<Long, Long>, Pair<Short, List<Short>>>> e : mIn.entrySet()) {
 			mOut.put(e.getKey(), new TreeMap<>(e.getValue()));
@@ -54,7 +50,7 @@ public class DirWatchDog {
 	}
 	
 	private boolean watchDogIt() {
-		Map<Pair<String, String>, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>>> tmp = 
+		Map<Pair<String, String>, Map<Pair<Long, Long>, Pair<Short, List<Short>>>> tmp = 
 				new HashMap<>(timeTableFolder.listFiles().length);
 		final Date now = new Date();
 		for (final File fileEntry : timeTableFolder.listFiles()) {
@@ -74,7 +70,7 @@ public class DirWatchDog {
 				Calendar c = Calendar.getInstance();
 				c.setTime(d);
 				if (now.before(d) || now.equals(d) || Calendar.getInstance().get(Calendar.YEAR) == c.get(Calendar.YEAR)) {
-					tmp.put(new Pair<String, String>(channel, date), TvTimetableParser.parseTimeTable(path));
+					tmp.put(Pair.of(channel, date), TvTimetableParser.parseTimeTable(path));
 					LOG.debug("put new timetable :{}", path);
 					//fileEntry.delete(); !!!!!!!!!!!!!!!!!!!!!					
 				} else {
@@ -95,7 +91,7 @@ public class DirWatchDog {
         	while (true) {
 	            LOG.debug("check timetable dir");
             	if (watchDogIt()) {
-            		mapInternal = map2TreeMapCopy(mapExternal);
+            		//mapInternal = map2TreeMapCopy(mapExternal);
             	}
 	            try {
 					//TimeUnit.MINUTES.sleep(1);
@@ -116,12 +112,11 @@ public class DirWatchDog {
            		c.roll(Calendar.DATE, true);
            		final Date yesterday = c.getTime();
 	            for (Map.Entry<Pair<String, String>, Map<Pair<Long, Long>, Pair<Short, List<Short>>>> e : mapExternal.entrySet()) {
-	            	final String date = e.getKey().getSecond();
+	            	final String date = e.getKey().getValue();
 	            	try {
 						Date d = TIME_TABLE_DATE.parse(date);						
 						if (yesterday.after(d)) {
 							mapExternal.remove(e.getKey());
-							LOG.debug("MapCleaner, replace old timetable: {}, today: {}", e.getKey(), Calendar.getInstance().toString());
 						}
 					} catch (ParseException e1) {
 						e1.printStackTrace();
