@@ -2,37 +2,32 @@ package kiklos.tv.timetable;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TimeZone;
 import java.util.TreeMap;
 
+import kiklos.proxy.core.PairEx;
 import static org.junit.Assert.*;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
 public class TvTimetableParserTest {
 	
 	//@Test
-	public void testTimeTable() throws URISyntaxException, IOException, ParseException {
+/*	public void testTimeTable() throws URISyntaxException, IOException, ParseException {
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
-		Map<Pair<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseVimbTimeTable(in);
-		for (Map.Entry<Pair<Long, Long>, Pair<Short, List<Short>>> e : m.entrySet()) {
+		Map<Map<Long, Long>, Pair<Short, List<Short>>> m = TvTimetableParser.parseVimbTimeTable(in);
+		for (Map.Entry<Map<Long, Long>, Pair<Short, List<Short>>> e : m.entrySet()) {
 			System.out.println("window: " + e.getKey().getKey() + " to: " + e.getKey().getValue() + " duration summary: " + e.getValue().getKey());
 			for (short dur: e.getValue().getValue()) {
 				System.out.println("    duration: " + dur);
 			}
 			System.out.println();
 		}
-	}
+	}*/
 	
 	@Test
 	public void testNow() throws IOException, ParseException {
@@ -41,10 +36,10 @@ public class TvTimetableParserTest {
 		long now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 		
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
-		NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m = new TreeMap<>(TvTimetableParser.parseVimbTimeTable(in));
+		NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = new TreeMap<>(TvTimetableParser.parseVimbTimeTable(in));
 		
-		Pair<Long, Long> p = Pair.of(now, 0L);
-		Pair<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);
+		PairEx<Long, Long> p = new PairEx<>(new SimpleEntry<>(now, 0L)); 
+		PairEx<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);
 		assertTrue(pp.getKey() == 65);
 		
 		// --------------------
@@ -55,8 +50,13 @@ public class TvTimetableParserTest {
 		in = getClass().getResourceAsStream("408_140827.xml");
 		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(in, TvTimetableParser.getDateFromFileName("408_140827.xml")));
 		
-		p = Pair.of(now, 0L);
+		p = new PairEx<>(new SimpleEntry<>(now, 0L));
 		pp = TvTimetableParser.getWindow(p, m);
 		System.out.println(pp);
+		
+        Calendar c = Calendar.getInstance();
+   		c.roll(Calendar.DATE, false);
+   		
+   		System.out.println(c.getTime());
 	}
 }

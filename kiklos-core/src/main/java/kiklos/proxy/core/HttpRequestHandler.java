@@ -9,6 +9,7 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -140,6 +141,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				}
 		}		
 		return Collections.emptyList();
+	}
+	
+	private Map<String, String> getDebugParams(final String req) {
+		QueryStringDecoder decoder = new QueryStringDecoder(req);
+		Map<String, String> mOut = new HashMap<>();
+		Map<String, List<String>> params = decoder.parameters();
+		if (params.keySet().contains("debug")) {
+			for (Map.Entry<String, List<String>> e : params.entrySet()) {
+				if (params.get(CHANNEL) != null) {
+					mOut.put(CHANNEL, params.get(CHANNEL).get(0));
+				}
+			}
+		}
+		return mOut;
 	}
 	
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {

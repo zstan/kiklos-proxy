@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,13 +26,13 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import kiklos.proxy.core.PairEx;
+
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -80,7 +79,7 @@ public class TvTimetableParser {
 		}
 	}
 	
-	public static Map<Pair<Long, Long>, Pair<Short, List<Short>>> parseTimeTable(final String path) throws IOException {
+	public static Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String path) throws IOException {
 		InputStream in;
 		LOG.debug("parseTimeTable: {}", path);
 		if (path.endsWith("txt")) { // vimb
@@ -100,7 +99,7 @@ public class TvTimetableParser {
 		return dst;
 	}
 	
-	static Map<Pair<Long, Long>, Pair<Short, List<Short>>> parseXmlTimeTable(final InputStream in, 
+	static Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final InputStream in, 
 			final Calendar calendar) throws IOException {
 		
 		if (calendar == null) {
@@ -133,31 +132,28 @@ public class TvTimetableParser {
 			return null;
 		}
 		
-		Map<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new HashMap<>();
+		Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> tOut = new HashMap<>();
 		Calendar onAirCalendar = Calendar.getInstance(); 
 		
 		if(nodeList.getLength() > 0) {
-			Pair<Long, Long> window;
+			PairEx<Long, Long> window;
 			for(int i = 0 ; i < nodeList.getLength(); ++i) {
 				Element el = (Element)nodeList.item(i);
-				//System.out.println(el.getAttribute("OnAir") + " " + el.getAttribute("Duration"));
 				short duration;
 				long onAir;
 				try {
 					duration = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(el.getAttribute("Duration")));
-					System.out.println("---" + (short)dateHMToSeconds(TIME_TV_FORMAT.parse(el.getAttribute("Duration"))));
 					onAirCalendar.setTime(TIME_TV_FORMAT.parse(el.getAttribute("OnAir")));
 					onAir = updateCalendar(calendar, onAirCalendar).getTimeInMillis();
-					window = Pair.of(onAir, onAir + duration * 1000);
+					window = new PairEx<>(onAir, onAir + duration * 1000);
 					NodeList spots = el.getElementsByTagName("Spot");
 					List<Short> durationsList = new ArrayList<>(spots.getLength());
 					for (int j = 0; j < spots.getLength(); ++j) {
 						Element spot = (Element)spots.item(j);
 						final String dur = spot. getAttribute("Duration");
 						durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(dur)));
-						System.out.println((short)dateHMToSeconds(TIME_TV_FORMAT.parse(dur)));
 					}
-					tOut.put(window, Pair.of(duration, durationsList));
+					tOut.put(window, new PairEx<>(duration, durationsList));
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}				
@@ -167,15 +163,15 @@ public class TvTimetableParser {
 		return tOut;
 	}
 	
-	static Map<Pair<Long, Long>, Pair<Short, List<Short>>> parseVimbTimeTable(final InputStream in) throws IOException {
+	static Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseVimbTimeTable(final InputStream in) throws IOException {
 		// <start, end>, <duration, <spot1_duration, spot2_duration, spot3_duration ....>>
-		Map<Pair<Long, Long>, Pair<Short, List<Short>>> tOut = new HashMap<>();
+		Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> tOut = new HashMap<>();
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));				
 		String line = reader.readLine();
 		
-		Pair<Long, Long> window = null; 
-		Pair<Short, List<Short>> block = null;
+		PairEx<Long, Long> window = null; 
+		PairEx<Short, List<Short>> block = null;
 		
 		while (line != null) {
 			line = line.trim();
@@ -191,7 +187,7 @@ public class TvTimetableParser {
 					wStart = DATE_TV_FORMAT.parse(items[0]);
 					wEnd = DATE_TV_FORMAT.parse(items[1]);
 					
-					window = Pair.of(wStart.getTime(), wEnd.getTime());
+					window = new PairEx<>(wStart.getTime(), wEnd.getTime());
 					block = tOut.get(window);
 					
 					if (block == null) {
@@ -206,7 +202,7 @@ public class TvTimetableParser {
 				if (block == null) {
 					List<Short> l = new ArrayList<>();
 					l.add(adBlockTime);
-					block = Pair.of(summary, l);
+					block = new PairEx<>(summary, l);
 					tOut.put(window, block);
 				} else {
 					block.getValue().add(adBlockTime);
@@ -217,10 +213,10 @@ public class TvTimetableParser {
 		return tOut;
 	}
 	
-	public static Pair<Short, List<Short>> getWindow(Pair<Long, Long> key, NavigableMap<Pair<Long, Long>, Pair<Short, List<Short>>> m) {		
-		SortedMap<Pair<Long, Long>, Pair<Short, List<Short>>> head = m.headMap(key);
-		Pair <Long, Long> tmp = null;
-		for (Map.Entry<Pair<Long, Long>, Pair<Short, List<Short>>> e : head.entrySet()) {
+	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m) {		
+		SortedMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m.headMap(key);
+		PairEx <Long, Long> tmp = null;
+		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {
 			if (key.getKey() > e.getKey().getKey() && key.getKey() < e.getKey().getValue()) {
 				tmp = e.getKey();
 				break;
