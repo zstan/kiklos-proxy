@@ -99,6 +99,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				if (vastList.isEmpty()) {
 					int reqDuration = this.getRequiredAdDuration(req);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
+					reqDuration = watchDog.getAdListFromTimeTable("408").getKey(); // !!!!!!!!!!!!!!!!!!!!!
 					vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
 				}				
 				if (!vastList.isEmpty()) {

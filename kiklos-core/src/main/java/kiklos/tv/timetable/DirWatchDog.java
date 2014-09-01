@@ -65,6 +65,7 @@ public class DirWatchDog {
 			try {
 				tm = TvTimetableParser.parseTimeTable(date, inputSource);
 			} catch (IOException e1) {
+				LOG.info("DirWatchDog, timetable file is incorrect, {}", date);
 				e1.printStackTrace();
 			}
 			
@@ -126,15 +127,7 @@ public class DirWatchDog {
 					
 					LOG.debug("DirWatchDog, add new data to external storage ch: {}, date: {}", channel, date);
 					tmp.put(channel, new PairEx<String, String>(date, buff.toString()));
-					/*LOG.debug("DirWatchDog, try to parse new timetable :{}", path);
-					Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = TvTimetableParser.parseTimeTable(path);
-					if (m != null) {
-						tmp.put(new PairEx<>(channel, date), m);
-					} else {
-						LOG.debug("DirWatchDog, timetable file is incorrect");
-					}
-				}
-				*/
+					
 					LOG.debug("DirWatchDog, move old timetable :{}", path);
 					FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);					
 				}
@@ -170,18 +163,18 @@ public class DirWatchDog {
     private class MapCleaner implements Runnable {
         @Override
         public void run() {
-        	while (true) {
-	            LOG.debug("try to clear timetable map");
+        	while (true) {	            
 	            Calendar c = Calendar.getInstance();
-           		c.roll(Calendar.DATE, false);
+           		c.roll(Calendar.DATE, false);           		
            		final Date yesterday = c.getTime();
+           		LOG.debug("try to clear timetable map, yesterday: {}", yesterday.toString());
 	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
 	            	final String date = e.getKey().getValue();
 	            	try {
 						Date d = TIME_TABLE_DATE.parse(date);						
 						if (yesterday.after(d)) {
 							LOG.info("DirWatchDog, replace key: {}", e.getKey());
-							//mapExternal.remove(e.getKey());
+							mapExternal.remove(e.getKey());
 						}
 					} catch (ParseException e1) {
 						e1.printStackTrace();
