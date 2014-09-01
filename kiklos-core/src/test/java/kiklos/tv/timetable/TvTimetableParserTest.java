@@ -38,7 +38,7 @@ public class TvTimetableParserTest {
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
 		NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = new TreeMap<>(TvTimetableParser.parseVimbTimeTable(in));
 		
-		PairEx<Long, Long> p = new PairEx<>(new SimpleEntry<>(now, 0L)); 
+		PairEx<Long, Long> p = new PairEx<>(now, 0L); 
 		PairEx<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);
 		assertTrue(pp.getKey() == 65);
 		
@@ -50,7 +50,7 @@ public class TvTimetableParserTest {
 		in = getClass().getResourceAsStream("408_140827.xml");
 		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(in, TvTimetableParser.getDateFromFileName("408_140827.xml")));
 		
-		p = new PairEx<>(new SimpleEntry<>(now, 0L));
+		p = new PairEx<>(now, 0L);
 		pp = TvTimetableParser.getWindow(p, m);
 		System.out.println(pp);
 		
@@ -58,5 +58,8 @@ public class TvTimetableParserTest {
    		c.roll(Calendar.DATE, false);
    		
    		System.out.println(c.getTime());
+   		
+   		System.out.println(TvTimetableParser.DATE_FILE_FORMAT.format(c.getTime()));
+   		
 	}
 }

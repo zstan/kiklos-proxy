@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
@@ -44,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHandler.STATE;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
 import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
@@ -107,7 +105,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					LOG.debug("reqTransformer vastList size: {}", vastList.size());
 					List<String> vastUriList = new ArrayList<>(vastList.size());
 					params.remove("id");
-					params.remove("t");
+					params.remove(DURATION);
+					params.remove(CHANNEL);
 					
 					QueryStringEncoder enc = new QueryStringEncoder(""); 
 					for (Map.Entry<String, List<String>> e: params.entrySet()) {
@@ -148,11 +147,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		Map<String, String> mOut = new HashMap<>();
 		Map<String, List<String>> params = decoder.parameters();
 		if (params.keySet().contains("debug")) {
-			for (Map.Entry<String, List<String>> e : params.entrySet()) {
+			//for (Map.Entry<String, List<String>> e : params.entrySet()) {
 				if (params.get(CHANNEL) != null) {
 					mOut.put(CHANNEL, params.get(CHANNEL).get(0));
 				}
-			}
+			//}
 		}
 		return mOut;
 	}
@@ -216,7 +215,18 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			if ("/favicon.ico".equals(reqUri)) {
 				ctx.channel().close();
 				return;			
-			}		
+			}
+			
+			if (!getDebugParams(reqUri).isEmpty()) { // check for ch param !!!
+				LOG.debug("1 **");
+				String ch = getDebugParams(reqUri).get(CHANNEL);
+				LOG.debug("2 **");
+				PairEx<Short, List<Short>> ppp = watchDog.getAdListFromTimeTable(ch);
+				LOG.debug("3 **");				
+				writeResp(ctx, (HttpRequest)msg, ppp == null ? "p==null" : ppp.toString(), new ArrayList<Cookie>(), null);
+				ctx.channel().close();
+				return;
+			}			
 			
 			/*if (this.getRequiredAdDuration(reqUri) == -1) {
 				return empty vast

@@ -213,15 +213,21 @@ public class TvTimetableParser {
 		return tOut;
 	}
 	
-	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m) {		
-		SortedMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m.headMap(key);
-		PairEx <Long, Long> tmp = null;
-		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {
-			if (key.getKey() > e.getKey().getKey() && key.getKey() < e.getKey().getValue()) {
-				tmp = e.getKey();
-				break;
+	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m) {
+		try {
+			//SortedMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m.headMap(key);
+			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m;
+			PairEx <Long, Long> tmp = null;
+			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {
+				if (key.getKey() > 10/*e.getKey().getKey() && key.getKey() < e.getKey().getValue()*/) {
+					tmp = e.getKey();
+					break;
+				}
 			}
+			return tmp == null ? null : head.get(tmp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
-		return tmp == null ? null : head.get(tmp);
 	}
 }
