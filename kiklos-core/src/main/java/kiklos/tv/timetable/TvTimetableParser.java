@@ -219,7 +219,14 @@ public class TvTimetableParser {
 			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m;
 			PairEx <Long, Long> tmp = null;
 			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {
-				if (key.getKey() > 10/*e.getKey().getKey() && key.getKey() < e.getKey().getValue()*/) {
+				LOG.debug("1");
+				long l = key.getKey();
+				LOG.debug("1");
+				l = e. getKey().getClass().to getKey();
+				LOG.debug("1");
+				l = e.getKey().getValue();
+				LOG.debug("1");
+				if (key.getKey().compareTo(e.getKey().getKey()) > 0 && key.getKey().compareTo(e.getKey().getValue()) < 0) {
 					tmp = e.getKey();
 					break;
 				}

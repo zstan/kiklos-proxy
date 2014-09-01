@@ -47,7 +47,12 @@ public class DirWatchDog {
 	private static Map<PairEx<String, String>, TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> map2TreeMapCopy(final Map<PairEx<String, String>, Map<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mIn) {
 		Map<PairEx<String, String>, TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
 		for (Map.Entry<PairEx<String, String>, Map<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mIn.entrySet()) {
-			mOut.put(e.getKey(), new TreeMap<>(e.getValue()));
+			PairEx<String, String> p = e.getKey();
+			TreeMap <PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = new TreeMap<>();
+			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e1 : e.getValue().entrySet()) {
+				tm.put(e1.getKey(), e1.getValue());
+			}			
+			mOut.put(p, tm);
 		}
 		return mOut;
 	}
