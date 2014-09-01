@@ -92,11 +92,13 @@ public class TvTimetableParser {
 			return null;
 	}
 	
-	private static Calendar updateCalendar(Calendar dst, final Calendar c) {
-		dst.set(Calendar.HOUR, c.get(Calendar.HOUR_OF_DAY));
-		dst.set(Calendar.MINUTE, c.get(Calendar.MINUTE));
-		dst.set(Calendar.SECOND, c.get(Calendar.SECOND));
-		return dst;
+	private static Calendar updateCalendar(final Calendar dst, final Calendar c) {
+		Calendar out = Calendar.getInstance();
+		out.setTime(dst.getTime());
+		out.set(Calendar.HOUR, c.get(Calendar.HOUR_OF_DAY));
+		out.set(Calendar.MINUTE, c.get(Calendar.MINUTE));
+		out.set(Calendar.SECOND, c.get(Calendar.SECOND));
+		return out;
 	}
 	
 	static Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final InputStream in, 
@@ -218,17 +220,17 @@ public class TvTimetableParser {
 			//SortedMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m.headMap(key);
 			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m;
 			PairEx <Long, Long> tmp = null;
-			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {
-				LOG.debug("1");
-				long l = key.getKey();
-				LOG.debug("1");
-				l = e. getKey().getClass().to getKey();
-				LOG.debug("1");
-				l = e.getKey().getValue();
-				LOG.debug("1");
-				if (key.getKey().compareTo(e.getKey().getKey()) > 0 && key.getKey().compareTo(e.getKey().getValue()) < 0) {
+			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {				
+				Calendar c = Calendar.getInstance();
+				c.setTimeInMillis(key.getKey());
+				LOG.debug(c.getTime().toString());
+				
+				c.setTimeInMillis(e.getKey().getKey());
+				LOG.debug(c.getTime().toString());
+				
+				if (key.getKey() > e.getKey().getKey() /*&& key.getKey() < e.getKey().getValue()*/) {
 					tmp = e.getKey();
-					break;
+					//break;
 				}
 			}
 			return tmp == null ? null : head.get(tmp);

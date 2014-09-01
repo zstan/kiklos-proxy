@@ -223,8 +223,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				LOG.debug("2 **");
 				PairEx<Short, List<Short>> ppp = watchDog.getAdListFromTimeTable(ch);
 				LOG.debug("3 **");				
+				LOG.debug(ppp.toString());
 				writeResp(ctx, (HttpRequest)msg, ppp == null ? "p==null" : ppp.toString(), new ArrayList<Cookie>(), null);
-				ctx.channel().close();
+				//ctx.channel().close();
 				return;
 			}			
 			
