@@ -218,12 +218,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			}
 			
 			if (!getDebugParams(reqUri).isEmpty()) { // check for ch param !!!
-				LOG.debug("1 **");
 				String ch = getDebugParams(reqUri).get(CHANNEL);
-				LOG.debug("2 **");
 				PairEx<Short, List<Short>> ppp = watchDog.getAdListFromTimeTable(ch);
-				LOG.debug("3 **");				
-				LOG.debug(ppp.toString());
 				writeResp(ctx, (HttpRequest)msg, ppp == null ? "p==null" : ppp.toString(), new ArrayList<Cookie>(), null);
 				//ctx.channel().close();
 				return;

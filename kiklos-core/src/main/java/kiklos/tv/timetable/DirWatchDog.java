@@ -1,7 +1,13 @@
 package kiklos.tv.timetable;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,22 +25,25 @@ import org.apache.commons.io.FileUtils;
 import org.redisson.Redisson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
+
+import com.google.common.base.Charsets;
 
 public class DirWatchDog {	
 	private final static File TIME_TABLE_FOLDER = new File("./timetable");
 	private final static File OLD_DATA_FOLDER = new File("./timetable/old");
 	private static final String TIMETABLE_MAP_NAME = ".timetable";
 	private static final SimpleDateFormat TIME_TABLE_DATE = new SimpleDateFormat("yyMMdd");
-    private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
-    //private Map<PairEx<String, String>, Map<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mapExternal;
-    private volatile Map<PairEx<String, String>, TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mapInternal = new TreeMap<>();
+    private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);    
+    private Map<String, PairEx<String, String>> mapExternal; // channel, day, content
+    private volatile Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mapInternal;
 	
 	public DirWatchDog(final Redisson memStorage) {
 		LOG.debug("DirWatchDog initialization start");
 		if (!TIME_TABLE_FOLDER.exists())
 			TIME_TABLE_FOLDER.mkdirs();
-		//mapExternal = memStorage.getMap(TIMETABLE_MAP_NAME);
-		//mapInternal = map2TreeMapCopy(mapExternal);
+		mapExternal = memStorage.getMap(TIMETABLE_MAP_NAME);
+		mapInternal = map2TreeMapCopy(mapExternal);
 		Thread t1 = new Thread(new MapUpdater());
 		Thread t2 = new Thread(new MapCleaner());
 		t1.setPriority(Thread.MIN_PRIORITY);
@@ -44,15 +53,22 @@ public class DirWatchDog {
 		LOG.debug("DirWatchDog initialization complete");
 	}
 	
-	static Map<PairEx<String, String>, TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> map2TreeMapCopy(final Map<PairEx<String, String>, Map<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mIn) {
-		Map<PairEx<String, String>, TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
-		for (Map.Entry<PairEx<String, String>, Map<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mIn.entrySet()) {
-			PairEx<String, String> p = e.getKey();
-			TreeMap <PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = new TreeMap<>();
-			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e1 : e.getValue().entrySet()) {
-				tm.put(e1.getKey(), e1.getValue());
-			}			
-			mOut.put(p, tm);
+	static Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> map2TreeMapCopy(final Map<String, PairEx<String, String>> mIn) {
+		Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
+		for (Map.Entry<String, PairEx<String, String>> e : mIn.entrySet()) {
+			final String ch = e.getKey();
+			final String date = e.getValue().getKey(); 
+			final String content = e.getValue().getValue();
+			
+			InputSource inputSource = new InputSource(new StringReader(content));
+			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = null;
+			try {
+				tm = TvTimetableParser.parseTimeTable(date, inputSource);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
+			mOut.put(new PairEx<String, String>(ch, date), tm);
 		}
 		return mOut;
 	}
@@ -72,7 +88,7 @@ public class DirWatchDog {
 	}
 	
 	private boolean watchDogIt() {
-		Map<PairEx<String, String>, Map<PairEx<Long, Long>, PairEx<Short, List<Short>>>> tmp = 
+		Map<String, PairEx<String, String>> tmp = 
 				new HashMap<>(TIME_TABLE_FOLDER.listFiles().length);
 		final Calendar now = Calendar.getInstance();
 		for (final File fileEntry : TIME_TABLE_FOLDER.listFiles()) {
@@ -91,8 +107,26 @@ public class DirWatchDog {
 				d = TIME_TABLE_DATE.parse(date);
 				Calendar c = Calendar.getInstance();
 				c.setTime(d);
-				if (now.get(Calendar.YEAR) == c.get(Calendar.YEAR) && now.get(Calendar.MONTH) == c.get(Calendar.MONTH) && now.get(Calendar.DAY_OF_MONTH) == c.get(Calendar.DAY_OF_MONTH)) {
-					LOG.debug("DirWatchDog, try to parse new timetable :{}", path);
+				if (now.get(Calendar.YEAR) == c.get(Calendar.YEAR) && 
+						now.get(Calendar.MONTH) == c.get(Calendar.MONTH) && 
+						now.get(Calendar.DAY_OF_MONTH) == c.get(Calendar.DAY_OF_MONTH)) {
+					
+					InputStream in = new BufferedInputStream(new FileInputStream(path));
+					BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));
+					
+					String line = reader.readLine();
+					StringBuilder buff = new StringBuilder();
+					
+					while (line != null) {
+						buff.append(line);
+						line = reader.readLine();
+					}
+					
+					reader.close();
+					
+					LOG.debug("DirWatchDog, add new data to external storage ch: {}, date: {}", channel, date);
+					tmp.put(channel, new PairEx<String, String>(date, buff.toString()));
+					/*LOG.debug("DirWatchDog, try to parse new timetable :{}", path);
 					Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = TvTimetableParser.parseTimeTable(path);
 					if (m != null) {
 						tmp.put(new PairEx<>(channel, date), m);
@@ -100,15 +134,17 @@ public class DirWatchDog {
 						LOG.debug("DirWatchDog, timetable file is incorrect");
 					}
 				}
-				LOG.debug("DirWatchDog, move old timetable :{}", path);
-				FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);
+				*/
+					LOG.debug("DirWatchDog, move old timetable :{}", path);
+					FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);					
+				}
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
 			}			 
 		}
 		if (!tmp.isEmpty()) {
-			LOG.debug("DirWatchDog, putAll");
-			mapInternal.putAll(map2TreeMapCopy(tmp));
+			LOG.debug("DirWatchDog mapExternal, putAll");
+			mapExternal.putAll(tmp);
 		}
 		return tmp.isEmpty() ? false : true;
 	}
@@ -119,7 +155,7 @@ public class DirWatchDog {
         	while (true) {
 	            LOG.debug("check timetable dir");
             	if (watchDogIt()) {
-            		//mapInternal = map2TreeMapCopy(mapExternal);
+            		mapInternal = map2TreeMapCopy(mapExternal);
             	}
 	            try {
 					//TimeUnit.MINUTES.sleep(1);
@@ -139,7 +175,7 @@ public class DirWatchDog {
 	            Calendar c = Calendar.getInstance();
            		c.roll(Calendar.DATE, false);
            		final Date yesterday = c.getTime();
-	            for (Map.Entry<PairEx<String, String>, TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
+	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
 	            	final String date = e.getKey().getValue();
 	            	try {
 						Date d = TIME_TABLE_DATE.parse(date);						

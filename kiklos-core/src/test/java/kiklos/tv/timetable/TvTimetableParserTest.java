@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
+import org.xml.sax.InputSource;
 
 public class TvTimetableParserTest {
 	
@@ -45,12 +46,12 @@ public class TvTimetableParserTest {
 		PairEx<String, String> pp = new PairEx<>("1", "2");
 		mm.put(pp, m);
 		
-		Map<PairEx<String, String>, TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> m2 = DirWatchDog.map2TreeMapCopy(mm);
+/*		Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> m2 = DirWatchDog.map2TreeMapCopy(mm);
 		m = m2.get(pp);
 		
 		PairEx<Long, Long> p = new PairEx<>(now, 0L); 
 		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m));
-		System.out.println(p3.getKey());
+		System.out.println(p3.getKey());*/
 		//assertTrue(p3.getKey() == 65);
 		
 		// --------------------
@@ -59,10 +60,11 @@ public class TvTimetableParserTest {
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
 		
 		in = getClass().getResourceAsStream("408_140827.xml");
-		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(in, TvTimetableParser.getDateFromFileName("408_140827.xml")));
+		InputSource source = new InputSource(in);
+		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(source, TvTimetableParser.DATE_FILE_FORMAT.parse("140827")));
 		
-		p = new PairEx<>(now, 0L);
-		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m));
+		PairEx<Long, Long> p = new PairEx<>(now, 0L);
+		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m));
 		System.out.println(p3);
 		
         Calendar c = Calendar.getInstance();

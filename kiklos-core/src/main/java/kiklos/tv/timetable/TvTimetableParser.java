@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
@@ -79,17 +81,24 @@ public class TvTimetableParser {
 		}
 	}
 	
-	public static Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String path) throws IOException {
+	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String dateStr, final InputSource source) throws IOException {
 		InputStream in;
-		LOG.debug("parseTimeTable: {}", path);
-		if (path.endsWith("txt")) { // vimb
+		LOG.debug("parseTimeTable: {}", dateStr);
+/*		if (path.endsWith("txt")) { // vimb
 			in = new BufferedInputStream(new FileInputStream(path));
 			return parseVimbTimeTable(in);
-		} else if (path.endsWith("xml")) {
-			in = new BufferedInputStream(new FileInputStream(path));
-			return parseXmlTimeTable(in, getDateFromFileName(path));
-		} else
-			return null;
+		} else if (path.endsWith("xml")) {*/
+			//in = new BufferedInputStream(new FileInputStream(path));
+			Date date;
+			try {
+				date = DATE_FILE_FORMAT.parse(dateStr);
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return null;
+			}		
+			return parseXmlTimeTable(source, date);
+		//} else
+		//	return null;
 	}
 	
 	private static Calendar updateCalendar(final Calendar dst, final Calendar c) {
@@ -97,16 +106,19 @@ public class TvTimetableParser {
 		out.setTime(dst.getTime());
 		out.set(Calendar.HOUR, c.get(Calendar.HOUR_OF_DAY));
 		out.set(Calendar.MINUTE, c.get(Calendar.MINUTE));
-		out.set(Calendar.SECOND, c.get(Calendar.SECOND));
+		out.set(Calendar.SECOND, c.get(Calendar.SECOND));	
 		return out;
 	}
 	
-	static Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final InputStream in, 
-			final Calendar calendar) throws IOException {
+	static TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final InputSource in, 
+			final Date date) throws IOException {
 		
-		if (calendar == null) {
+		if (date == null) {
 			return null;
 		}
+		
+		Calendar cl = Calendar.getInstance();
+		cl.setTime(date);
 		
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		Document dom = null;
@@ -134,7 +146,7 @@ public class TvTimetableParser {
 			return null;
 		}
 		
-		Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> tOut = new HashMap<>();
+		TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tOut = new TreeMap<>();
 		Calendar onAirCalendar = Calendar.getInstance(); 
 		
 		if(nodeList.getLength() > 0) {
@@ -146,7 +158,7 @@ public class TvTimetableParser {
 				try {
 					duration = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(el.getAttribute("Duration")));
 					onAirCalendar.setTime(TIME_TV_FORMAT.parse(el.getAttribute("OnAir")));
-					onAir = updateCalendar(calendar, onAirCalendar).getTimeInMillis();
+					onAir = updateCalendar(cl, onAirCalendar).getTimeInMillis();
 					window = new PairEx<>(onAir, onAir + duration * 1000);
 					NodeList spots = el.getElementsByTagName("Spot");
 					List<Short> durationsList = new ArrayList<>(spots.getLength());
@@ -225,11 +237,11 @@ public class TvTimetableParser {
 				c.setTimeInMillis(key.getKey());
 				LOG.debug(c.getTime().toString());
 				
-				c.setTimeInMillis(e.getKey().getKey());
-				LOG.debug(c.getTime().toString());
+				c.setTimeInMillis(e.getKey().getKey());				
 				
 				if (key.getKey() > e.getKey().getKey() /*&& key.getKey() < e.getKey().getValue()*/) {
 					tmp = e.getKey();
+					LOG.debug("==>" + c.getTime().toString());
 					//break;
 				}
 			}
