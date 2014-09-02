@@ -68,7 +68,7 @@ public class TvTimetableParserTest {
 		System.out.println(p3);
 		
         Calendar c = Calendar.getInstance();
-   		c.roll(Calendar.DATE, false);
+   		c.roll(Calendar.DAY_OF_YEAR, false);
    		
    		System.out.println(c.getTime());
    		

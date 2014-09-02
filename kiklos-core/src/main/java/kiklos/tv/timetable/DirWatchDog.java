@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import kiklos.proxy.core.PairEx;
@@ -165,7 +164,7 @@ public class DirWatchDog {
         public void run() {
         	while (true) {	            
 	            Calendar c = Calendar.getInstance();
-           		c.roll(Calendar.DATE, false);           		
+           		c.roll(Calendar.DAY_OF_YEAR, false);           		
            		final Date yesterday = c.getTime();
            		LOG.debug("try to clear timetable map, yesterday: {}", yesterday.toString());
 	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
@@ -175,6 +174,7 @@ public class DirWatchDog {
 						if (yesterday.after(d)) {
 							LOG.info("DirWatchDog, replace key: {}", e.getKey());
 							mapExternal.remove(e.getKey());
+							// update mapinternal too !!!!
 						}
 					} catch (ParseException e1) {
 						e1.printStackTrace();
