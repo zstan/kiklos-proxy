@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import kiklos.proxy.core.PairEx;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.input.AutoCloseInputStream;
 import org.redisson.Redisson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,6 @@ public class DirWatchDog {
 			final String ch = e.getKey();
 			final String date = e.getValue().getKey(); 
 			final String content = e.getValue().getValue();
-			
 			InputSource inputSource = new InputSource(new StringReader(content));
 			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = null;
 			try {
@@ -111,7 +111,7 @@ public class DirWatchDog {
 						now.get(Calendar.MONTH) == c.get(Calendar.MONTH) && 
 						now.get(Calendar.DAY_OF_MONTH) == c.get(Calendar.DAY_OF_MONTH)) {
 					
-					InputStream in = new BufferedInputStream(new FileInputStream(path));
+					InputStream in = new AutoCloseInputStream(new BufferedInputStream(new FileInputStream(path)));
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));
 					
 					String line = reader.readLine();
