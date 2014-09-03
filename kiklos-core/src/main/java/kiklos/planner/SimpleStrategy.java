@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.collections.primitives.ArrayIntList;
+import org.apache.commons.collections.primitives.IntIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,16 +24,16 @@ public class SimpleStrategy implements AbstractStrategy {
 			lOut.add(defaultPlacement);
 			lOut.add(defaultPlacement);			
 		} else {
-			List<Integer> ttList = getTimeTable(summaryDuration); 
-			for (int i: ttList)
-				lOut.add(settings.getPlacement(i));
+			ArrayIntList ttList = getTimeTable(summaryDuration); 
+			for(IntIterator iter = ttList.iterator(); iter.hasNext(); ) 
+				lOut.add(settings.getPlacement(iter.next()));
 		}
 		return lOut;
 	}
 	
 	// вставляем длительности по очереди 5, 10, 15 пока вставляется, когда не всатвляется - вставляем минимальные.
-	private static List<Integer> getTimeTable(final int summaryDuration) {		
-		List<Integer> lOut = new ArrayList<>();
+	private static ArrayIntList getTimeTable(final int summaryDuration) {		
+		ArrayIntList lOut = new ArrayIntList();
 		int remain = summaryDuration;
 		int pos = 0;
 		while (true) {
