@@ -57,6 +57,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
 	private static final String DURATION = "t";
 	private static final String CHANNEL = "ch";
+	private static final String DEFAULT_CHANNEL = "408";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	private static short MAX_DURATION_BLOCK = 900;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
@@ -88,6 +89,16 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			return -1;
 	}
 	
+	private static String getChannelFromParams(final Map<String, List<String>> params) {
+		List<String> channel = params.remove(CHANNEL);
+		if (channel.isEmpty()) {
+			LOG.info("no channel param found, using default");
+			return DEFAULT_CHANNEL;
+		} else {
+			return channel.remove(0);
+		}
+	}
+	
 	private List<String> reqTransformer(final String req) {
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
 		
@@ -99,9 +110,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				if (vastList.isEmpty()) {
 					int reqDuration = this.getRequiredAdDuration(req);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
-					PairEx<Short, List<Short>> tt4ch = watchDog.getAdListFromTimeTable("408"); // !!!!!!!!!!!!!!!!!!!!!!!
+					PairEx<Short, List<Short>> tt4ch = watchDog.getAdListFromTimeTable(getChannelFromParams(params));
 					if (tt4ch != null) {
-						reqDuration = watchDog.getAdListFromTimeTable("408").getKey(); // !!!!!!!!!!!!!!!!!!!!!
+						reqDuration = tt4ch.getKey();
 					}
 					vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
 				}				
