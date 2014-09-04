@@ -37,6 +37,26 @@ import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 
+enum TvChannelRange {
+	STS ((short)24, (short)26),
+	DEFAULT ((short)30, (short)30);
+	
+	final short lower, upper;
+	
+	TvChannelRange(final short l, final short u) {
+		lower = l;
+		upper = u;
+	}
+	
+	static TvChannelRange getRange4Channel(final short ch) {
+		switch (ch) {
+			case 408: return STS;
+			default: return DEFAULT;
+		}
+	}
+	
+}
+
 public class TvTimetableParser {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TvTimetableParser.class);
