@@ -83,7 +83,7 @@ public class DirWatchDog {
 			return null;
 		}
 		PairEx<Long, Long> p = new PairEx<>(now.getTime(), now.getTime());
-		PairEx<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m);
+		PairEx<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m, ch);
 		return pp;
 	}
 	

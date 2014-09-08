@@ -127,7 +127,7 @@
 			<groupId>commons-primitives</groupId>
 			<artifactId>commons-primitives</artifactId>
 			<version>20041207.202534</version>
-		</dependency>		
+		</dependency>	
 		
 		<dependency>
 		   <groupId>kiklos.ad</groupId>

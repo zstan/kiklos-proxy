@@ -56,7 +56,7 @@ public class TvTimetableParserTest {
 		
 		// --------------------
 		
-		final String sd2 = "2014.08.27 07:09:30";
+		String sd2 = "2014.08.27 07:09:30";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
 		
 		in = getClass().getResourceAsStream("408_140827.xml");
@@ -64,15 +64,19 @@ public class TvTimetableParserTest {
 		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(source, TvTimetableParser.DATE_FILE_FORMAT.parse("140827")));
 		
 		PairEx<Long, Long> p = new PairEx<>(now, 0L);
-		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m));
+		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
+		
+		assertTrue(p3.getKey() == 60);
+		
 		System.out.println(p3);
 		
-        Calendar c = Calendar.getInstance();
-   		c.roll(Calendar.DAY_OF_YEAR, false);
-   		
-   		System.out.println(c.getTime());
-   		
-   		System.out.println(TvTimetableParser.DATE_FILE_FORMAT.format(c.getTime()));
-   		
+		sd2 = "2014.08.27 07:08:40";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
+
+		p = new PairEx<>(now, 0L);
+		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
+		
+		assertTrue(p3.getKey() == 60);
+		
 	}
 }

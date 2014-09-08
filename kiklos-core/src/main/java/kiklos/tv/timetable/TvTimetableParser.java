@@ -38,14 +38,14 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Charsets;
 
 enum TvChannelRange {
-	STS ((short)24, (short)26),
-	DEFAULT ((short)30, (short)30);
+	STS (24, 26),
+	DEFAULT (30, 30);
 	
-	final short lower, upper;
+	final int lower, upper;
 	
-	TvChannelRange(final short l, final short u) {
-		lower = l;
-		upper = u;
+	TvChannelRange(final int l, final int u) {
+		lower = l * 1000;
+		upper = u * 1000;
 	}
 	
 	static TvChannelRange getRange4Channel(final short ch) {
@@ -243,21 +243,23 @@ public class TvTimetableParser {
 		return tOut;
 	}
 	
-	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m) {
+	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m, final String ch) {
 		try {
 			//SortedMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m.headMap(key);
 			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m;
 			PairEx <Long, Long> tmp = null;
+			TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
+			
 			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {				
 				Calendar c = Calendar.getInstance();
 				c.setTimeInMillis(key.getKey());
-				LOG.debug(c.getTime().toString());
+				//LOG.debug(c.getTime().toString());
 				
 				c.setTimeInMillis(e.getKey().getKey());				
 				
-				if (key.getKey() > e.getKey().getKey() /*&& key.getKey() < e.getKey().getValue()*/) {
+				if (key.getKey() > e.getKey().getKey() - range.lower /*&& key.getKey() < e.getKey().getValue()*/) {
 					tmp = e.getKey();
-					LOG.debug("==>" + c.getTime().toString());
+					//LOG.debug("==>" + c.getTime().toString());
 					//break;
 				}
 			}
