@@ -66,6 +66,7 @@ public class TvTimetableParser {
 	static final SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 	static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
 	static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
+	
 	private static final byte TV_ITEMS_COUNT = 6;
 	private static Calendar calendar = Calendar.getInstance();  
 
@@ -127,7 +128,7 @@ public class TvTimetableParser {
 	}
 	
 	static TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final InputSource in, 
-			final Date date) throws IOException {
+			final Date date) throws IOException {		
 		
 		if (date == null) {
 			return null;
@@ -163,17 +164,26 @@ public class TvTimetableParser {
 		}
 		
 		TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tOut = new TreeMap<>();
-		Calendar onAirCalendar = Calendar.getInstance(); 
+		Calendar onAirCalendar = Calendar.getInstance();
 		
-		if(nodeList.getLength() > 0) {
-			PairEx<Long, Long> window;
-			for(int i = 0 ; i < nodeList.getLength(); ++i) {
-				Element el = (Element)nodeList.item(i);
-				short duration;
-				long onAir;
-				try {
+		try {
+			if(nodeList.getLength() > 0) {
+				PairEx<Long, Long> window;
+				Date midDay = TIME_TV_FORMAT.parse("12:00:00");
+				Date midNight = TIME_TV_FORMAT.parse("00:00:00");
+				boolean afterMidDay = false;
+				for(int i = 0 ; i < nodeList.getLength(); ++i) {
+					Element el = (Element)nodeList.item(i);
+					short duration;
+					long onAir;
 					duration = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(el.getAttribute("Duration")));
 					onAirCalendar.setTime(TIME_TV_FORMAT.parse(el.getAttribute("OnAir")));
+					if (afterMidDay || onAirCalendar.after(midDay)) { 
+						afterMidDay = true;
+						if (onAirCalendar.after(midNight)) {
+							onAirCalendar.roll(Calendar.DAY_OF_MONTH, true);
+						}
+					}
 					onAir = updateCalendar(cl, onAirCalendar).getTimeInMillis();
 					window = new PairEx<>(onAir, onAir + duration * 1000);
 					NodeList spots = el.getElementsByTagName("Spot");
@@ -184,11 +194,11 @@ public class TvTimetableParser {
 						durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(dur)));
 					}
 					tOut.put(window, new PairEx<>(duration, durationsList));
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}				
+				} 				
 			}
-		}		
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}	
 		
 		return tOut;
 	}

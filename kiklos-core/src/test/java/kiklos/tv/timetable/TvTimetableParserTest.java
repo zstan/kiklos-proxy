@@ -78,5 +78,14 @@ public class TvTimetableParserTest {
 		
 		assertTrue(p3.getKey() == 60);
 		
+		sd2 = "2014.08.27 02:30:00";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
+
+		p = new PairEx<>(now, 0L);
+		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
+		
+		assertTrue(p3.getKey() == 75);
+		//System.out.println(p3);
+		
 	}
 }
