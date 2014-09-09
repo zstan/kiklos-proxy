@@ -75,7 +75,8 @@ public class DirWatchDog {
 	
 	public PairEx<Short, List<Short>> getAdListFromTimeTable(final String ch) {
 		Calendar c = Calendar.getInstance();
-		Date now = c.getTime();		
+		Date now = c.getTime();
+		// currentDate and date before !!! fix it !
 		final String currentDate = TvTimetableParser.DATE_FILE_FORMAT.format(now);
 		NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
 		if (m == null) {
