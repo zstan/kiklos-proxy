@@ -181,7 +181,7 @@ public class TvTimetableParser {
 					if (afterMidDay || onAirCalendar.after(midDay)) { 
 						afterMidDay = true;
 						if (onAirCalendar.after(midNight)) {
-							onAirCalendar.roll(Calendar.DAY_OF_MONTH, true);
+							onAirCalendar.roll(Calendar.DAY_OF_YEAR, true);
 						}
 					}
 					onAir = updateCalendar(cl, onAirCalendar).getTimeInMillis();

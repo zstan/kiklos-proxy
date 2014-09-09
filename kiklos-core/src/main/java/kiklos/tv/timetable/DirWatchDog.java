@@ -164,30 +164,22 @@ public class DirWatchDog {
         public void run() {
         	while (true) {	            
 	            Calendar c = Calendar.getInstance();
-           		c.roll(Calendar.DAY_OF_YEAR, false);           		
-           		final Date yesterday = c.getTime();
-           		LOG.debug("try to clear timetable map, yesterday: {}", yesterday.toString());
 	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
-	            	final String date = e.getKey().getValue();
-	            	try {
-						Date d = TIME_TABLE_DATE.parse(date);						
-						if (yesterday.after(d)) {
-							LOG.info("DirWatchDog, replace key: {}", e.getKey());
-							mapExternal.remove(e.getKey());
-							// update mapinternal too !!!!
-						}
-					} catch (ParseException e1) {
-						e1.printStackTrace();
-					}	            
-	            }
+	            	final NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> curMap = e.getValue();
+	            	Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> lastEntry = curMap.lastEntry();
+					if (c.getTimeInMillis() > lastEntry.getKey().getValue()) {
+						LOG.info("DirWatchDog MapCleaner, delete old: {}", e.getKey().toString());
+						mapExternal.remove(e.getKey());
+						mapInternal.remove(e.getKey());
+					}
 	            
-	            try {
-					TimeUnit.HOURS.sleep(1);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+		            try {
+						TimeUnit.MINUTES.sleep(30);
+					} catch (InterruptedException e1) {
+							e1.printStackTrace();
+					}
+	            }
         	}
         }
-    }
-        
+    }    
 }

@@ -91,7 +91,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
 	private static String getChannelFromParams(final Map<String, List<String>> params) {
 		List<String> channel = params.remove(CHANNEL);
-		if (channel.isEmpty()) {
+		if (channel == null || channel.isEmpty()) {
 			LOG.info("no channel param found, using default");
 			return DEFAULT_CHANNEL;
 		} else {
