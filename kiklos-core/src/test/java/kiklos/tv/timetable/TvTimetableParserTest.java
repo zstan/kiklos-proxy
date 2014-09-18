@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import kiklos.proxy.core.HelperUtils;
 import kiklos.proxy.core.PairEx;
 import static org.junit.Assert.*;
 
@@ -37,7 +38,7 @@ public class TvTimetableParserTest {
 	@Test
 	public void testNow() throws IOException, ParseException {
 		
-		final String sd = "2014.04.11 08:30:00";
+		String sd = "2014.04.11 08:30:00";
 		long now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 		
 		InputStream in = getClass().getResourceAsStream("sts_1.txt");
@@ -56,13 +57,13 @@ public class TvTimetableParserTest {
 		
 		// --------------------
 		
-		String sd2 = "2014.08.27 07:09:30";
-		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
-		
 		in = getClass().getResourceAsStream("408_140827.xml");
 		InputSource source = new InputSource(in);
-		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(source, TvTimetableParser.DATE_FILE_FORMAT.parse("140827")));
+		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(source, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
 		
+		sd = "2014.08.27 07:09:30";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
+				
 		PairEx<Long, Long> p = new PairEx<>(now, 0L);
 		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
@@ -70,24 +71,24 @@ public class TvTimetableParserTest {
 		
 		System.out.println(p3);
 		
-		sd2 = "2014.08.27 07:08:40";
-		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
+		sd = "2014.08.27 07:08:37";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
 		assertTrue(p3.getKey() == 60);
 		
-		sd2 = "2014.08.27 02:30:00";
-		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
+		sd = "2014.08.27 02:30:00";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
 		assertTrue(p3.getKey() == 75);
 		
-		sd2 = "2014.08.27 02:28:30";
-		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd2).getTime();
+		sd = "2014.08.27 02:28:30";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");

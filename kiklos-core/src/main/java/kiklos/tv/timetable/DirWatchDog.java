@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.TimeUnit;
 
+import kiklos.proxy.core.HelperUtils;
 import kiklos.proxy.core.PairEx;
 
 import org.apache.commons.io.FileUtils;
@@ -77,7 +78,7 @@ public class DirWatchDog {
 		Calendar c = Calendar.getInstance();
 		Date now = c.getTime();
 		// currentDate and date before !!! fix it !
-		final String currentDate = TvTimetableParser.DATE_FILE_FORMAT.format(now);
+		final String currentDate = HelperUtils.DATE_FILE_FORMAT.format(now);
 		NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
 		if (m == null) {
 			LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
@@ -108,9 +109,7 @@ public class DirWatchDog {
 				d = TIME_TABLE_DATE.parse(date);
 				Calendar c = Calendar.getInstance();
 				c.setTime(d);
-				if (now.get(Calendar.YEAR) == c.get(Calendar.YEAR) && 
-						now.get(Calendar.MONTH) == c.get(Calendar.MONTH) && 
-						now.get(Calendar.DAY_OF_MONTH) == c.get(Calendar.DAY_OF_MONTH)) {
+				if (HelperUtils.CalendarDayComparer (now, c)) {
 					
 					InputStream in = new AutoCloseInputStream(new BufferedInputStream(new FileInputStream(path)));
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));
@@ -150,12 +149,7 @@ public class DirWatchDog {
             	if (watchDogIt()) {
             		mapInternal = map2TreeMapCopy(mapExternal);
             	}
-	            try {
-					//TimeUnit.MINUTES.sleep(1);
-	            	TimeUnit.SECONDS.sleep(30);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+            	HelperUtils.try2sleep(TimeUnit.MINUTES, 10);
         	}
         }
     }
@@ -164,21 +158,17 @@ public class DirWatchDog {
         @Override
         public void run() {
         	while (true) {	            
-	            Calendar c = Calendar.getInstance();
+	            Calendar now = Calendar.getInstance();
 	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
 	            	final NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> curMap = e.getValue();
 	            	Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> lastEntry = curMap.lastEntry();
-					if (c.getTimeInMillis() > lastEntry.getKey().getValue()) {
+					if (now.getTimeInMillis() > lastEntry.getKey().getValue()) {
 						LOG.info("DirWatchDog MapCleaner, delete old: {}", e.getKey().toString());
 						mapExternal.remove(e.getKey());
 						mapInternal.remove(e.getKey());
 					}
 	            
-		            try {
-						TimeUnit.MINUTES.sleep(30);
-					} catch (InterruptedException e1) {
-							e1.printStackTrace();
-					}
+					HelperUtils.try2sleep(TimeUnit.MINUTES, 30);
 	            }
         	}
         }

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -25,9 +24,9 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import kiklos.proxy.core.HelperUtils;
 import kiklos.proxy.core.PairEx;
 
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -65,7 +64,6 @@ public class TvTimetableParser {
 	private static XPathExpression xpathExpr = null;
 	
 	static final SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-	static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
 	static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
 	
 	private static final byte TV_ITEMS_COUNT = 6;
@@ -76,30 +74,6 @@ public class TvTimetableParser {
 		return calendar.get(Calendar.HOUR_OF_DAY) * 3600 + calendar.get(Calendar.MINUTE) * 60 + calendar.get(Calendar.SECOND);
 	}	
 	
-	/*
-     * @param filename  the filename to query pattern: \d+_\d{6}\.xml, null returns ""
-     * @return the name of the file without the path, or an empty string if none exists 
-	 */
-	static Calendar getDateFromFileName(final String filename) {
-		if (filename.isEmpty() || filename.indexOf('_') == -1)
-			return null;
-		else {
-			String dateStr = FilenameUtils.getBaseName(filename);
-			dateStr = dateStr.substring(dateStr.indexOf('_') + 1);
-			LOG.debug("dateStr: {}", dateStr);
-			Date date;
-			try {
-				date = DATE_FILE_FORMAT.parse(dateStr);
-			} catch (ParseException e) {
-				e.printStackTrace();
-				return null;
-			}
-			final Calendar c = Calendar.getInstance();
-			c.setTime(date);
-			return c;
-		}
-	}
-	
 	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String dateStr, final InputSource source) throws IOException {
 		LOG.debug("parseTimeTable: {}", dateStr);
 /*		if (path.endsWith("txt")) { // vimb
@@ -109,7 +83,7 @@ public class TvTimetableParser {
 			//in = new BufferedInputStream(new FileInputStream(path));
 			Date date;
 			try {
-				date = DATE_FILE_FORMAT.parse(dateStr);
+				date = HelperUtils.DATE_FILE_FORMAT.parse(dateStr);
 			} catch (ParseException e) {
 				e.printStackTrace();
 				return null;
@@ -117,15 +91,6 @@ public class TvTimetableParser {
 			return parseXmlTimeTable(source, date);
 		//} else
 		//	return null;
-	}
-	
-	private static Calendar updateCalendar(final Calendar dst, final Calendar c) {
-		Calendar out = Calendar.getInstance();
-		out.setTime(dst.getTime());
-		out.set(Calendar.HOUR, c.get(Calendar.HOUR_OF_DAY));
-		out.set(Calendar.MINUTE, c.get(Calendar.MINUTE));
-		out.set(Calendar.SECOND, c.get(Calendar.SECOND));	
-		return out;
 	}
 	
 	static TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final InputSource in, 
@@ -185,7 +150,7 @@ public class TvTimetableParser {
 							onAirCalendar.roll(Calendar.DAY_OF_YEAR, true);
 						}
 					}
-					onAir = updateCalendar(cl, onAirCalendar).getTimeInMillis();
+					onAir = HelperUtils.updateCalendar(cl, onAirCalendar).getTimeInMillis();
 					window = new PairEx<>(onAir, onAir + duration * 1000);
 					NodeList spots = el.getElementsByTagName("Spot");
 					List<Short> durationsList = new ArrayList<>(spots.getLength());
@@ -254,17 +219,16 @@ public class TvTimetableParser {
 		return tOut;
 	}
 	
+	// return duration and ad list
 	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m, final String ch) {
-		//LOG.debug("!!! key" + Long.toString(key.getKey()));
 		PairEx <Long, Long> window = null;
 		TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
 		
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {				
-			if (key.getKey() > e.getKey().getKey() - range.lower && key.getKey() < e.getKey().getValue() + range.upper) {
+			if (key.getKey() >= e.getKey().getKey() - range.lower && key.getKey() <= e.getKey().getValue() + range.upper) {
 				window = e.getKey();
 				break;
 			}
-			//LOG.debug(Long.toString(key.getKey()) + " : " + Long.toString(e.getKey().getKey() - range.lower) + " " + Long.toString(e.getKey().getValue() + range.upper));
 		}
 		return window == null ? null : m.get(window);
 	}
