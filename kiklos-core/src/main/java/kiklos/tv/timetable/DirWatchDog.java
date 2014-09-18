@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import kiklos.proxy.core.HelperUtils;
@@ -34,23 +35,22 @@ public class DirWatchDog {
 	private final static File TIME_TABLE_FOLDER = new File("./timetable");
 	private final static File OLD_DATA_FOLDER = new File("./timetable/old");
 	private static final String TIMETABLE_MAP_NAME = ".timetable";
+	private static final long PAUSE_BEFORE_DELETE = 60 * 1000 * 30;
 	private static final SimpleDateFormat TIME_TABLE_DATE = new SimpleDateFormat("yyMMdd");
     private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);    
     private Map<String, PairEx<String, String>> mapExternal; // channel, day, content
     private volatile Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mapInternal;
+    private final ExecutorService pool;
 	
-	public DirWatchDog(final Redisson memStorage) {
+	public DirWatchDog(final Redisson memStorage, final ExecutorService execPool) {
 		LOG.debug("DirWatchDog initialization start");
 		if (!TIME_TABLE_FOLDER.exists())
 			TIME_TABLE_FOLDER.mkdirs();
 		mapExternal = memStorage.getMap(TIMETABLE_MAP_NAME);
 		mapInternal = map2TreeMapCopy(mapExternal);
-		Thread t1 = new Thread(new MapUpdater());
-		Thread t2 = new Thread(new MapCleaner());
-		t1.setPriority(Thread.MIN_PRIORITY);
-		t1.start();
-		t2.setPriority(Thread.MIN_PRIORITY);
-		t2.start();
+		pool = execPool;
+		pool.execute(new MapUpdater());
+		pool.execute(new MapCleaner());		
 		LOG.debug("DirWatchDog initialization complete");
 	}
 	
@@ -162,7 +162,7 @@ public class DirWatchDog {
 	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
 	            	final NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> curMap = e.getValue();
 	            	Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> lastEntry = curMap.lastEntry();
-					if (now.getTimeInMillis() > lastEntry.getKey().getValue()) {
+					if (now.getTimeInMillis() > lastEntry.getKey().getValue() + PAUSE_BEFORE_DELETE) {
 						LOG.info("DirWatchDog MapCleaner, delete old: {}", e.getKey().toString());
 						mapExternal.remove(e.getKey());
 						mapInternal.remove(e.getKey());

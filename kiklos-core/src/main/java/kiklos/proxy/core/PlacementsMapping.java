@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.redisson.Redisson;
@@ -15,15 +16,15 @@ public class PlacementsMapping {
     private static final Logger LOG = LoggerFactory.getLogger(PlacementsMapping.class);
 	private volatile Map<String, List<String>> placements;
 	private Map<String, List<String>> plExternal;
+	private final ExecutorService pool; 
 	
-	public PlacementsMapping(final Redisson memStorage) {
+	public PlacementsMapping(final Redisson memStorage, final ExecutorService execPool) {
 		
 		//pl.put("111", Arrays.asList("2504637", "some comment1"));
 		plExternal = memStorage.getMap(PLACEMENTS_MAP_NAME);
 		placements = getRemoteCollection();
-		Thread t = new Thread(new PlacementsUpdater());
-		t.setPriority(Thread.MIN_PRIORITY);
-		t.start();
+		pool = execPool;
+		pool.execute(new PlacementsUpdater());
 	}
 	
 	private Map<String, List<String>> getRemoteCollection() {
@@ -48,7 +49,7 @@ public class PlacementsMapping {
         @Override
         public void run() {
         	while (true) {
-	            LOG.debug("Read new placements config");
+	            LOG.info("Read new placements config");
 	            placements = getRemoteCollection();
 	            try {
 					TimeUnit.MINUTES.sleep(2);

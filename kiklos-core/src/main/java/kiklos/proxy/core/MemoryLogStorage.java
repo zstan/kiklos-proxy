@@ -41,17 +41,17 @@ public class MemoryLogStorage {
 		int memStorageSize = memStorageList.size();
 		LOG.info("data size: {}", memStorageSize);
 		Path path = FileSystems.getDefault().getPath("./logs", "access.log");
-		BufferedWriter bw = Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.APPEND); 
-		for (int i = 0; i < (memStorageSize / LOG_DATA_CHUNK_SIZE) + 1; ++i) {
-			int to = Math.min(memStorageSize, (i + 1) * LOG_DATA_CHUNK_SIZE);
-			List<String> tmp = memStorageList.subList(i * LOG_DATA_CHUNK_SIZE, to);
-			for (String s : tmp) {
-				s = URLDecoder.decode(s, "UTF-8");
-				bw.write(s + "\n");
+		try (BufferedWriter bw = Files.newBufferedWriter(path, Charset.forName("UTF-8"), StandardOpenOption.APPEND)) { 
+			for (int i = 0; i < (memStorageSize / LOG_DATA_CHUNK_SIZE) + 1; ++i) {
+				int to = Math.min(memStorageSize, (i + 1) * LOG_DATA_CHUNK_SIZE);
+				List<String> tmp = memStorageList.subList(i * LOG_DATA_CHUNK_SIZE, to);
+				for (String s : tmp) {
+					s = URLDecoder.decode(s, "UTF-8");
+					bw.write(s + "\n");
+				}
+				memStorageList.removeAll(tmp);
 			}
-			memStorageList.removeAll(tmp);
 		}
-		bw.close();
 	}
 	
 	public static void main(String[] args) {

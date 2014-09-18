@@ -44,8 +44,8 @@ enum TvChannelRange {
 	final int lower, upper;
 	
 	TvChannelRange(final int l, final int u) {
-		lower = l * 1000;
-		upper = u * 1000;
+		lower = l * 1000 * 60;
+		upper = u * 1000 * 60;
 	}
 	
 	static TvChannelRange getRange4Channel(final short ch) {
