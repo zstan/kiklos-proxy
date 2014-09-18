@@ -1,0 +1,8 @@
+hdel "\".durations\"" "1"
+HKEYS "\".durations\""
+LRANGE "\".access_log\"" 0 600
+
+sudo add-apt-repository ppa:chris-lea/redis-server
+sudo add-apt repository ppa:chris-lea/redis-server
+add-apt-repository ppa:chris-lea/redis-server
+add-apt-repository ppa:chris-lea/redis-server
