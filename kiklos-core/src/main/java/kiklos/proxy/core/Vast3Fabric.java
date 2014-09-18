@@ -55,7 +55,7 @@ public class Vast3Fabric {
 		VAST3 vast3 = new VAST3();
 		vast3.setVersion("3.0");
 		vast3.setXmlns("http://www.w3.org/2001/XMLSchema-instance");
-		vast3.setXsi("data/vast.xsd");
+		vast3.setXsi("vast.xsd");
 		LOG.debug("Vast2ListToVast3 vastList {}", vastList.size());
 		
 		List<Ad> adList = vast3.getAds();

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.redisson.Redisson;
@@ -17,14 +18,14 @@ public class DurationSettings {
     private volatile Map<Integer, String> durationsMap;
     private Map<Integer, String> durExternal;
     private volatile List<Integer> keyList = new ArrayList<>();
+    private final ExecutorService pool;
     
-	public DurationSettings(final Redisson memStorage) {
+	public DurationSettings(final Redisson memStorage, final ExecutorService execPool) {
 		
 		durExternal = memStorage.getMap(DURATIONS_MAP_NAME);
 		durationsMap = getRemoteCollection();
-		Thread t = new Thread(new DurationsUpdater());
-		t.setPriority(Thread.MIN_PRIORITY);
-		t.start();
+		pool = execPool;
+		pool.execute(new DurationsUpdater());
 	}  
 	
 	private Map<Integer, String> getRemoteCollection() {

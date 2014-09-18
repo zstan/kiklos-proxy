@@ -7,8 +7,10 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpServerCodec;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.redisson.Redisson;
 
@@ -18,7 +20,7 @@ import com.ning.http.client.AsyncHttpClientConfig;
 public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel> {
 
 	public HttpServerPipelineFactory() {
-		cf = CookieFabric.buildCookieFabric();
+		cookieFabric = CookieFabric.buildCookieFabric();
 	}
 
 	private final Redisson storage = Redisson.create();
@@ -30,18 +32,28 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 		.setFollowRedirects(true)
 		.build();
 	
-	private final AsyncHttpClient cl = new AsyncHttpClient(cfg);
-	private final ExecutorService pool = Executors.newCachedThreadPool();
-	private final PlacementsMapping plMap = new PlacementsMapping(storage, pool);
-	private final DurationSettings ds = new DurationSettings(storage);
+	private final AsyncHttpClient httpClient = new AsyncHttpClient(cfg);
+	private final ExecutorService pool = Executors.newCachedThreadPool(new SimpleThreadFactory());
+	private final PlacementsMapping placementsMap = new PlacementsMapping(storage, pool);
+	private final DurationSettings durationsConfig = new DurationSettings(storage, pool);
 	private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage);
-	private final DirWatchDog watchDog = new DirWatchDog(storage, pool);
-	private final CookieFabric cf;	
+	private final DirWatchDog timeTableWatchDog = new DirWatchDog(storage, pool);
+	private final CookieFabric cookieFabric;	
 	
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
         p.addLast(new HttpServerCodec());
-        p.addLast(new HttpRequestHandler(cl, plMap, memLogStorage, cf, ds, watchDog));
+        p.addLast(new HttpRequestHandler(httpClient, placementsMap, memLogStorage, cookieFabric, durationsConfig, timeTableWatchDog));
     }
 }
+
+class SimpleThreadFactory implements ThreadFactory {
+	   public Thread newThread(Runnable r) {
+		 Thread t = new Thread(r);
+		 t.setPriority(Thread.MIN_PRIORITY);
+	     return t;
+	   }
+ }
+
+
