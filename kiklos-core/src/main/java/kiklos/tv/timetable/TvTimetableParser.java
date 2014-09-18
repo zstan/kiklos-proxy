@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -254,29 +255,17 @@ public class TvTimetableParser {
 	}
 	
 	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m, final String ch) {
-		try {
-			//SortedMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m.headMap(key);
-			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> head = m;
-			PairEx <Long, Long> tmp = null;
-			TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
-			
-			for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : head.entrySet()) {				
-				Calendar c = Calendar.getInstance();
-				c.setTimeInMillis(key.getKey());
-				//LOG.debug(c.getTime().toString());
-				
-				c.setTimeInMillis(e.getKey().getKey());				
-				
-				if (key.getKey() > e.getKey().getKey() - range.lower /*&& key.getKey() < e.getKey().getValue()*/) {
-					tmp = e.getKey();
-					//LOG.debug("==>" + c.getTime().toString());
-					//break;
-				}
+		//LOG.debug("!!! key" + Long.toString(key.getKey()));
+		PairEx <Long, Long> window = null;
+		TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
+		
+		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {				
+			if (key.getKey() > e.getKey().getKey() - range.lower && key.getKey() < e.getKey().getValue() + range.upper) {
+				window = e.getKey();
+				break;
 			}
-			return tmp == null ? null : head.get(tmp);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+			//LOG.debug(Long.toString(key.getKey()) + " : " + Long.toString(e.getKey().getKey() - range.lower) + " " + Long.toString(e.getKey().getValue() + range.upper));
 		}
+		return window == null ? null : m.get(window);
 	}
 }

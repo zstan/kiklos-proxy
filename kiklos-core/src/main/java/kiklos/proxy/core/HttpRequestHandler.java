@@ -52,14 +52,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private final PlacementsMapping plMap;
 	private final DurationSettings durationSettings;
 	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
+	private static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
 	private final CookieFabric cookieFabric;
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
-	private static final String DURATION = "t";
-	private static final String CHANNEL = "ch";
-	private static final String DEFAULT_CHANNEL = "408";
+	public static final String DURATION = "t";
+	public static final String CHANNEL = "ch";
+	public static final String DEFAULT_CHANNEL = "408";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
-	private static short MAX_DURATION_BLOCK = 900;
+	public static short MAX_DURATION_BLOCK = 900;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
@@ -75,30 +76,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		watchDog = wd;
 	}
 	
-	private int getRequiredAdDuration(final String req) {
-		Map<String, List<String>> params = (new QueryStringDecoder(req)).parameters();
-		List<String> dur = params.get(DURATION); 
-		if (dur != null) {
-			try {
-				int d = Integer.parseInt(dur.get(0)); 
-				return d > MAX_DURATION_BLOCK ? MAX_DURATION_BLOCK : d;
-			} catch (NumberFormatException e) {
-				return -1;
-			}			
-		} else
-			return -1;
-	}
-	
-	private static String getChannelFromParams(final Map<String, List<String>> params) {
-		List<String> channel = params.remove(CHANNEL);
-		if (channel == null || channel.isEmpty()) {
-			LOG.info("no channel param found, using default");
-			return DEFAULT_CHANNEL;
-		} else {
-			return channel.remove(0);
-		}
-	}
-	
 	private List<String> reqTransformer(final String req) {
 		QueryStringDecoder decoder = new QueryStringDecoder(req);
 		
@@ -108,14 +85,17 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				final String id = params.get("id").get(0);
 				List<String> vastList =  plMap.getMappingVASTList(id);
 				if (vastList.isEmpty()) {
-					int reqDuration = this.getRequiredAdDuration(req);
+					int reqDuration = HelperUtils.getRequiredAdDuration(req);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
-					PairEx<Short, List<Short>> tt4ch = watchDog.getAdListFromTimeTable(getChannelFromParams(params));
+					PairEx<Short, List<Short>> tt4ch = watchDog.getAdListFromTimeTable(HelperUtils.getChannelFromParams(params));
 					if (tt4ch != null) {
 						reqDuration = tt4ch.getKey();
+						vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
+					} else {
+						vastList = Collections.emptyList();
 					}
-					vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
-				}				
+				}
+				
 				if (!vastList.isEmpty()) {
 					LOG.debug("reqTransformer vastList size: {}", vastList.size());
 					List<String> vastUriList = new ArrayList<>(vastList.size());
@@ -232,11 +212,10 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				return;			
 			}
 			
-			if (!getDebugParams(reqUri).isEmpty()) { // check for ch param !!!
+			if (!getDebugParams(reqUri).isEmpty()) { 
 				String ch = getDebugParams(reqUri).get(CHANNEL);
-				PairEx<Short, List<Short>> ppp = watchDog.getAdListFromTimeTable(ch);
-				writeResp(ctx, (HttpRequest)msg, ppp == null ? "p==null" : ppp.toString(), new ArrayList<Cookie>(), null);
-				//ctx.channel().close();
+				PairEx<Short, List<Short>> adList = watchDog.getAdListFromTimeTable(ch);
+				writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<Cookie>(), null);
 				return;
 			}			
 			
