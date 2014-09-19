@@ -1,7 +1,9 @@
 package kiklos.proxy.core;
 
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -31,6 +33,25 @@ public class HelperUtils {
 			}			
 		} else
 			return -1;
+	}
+	
+	static String queryParams2String(final Map<String, List<String>> params) {
+		QueryStringEncoder enc = new QueryStringEncoder(""); 
+		for (Map.Entry<String, List<String>> e: params.entrySet()) {
+			for (String val: e.getValue()) {
+				enc.addParam(e.getKey(), val);
+			}													
+		}
+
+		String query = "";
+		try {
+			query = enc.toUri().getQuery();
+		} catch (URISyntaxException e1) {
+			e1.printStackTrace();
+		}					
+		
+		LOG.debug("proxy params to vast req: {}", query);
+		return query;
 	}
 	
 	static String getChannelFromParams(final Map<String, List<String>> params) {

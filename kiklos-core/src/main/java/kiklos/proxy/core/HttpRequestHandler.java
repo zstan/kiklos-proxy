@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
@@ -41,6 +42,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
@@ -48,8 +50,8 @@ import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
-	private final AsyncHttpClient asyncClient;
-	private final PlacementsMapping plMap;
+	private final AsyncHttpClient httpClient;
+	private final PlacementsMapping placementsMapping;
 	private final DurationSettings durationSettings;
 	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
 	private static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
@@ -66,24 +68,27 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private final MemoryLogStorage memLogStorage;
     private final DirWatchDog watchDog;
 	
-	HttpRequestHandler(AsyncHttpClient c, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
-			final CookieFabric cf, final DurationSettings ds, final DirWatchDog wd) {
-		asyncClient = c;
-		plMap = placements;
+	HttpRequestHandler(AsyncHttpClient client, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
+			final CookieFabric cookie, final DurationSettings ds, final DirWatchDog wd) {
+		httpClient = client;
+		placementsMapping = placements;
 		memLogStorage = logStorage;
-		cookieFabric = cf;
+		cookieFabric = cookie;
 		durationSettings = ds;
 		watchDog = wd;
 	}
 	
 	private List<String> reqTransformer(final String req) {
-		QueryStringDecoder decoder = new QueryStringDecoder(req);
 		
+		QueryStringDecoder decoder = new QueryStringDecoder(req);		
 		Map<String, List<String>> params = decoder.parameters(); 
-		if (!params.isEmpty())
-			if (!params.get("id").isEmpty() && !params.get("id").get(0).isEmpty()) {
-				final String id = params.get("id").get(0);
-				List<String> vastList =  plMap.getMappingVASTList(id);
+		
+		if (!params.isEmpty()) {
+			final List<String> idList = params.get("id");
+			if (!idList.isEmpty() && !idList.get(0).isEmpty()) {
+				final String id = idList.get(0);
+				List<String> vastList =  placementsMapping.getMappingVASTList(id);
+				
 				if (vastList.isEmpty()) {
 					int reqDuration = HelperUtils.getRequiredAdDuration(req);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
@@ -92,7 +97,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 						reqDuration = tt4ch.getKey();
 						vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
 					} else {
-						vastList = Collections.emptyList();
+						vastList = Collections.emptyList(); // empty for unknown channel !!!
 					}
 				}
 				
@@ -103,23 +108,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					params.remove(DURATION);
 					params.remove(CHANNEL);
 					
-					QueryStringEncoder enc = new QueryStringEncoder(""); 
-					for (Map.Entry<String, List<String>> e: params.entrySet()) {
-						for (String val: e.getValue()) {
-							enc.addParam(e.getKey(), val);
-						}													
-					}
-
-					String query = "";
-					try {
-						query = enc.toUri().getQuery();
-					} catch (URISyntaxException e1) {
-						e1.printStackTrace();
-					}					
+					String query = HelperUtils.queryParams2String(params);
 					
-					LOG.debug("proxy params to vast req: {}", query);
-					
-					if (query != null) {
+					if (!Strings.isNullOrEmpty(query)) {
 						for (String v: vastList) {
 							if (new QueryStringDecoder(v).parameters().isEmpty())
 								v += "?";
@@ -129,24 +120,22 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 						}				
 					} else {
 						vastUriList = vastList;	
-					}
-					
+					}	
 					return vastUriList;
 				}
-		}		
+			}	
+		}
 		return Collections.emptyList();
 	}
 	
 	private Map<String, String> getDebugParams(final String req) {
-		QueryStringDecoder decoder = new QueryStringDecoder(req);
+		final QueryStringDecoder decoder = new QueryStringDecoder(req);
 		Map<String, String> mOut = new HashMap<>();
-		Map<String, List<String>> params = decoder.parameters();
+		final Map<String, List<String>> params = decoder.parameters();
 		if (params.keySet().contains("debug")) {
-			//for (Map.Entry<String, List<String>> e : params.entrySet()) {
-				if (params.get(CHANNEL) != null) {
-					mOut.put(CHANNEL, params.get(CHANNEL).get(0));
-				}
-			//}
+			if (params.get(CHANNEL) != null) {
+				mOut.put(CHANNEL, params.get(CHANNEL).get(0));
+			}
 		}
 		return mOut;
 	}
@@ -164,9 +153,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		}
 		return String.format("%s\t%s\t%s\t%s\t%s", date, Uri, newUri, cookieString, remoteHost);
 	}
-	
+
 	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg, 
 			final String buff, List<Cookie> cookieList, final Cookie stCookie) {
+		writeResp(ctx, msg, buff, cookieList, stCookie, XML_CONTENT_TYPE);
+	}
+	
+	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg, 
+			final String buff, List<Cookie> cookieList, final Cookie stCookie, final String contentType) {
 		ByteBuf bb = Unpooled.wrappedBuffer(buff.getBytes());
 		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
 		if (stCookie == null) {					
@@ -181,7 +175,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		}
 		
 		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length);
-		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, XML_CONTENT_TYPE);
+		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
 		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
 		
 		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
@@ -193,11 +187,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         }						
 	}
 	
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) {
-        ctx.flush();
-    }	
-				
     @Override    
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		
@@ -212,10 +201,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				return;			
 			}
 			
-			if (!getDebugParams(reqUri).isEmpty()) { 
-				String ch = getDebugParams(reqUri).get(CHANNEL);
+			Map<String, String> debugParams = getDebugParams(reqUri); 
+			
+			if (!debugParams.isEmpty()) { 
+				String ch = debugParams.get(CHANNEL);
 				PairEx<Short, List<Short>> adList = watchDog.getAdListFromTimeTable(ch);
-				writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<Cookie>(), null);
+				writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<Cookie>(), null, "text/plain");
 				return;
 			}			
 			
@@ -268,7 +259,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 						LOG.debug("response pool remove");
 					}
 					else {
-						//TimeUnit.MILLISECONDS.sleep(1);
+						HelperUtils.try2sleep(TimeUnit.MILLISECONDS, 1);
 					}
 				}
 				final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);
@@ -291,7 +282,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
 	private ListenableFuture<Response> createResponse(final List<Cookie> sessionCookieList, 
 			final String newPath) throws IOException {
-		final BoundRequestBuilder rb = asyncClient.prepareGet(newPath);
+		final BoundRequestBuilder rb = httpClient.prepareGet(newPath);
 		for (Cookie c : sessionCookieList) {
 			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
 		}
@@ -306,6 +297,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		return f;
 	}
 	
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        ctx.flush();
+    }	
+					
 	@Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 		LOG.warn(cause.getMessage());
