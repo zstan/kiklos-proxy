@@ -67,9 +67,8 @@ public class TvTimetableParserTest {
 		PairEx<Long, Long> p = new PairEx<>(now, 0L);
 		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
-		assertTrue(p3.getKey() == 60);
-		
 		System.out.println(p3);
+		assertTrue(p3.getKey() == 75);
 		
 		sd = "2014.08.27 07:08:37";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
@@ -77,7 +76,7 @@ public class TvTimetableParserTest {
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
-		assertTrue(p3.getKey() == 60);
+		assertTrue(p3.getKey() == 75);
 		
 		sd = "2014.08.27 02:30:00";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
@@ -102,7 +101,7 @@ public class TvTimetableParserTest {
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
-		assertTrue(p3.getKey() == 60);		
+		assertTrue(p3.getKey() == 75);		
 		//System.out.println(p3);		
 	}
 }
