@@ -227,7 +227,7 @@ public class TvTimetableParser {
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {				
 			if (key.getKey() >= e.getKey().getKey() - range.lower && key.getKey() <= e.getKey().getValue() + range.upper) {
 				window = e.getKey();
-				break;
+				//break;
 			}
 		}
 		return window == null ? null : m.get(window);
