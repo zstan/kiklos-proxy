@@ -14,6 +14,32 @@ import target.eyes.vag.codec.xml.javolution.vast.v3.impl.VAST3;
 
 public class Vast3Fabric {
 	private static final Logger LOG = LoggerFactory.getLogger(Vast3Fabric.class);
+	private static final String emptyFirst5SecVast = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://specs.adfox.ru/uploads/vast.xsd\">"+
+			"<Ad id=\"0\">"+
+			"<InLine>"+
+			"<AdSystem>AdFox.Ru</AdSystem>"+
+			"<AdTitle>None</AdTitle>"+
+			"<Description>5 sec stub</Description>"+
+			"<Error/><Impression/>"+
+			"<Creatives>"+
+			"<Creative>"+
+			"<Linear>"+
+			"<Duration>"+
+			"00:00:05"+
+			"</Duration>"+
+			"<TrackingEvents/><AdParameters/><VideoClicks/>"+
+			"<MediaFiles>"+
+			"<MediaFile id=\"1\" delivery=\"progressive\" type=\"application/x-mpegurl\" bitrate=\"\" maintainAspectRatio=\"false\" scalable=\"true\" width=\"720\" height=\"576\">"+
+			"<![CDATA[http://mostmediaonline.com/test/evergreen/408_H0STA05.m3u8?rnd=12345678]]>"+
+			"</MediaFile>"+
+			"</MediaFiles>"+
+			"</Linear>"+
+			"</Creative>"+
+			"</Creatives>"+
+			"<Extensions/>"+
+			"</InLine>"+
+			"</Ad>"+
+			"</VAST>";
 	
 	public static String VastToString(final String vast) {
 		VAST3 v;
@@ -57,6 +83,10 @@ public class Vast3Fabric {
 		vast3.setXmlns("http://www.w3.org/2001/XMLSchema-instance");
 		vast3.setXsi("vast.xsd");
 		LOG.debug("Vast2ListToVast3 vastList {}", vastList.size());
+		
+		if (!vastList.isEmpty()) {
+			vastList.set(0, emptyFirst5SecVast);
+		}
 		
 		List<Ad> adList = vast3.getAds();
 		int i = 0;

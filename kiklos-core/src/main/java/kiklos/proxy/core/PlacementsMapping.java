@@ -52,7 +52,7 @@ public class PlacementsMapping {
 	            LOG.info("Read new placements config");
 	            placements = getRemoteCollection();
 	            try {
-					TimeUnit.MINUTES.sleep(2);
+					TimeUnit.MINUTES.sleep(10);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
