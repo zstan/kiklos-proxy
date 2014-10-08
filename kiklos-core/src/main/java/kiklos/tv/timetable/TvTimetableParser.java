@@ -222,12 +222,23 @@ public class TvTimetableParser {
 	// return duration and ad list
 	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> key, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m, final String ch) {
 		PairEx <Long, Long> window = null;
+		long deltha = -1, tmpKey;
 		TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
 		
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {				
 			if (key.getKey() >= e.getKey().getKey() - range.lower && key.getKey() <= e.getKey().getValue() + range.upper) {
+				
+				if (deltha != -1 && key.getKey() < e.getKey().getKey()) {
+					if (e.getKey().getKey() - key.getKey() - deltha <= 0) {
+						window = e.getKey();
+						break;
+					}
+				}				
+				
+				if (key.getKey() > e.getKey().getValue()) {
+					deltha = key.getKey() - e.getKey().getValue(); 	
+				}
 				window = e.getKey();
-				//break;
 			}
 		}
 		return window == null ? null : m.get(window);
