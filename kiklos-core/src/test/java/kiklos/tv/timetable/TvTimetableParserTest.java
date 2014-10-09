@@ -104,13 +104,21 @@ public class TvTimetableParserTest {
 		assertTrue(p3.getKey() == 75);		
 		//System.out.println(p3);		
 		
-		sd = "2014.08.27 06:40:00";
+		sd = "2014.08.27 09:16:00";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
 
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
-		//assertTrue(p3.getKey() == 75);		
+		assertTrue(p3.getKey() == 150);		
 		System.out.println(p3);		
+		
+		sd = "2014.08.27 09:15:58";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
+
+		p = new PairEx<>(now, 0L);
+		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
+		
+		assertTrue(p3.getKey() == 120);		
 	}
 }
