@@ -1,0 +1,3 @@
+mvn clean package
+mv ./kiklos-core/target/kiklos.core-0.4-SNAPSHOT-jar-with-dependencies.jar ./kiklos-core/target/kiklos.jar
+#scp ./kiklos-core/target/kiklos.jar root@st.beintv.ru:./
