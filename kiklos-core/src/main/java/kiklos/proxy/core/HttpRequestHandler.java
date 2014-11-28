@@ -4,7 +4,6 @@ import java.util.Date;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -191,6 +189,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		
         if (msg instanceof HttpRequest) {
+        	
             HttpRequest request = (HttpRequest) msg;
 			if (HttpHeaders.is100ContinueExpected(request)) {
 				ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
@@ -262,8 +261,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 						HelperUtils.try2sleep(TimeUnit.MILLISECONDS, 1);
 					}
 				}
+				
 				final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);
-				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);
+				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);				
 				return;
 			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
 				ListenableFuture<Response> respFut = createResponse(sessionCookieList, VASTUrlList.get(0));
