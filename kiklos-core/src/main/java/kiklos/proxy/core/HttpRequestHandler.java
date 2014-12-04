@@ -167,7 +167,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				
 		LOG.debug(cookieList.toString());
 		for (Cookie c: cookieList) {
-			c.setDomain(".beintv.ru");
+			c.setDomain(".adinsertion.pro");
 			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
 			LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
 		}
