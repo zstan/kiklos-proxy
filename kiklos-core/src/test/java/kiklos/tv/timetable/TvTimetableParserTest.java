@@ -67,8 +67,8 @@ public class TvTimetableParserTest {
 		PairEx<Long, Long> p = new PairEx<>(now, 0L);
 		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
-		System.out.println(p3);
-		assertTrue(p3.getKey() == 75);
+		System.out.println("1 " + p3);
+		assertTrue(p3.getKey() == 60);
 		
 		sd = "2014.08.27 07:08:37";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
@@ -76,6 +76,7 @@ public class TvTimetableParserTest {
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
+		System.out.println("2 " + p3);
 		assertTrue(p3.getKey() == 75);
 		
 		sd = "2014.08.27 02:30:00";
@@ -84,6 +85,7 @@ public class TvTimetableParserTest {
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
+		System.out.println("3 " + p3);
 		assertTrue(p3.getKey() == 75);
 		
 		sd = "2014.08.27 02:28:30";
@@ -119,6 +121,39 @@ public class TvTimetableParserTest {
 		p = new PairEx<>(now, 0L);
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "408");
 		
-		assertTrue(p3.getKey() == 120);		
+		assertTrue(p3.getKey() == 120);	
+		
+		/////////////////*********************//////////////////
+		
+		in = getClass().getResourceAsStream("407_140827.xml");
+		source = new InputSource(in);
+		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(source, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
+		
+		sd = "2014.08.27 18:50:35";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
+				
+		p = new PairEx<>(now, 0L);
+		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "407");
+		
+		System.out.println(p3);		
+		assertTrue(p3.getKey() == 75);	
+		
+		sd = "2014.08.27 18:49:35";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
+				
+		p = new PairEx<>(now, 0L);
+		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "407");
+		
+		System.out.println(p3);		
+		assertTrue(p3.getKey() == 75);	
+		
+		sd = "2014.08.27 18:51:35";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
+				
+		p = new PairEx<>(now, 0L);
+		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "407");
+		
+		System.out.println(p3);		
+		assertTrue(p3.getKey() == 75);		
 	}
 }

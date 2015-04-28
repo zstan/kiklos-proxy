@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<Schedule Date="140827" ChannelID="0408" ChannelName="ЭСМИ _Первый развлекательный СТС_  Тверь" ChannelOffset="0" MontName="Тверь СТС (врезка)" ParentChannel="0016">
+<Program number="13" OnAir="18:30:00" Name="Дорожные войны" Beer="0">
+<Break number="1" OrigID="41175834" BreakID="1578343232" OnAir="18:40:00" Duration="00:01:00" DurationDelta="0" IndexNumber="56" MinutesList="88-89" PervyiBlokNumber="000" OrbitalID="41175836">
+<Spot number="0" SpotID="0" ID="00000000000" OnAir="18:40:00" Duration="00:00:05" Name="H0STA05" Beer="0"/>
+<Spot number="1" SpotID="1704765673" ID="00700966546" OnAir="18:40:05" Duration="00:00:05" Name="ТМК потолки 5" Beer="0"/>
+<Spot number="2" SpotID="1702916473" ID="00700965760" OnAir="18:40:10" Duration="00:00:10" Name="Шатура апрель-2 2015" Beer="0"/>
+<Spot number="3" SpotID="1704860049" ID="00700968268" OnAir="18:40:20" Duration="00:00:05" Name="ЖК Молодежный 5 этаж" Beer="0"/>
+<Spot number="4" SpotID="1704846832" ID="00700968654" OnAir="18:40:25" Duration="00:00:10" Name="Люкс апрель" Beer="0"/>
+<Spot number="5" SpotID="1704864497" ID="00700966900" OnAir="18:40:35" Duration="00:00:05" Name="Антропология Выпуск 5 сек апр 15" Beer="0"/>
+<Spot number="6" SpotID="1703359364" ID="00000499559" OnAir="18:40:40" Duration="00:00:10" Name="Леруа Мерлен 2015" Beer="0"/>
+<Spot number="7" SpotID="1704865794" ID="00700860090" OnAir="18:40:50" Duration="00:00:10" Name="Шины и диски ноябрь 14" Beer="0"/>
+<Spot number="8" SpotID="1704764990" ID="00700966545" OnAir="18:41:00" Duration="00:00:05" Name="ТМК окна 5" Beer="0"/>
+</Break>
+<Break number="2" OrigID="41175835" BreakID="1578343233" OnAir="18:50:00" Duration="00:01:15" DurationDelta="0" IndexNumber="57" MinutesList="89-91" PervyiBlokNumber="000" OrbitalID="41175837">
+<Spot number="0" SpotID="0" ID="00000000000" OnAir="18:50:00" Duration="00:00:05" Name="H0STA05" Beer="0"/>
+<Spot number="1" SpotID="1704845455" ID="00700967967" OnAir="18:50:05" Duration="00:00:10" Name="Окна Люкс апрель 2015" Beer="0"/>
+<Spot number="2" SpotID="1702430171" ID="00700964144" OnAir="18:50:15" Duration="00:00:10" Name="Мегастрой апр 15" Beer="0"/>
+<Spot number="3" SpotID="1704862143" ID="00700972052" OnAir="18:50:25" Duration="00:00:10" Name="ТШФ 2 магазин 10 сек апр 15" Beer="0"/>
+<Spot number="4" SpotID="1704868843" ID="00700897568" OnAir="18:50:35" Duration="00:00:05" Name="Окна Просто работа в праздники 6" Beer="0"/>
+<Spot number="5" SpotID="1704864506" ID="00700966900" OnAir="18:50:40" Duration="00:00:05" Name="Антропология Выпуск 5 сек апр 15" Beer="0"/>
+<Spot number="6" SpotID="1703357612" ID="00000499558" OnAir="18:50:45" Duration="00:00:20" Name="Леруа Мерлен 2015" Beer="0"/>
+<Spot number="7" SpotID="1704859972" ID="00700967748" OnAir="18:51:05" Duration="00:00:05" Name="Лесная мелодия_Старт продаж 2" Beer="0"/>
+<Spot number="8" SpotID="1704764997" ID="00700966545" OnAir="18:51:10" Duration="00:00:05" Name="ТМК окна 5" Beer="0"/>
+<Spot number="9" SpotID="1704867280" ID="00700972091" OnAir="18:51:15" Duration="00:00:05" Name="Баннер 4 сезона 4 апр 15" Beer="0"/>
+</Break>
+</Program>
+<Program number="14" OnAir="19:00:00" Name="Дорожные войны" Beer="0">
+<Break number="1" OrigID="41175630" BreakID="1578341937" OnAir="19:10:00" Duration="00:01:00" DurationDelta="0" IndexNumber="58" MinutesList="91-92" PervyiBlokNumber="000" OrbitalID="41175632">
+<Spot number="0" SpotID="0" ID="00000000000" OnAir="19:10:00" Duration="00:00:05" Name="H0STA05" Beer="0"/>
+<Spot number="1" SpotID="1691053329" ID="00000484544" OnAir="19:10:05" Duration="00:00:20" Name="Москвоский Провансаль" Beer="0"/>
+<Spot number="2" SpotID="1699439672" ID="00700634593" OnAir="19:10:25" Duration="00:00:10" Name="Нью Форм дек 13" Beer="0"/>
+<Spot number="3" SpotID="1699914144" ID="00700713532" OnAir="19:10:35" Duration="00:00:10" Name="АКВАтехника" Beer="0"/>
+<Spot number="4" SpotID="1700328684" ID="00700869375" OnAir="19:10:45" Duration="00:00:10" Name="Лесозавод нояб 14" Beer="0"/>
+<Spot number="5" SpotID="1704114272" ID="00700960443" OnAir="19:10:55" Duration="00:00:10" Name="ТМК 1 апр 15" Beer="0"/>
+</Break>
+<Break number="2" OrigID="41175631" BreakID="1578341938" OnAir="19:20:00" Duration="00:01:15" DurationDelta="0" IndexNumber="59" MinutesList="92-93" PervyiBlokNumber="000" OrbitalID="41175633">
+<Spot number="0" SpotID="0" ID="00000000000" OnAir="19:20:00" Duration="00:00:05" Name="H0STA05" Beer="0"/>
+<Spot number="1" SpotID="1704765311" ID="00700966545" OnAir="19:20:05" Duration="00:00:05" Name="ТМК окна 5" Beer="0"/>
+<Spot number="2" SpotID="1703085980" ID="00700966269" OnAir="19:20:10" Duration="00:00:15" Name="Морозофф апрель 15" Beer="0"/>
+<Spot number="3" SpotID="1704846747" ID="00700968654" OnAir="19:20:25" Duration="00:00:10" Name="Люкс апрель" Beer="0"/>
+<Spot number="4" SpotID="1703997958" ID="00700969332" OnAir="19:20:35" Duration="00:00:15" Name="Милавица апр 15" Beer="0"/>
+<Spot number="5" SpotID="1703359341" ID="00000499559" OnAir="19:20:50" Duration="00:00:10" Name="Леруа Мерлен 2015" Beer="0"/>
+<Spot number="6" SpotID="1702313702" ID="00700963681" OnAir="19:21:00" Duration="00:00:10" Name="Сила 2015" Beer="0"/>
+<Spot number="7" SpotID="1704765648" ID="00700966546" OnAir="19:21:10" Duration="00:00:05" Name="ТМК потолки 5" Beer="0"/>
+<Spot number="8" SpotID="1704867288" ID="00700972091" OnAir="19:21:15" Duration="00:00:05" Name="Баннер 4 сезона 4 апр 15" Beer="0"/>
+</Break>
+</Program>
+</Schedule>

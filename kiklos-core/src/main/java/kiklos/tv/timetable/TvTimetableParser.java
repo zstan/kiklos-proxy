@@ -219,7 +219,7 @@ public class TvTimetableParser {
 		return tOut;
 	}
 	
-	// return duration and ad list
+    // return duration and ad list                                                // onAir, onAir + duration * 1000, duration, durationsList      // channel
 	public static PairEx<Short, List<Short>> getWindow(PairEx<Long, Long> moment, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m, final String ch) {
 		PairEx <Long, Long> window = null, prevValue = null;
 		long deltha = -1;
@@ -228,16 +228,17 @@ public class TvTimetableParser {
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {
 			final long lower = e.getKey().getKey();
 			final long upper = e.getKey().getValue();
+            final long current = moment.getKey();
 			
-			if (moment.getKey() >= lower - range.lower && moment.getKey() <= upper + range.upper) {
+			if (current >= lower - range.lower && current <= upper + range.upper) {
 				
-				if (moment.getKey() >= upper && moment.getKey() <= lower) {
+				if (current >= lower && current <= upper) {
 					window = e.getKey();
 					break;
 				}
 				
-				if (deltha != -1 && moment.getKey() < lower) {
-					if (lower - moment.getKey() - deltha <= 0) {
+				if (deltha != -1 && current < lower) {
+					if (lower - current - deltha <= 0) {
 						window = e.getKey();						
 					} else {
 						window = prevValue;
@@ -245,12 +246,12 @@ public class TvTimetableParser {
 					break;
 				}				
 				
-				if (moment.getKey() > upper) {
-					deltha = moment.getKey() - upper;
+				if (current > upper) {
+					deltha = current - upper;
 					prevValue = e.getKey(); 
 				}
 				window = e.getKey();
-				LOG.warn("unreacable code, getWindow");
+				LOG.warn("unreachable code, getWindow");
 			}
 		}
 		return window == null ? null : m.get(window);
