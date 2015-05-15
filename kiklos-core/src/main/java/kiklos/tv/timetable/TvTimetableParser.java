@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ import javax.xml.xpath.XPathFactory;
 import kiklos.proxy.core.HelperUtils;
 import kiklos.proxy.core.PairEx;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -74,31 +78,109 @@ public class TvTimetableParser {
 		return calendar.get(Calendar.HOUR_OF_DAY) * 3600 + calendar.get(Calendar.MINUTE) * 60 + calendar.get(Calendar.SECOND);
 	}	
 	
-	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String dateStr, final InputSource source) throws IOException {
-		LOG.debug("parseTimeTable: {}", dateStr);
-/*		if (path.endsWith("txt")) { // vimb
-			in = new BufferedInputStream(new FileInputStream(path));
-			return parseVimbTimeTable(in);
-		} else if (path.endsWith("xml")) {*/
+	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String dateStr, final String format, final String content) 
+			throws IOException {
+		Date date;
+		try {
+			LOG.debug("parseTimeTable: {}", dateStr);
+			date = HelperUtils.DATE_FILE_FORMAT.parse(dateStr);			
+		} catch (ParseException e) {
+			LOG.error("bad format " + dateStr);
+			e.printStackTrace();
+			return null;
+		}	
+		
+		if (format.equals("txt")) { // vimb
 			//in = new BufferedInputStream(new FileInputStream(path));
-			Date date;
+			//return parseVimbTimeTable(in);
+		} else if (format.equals("xml")) { // vi			
+			return parseXmlTimeTable(content, date);
+		} else if (format.equals("csv")) { // excel
 			try {
-				date = HelperUtils.DATE_FILE_FORMAT.parse(dateStr);
+				return parseCsvTimeTable(content, date);
 			} catch (ParseException e) {
 				e.printStackTrace();
-				return null;
-			}		
-			return parseXmlTimeTable(source, date);
-		//} else
-		//	return null;
+			}
+		}
+		return null;
 	}
 	
-	static TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final InputSource in, 
+	static TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseCsvTimeTable(final String content, 
+			final Date date) throws IOException, ParseException {
+		if (date == null) {
+			return null;
+		}
+		
+		Calendar cl = Calendar.getInstance();
+		cl.setTime(date);
+		
+		CSVParser parser = CSVParser.parse(content, CSVFormat.EXCEL);
+		
+		TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tOut = new TreeMap<>();
+		Calendar onAirCalendar = Calendar.getInstance();
+		
+		
+		Calendar midDay = Calendar.getInstance();
+		midDay.setTime(date);
+		midDay.set(Calendar.HOUR, 12);
+		midDay.set(Calendar.MINUTE, 0);
+		midDay.set(Calendar.SECOND, 0);
+		//System.out.println("midDay: " + midDay.getTimeInMillis());
+			
+		boolean afterMidDay = false;
+		boolean startAdBlock = false, endAdBlock = false;
+		short duration = 0;
+		long onAir = 0;
+		PairEx<Long, Long> window;
+		List<Short> durationsList = new ArrayList<>();;
+		
+		for (CSVRecord csvRecord : parser) {
+			String adEvent = csvRecord.get(6);
+			if (adEvent.endsWith("_STR")) {
+				startAdBlock = true;
+				duration = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3)));
+				durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3))));
+				durationsList = new ArrayList<>();
+				
+				onAirCalendar.setTime(TIME_TV_FORMAT.parse(csvRecord.get(1)));
+				onAirCalendar = HelperUtils.updateCalendar(cl, onAirCalendar);
+				if (afterMidDay || onAirCalendar.after(midDay)) { 
+					afterMidDay = true;
+					if (onAirCalendar.before(midDay)) {
+						onAirCalendar.roll(Calendar.DAY_OF_YEAR, true);
+						cl.roll(Calendar.DAY_OF_YEAR, true);
+					}
+				}
+				onAir = HelperUtils.updateCalendar(cl, onAirCalendar).getTimeInMillis();
+				
+				continue;
+			}
+			if (adEvent.endsWith("_ENR")) {
+				endAdBlock = true;
+				startAdBlock = false;
+				window = new PairEx<>(onAir, onAir + duration * 1000);
+				duration += (short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3)));
+				durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3))));
+				tOut.put(window, new PairEx<>(duration, durationsList));
+				
+				continue;
+			}
+			if (startAdBlock) {				
+				duration += (short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3)));
+				durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3))));
+			}			
+		 }	
+		return tOut;
+	}
+	
+	static TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseXmlTimeTable(final String content, 
 			final Date date) throws IOException {		
 		
 		if (date == null) {
 			return null;
 		}
+		
+		InputSource inputSource = new InputSource(new StringReader(content));
 		
 		Calendar cl = Calendar.getInstance();
 		cl.setTime(date);
@@ -108,7 +190,7 @@ public class TvTimetableParser {
 		
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			dom = db.parse(in);
+			dom = db.parse(inputSource);
 		} catch(ParserConfigurationException | SAXException pce) {
 			pce.printStackTrace();
 			return null;

@@ -1,8 +1,12 @@
 package kiklos.tv.timetable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Calendar;
@@ -16,6 +20,10 @@ import kiklos.proxy.core.HelperUtils;
 import kiklos.proxy.core.PairEx;
 import static org.junit.Assert.*;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 import org.xml.sax.InputSource;
@@ -35,7 +43,7 @@ public class TvTimetableParserTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testNow() throws IOException, ParseException {
 		
 		String sd = "2014.04.11 08:30:00";
@@ -58,8 +66,8 @@ public class TvTimetableParserTest {
 		// --------------------
 		
 		in = getClass().getResourceAsStream("408_140827.xml");
-		InputSource source = new InputSource(in);
-		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(source, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
+		String content = IOUtils.toString(in, StandardCharsets.UTF_8); 
+		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(content, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
 		
 		sd = "2014.08.27 07:09:30";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
@@ -126,8 +134,8 @@ public class TvTimetableParserTest {
 		/////////////////*********************//////////////////
 		
 		in = getClass().getResourceAsStream("407_140827.xml");
-		source = new InputSource(in);
-		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(source, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
+		content = IOUtils.toString(in, StandardCharsets.UTF_8);
+		m = new TreeMap<>(TvTimetableParser.parseXmlTimeTable(content, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
 		
 		sd = "2014.08.27 18:50:35";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
@@ -155,5 +163,54 @@ public class TvTimetableParserTest {
 		
 		System.out.println(p3);		
 		assertTrue(p3.getKey() == 75);		
+	}
+	
+	@Test
+	public void testCsv() throws IOException, ParseException, URISyntaxException {
+//		URL path = getClass().getResource("PERREG.csv");
+//		File csvData = new File(path.getPath());
+//		CSVParser parser = CSVParser.parse(csvData, StandardCharsets.UTF_8, CSVFormat.EXCEL);
+//		boolean startAdBlock = false, endAdBlock = false;
+//		for (CSVRecord csvRecord : parser) {
+//			String adEvent = csvRecord.get(6);
+//			if (adEvent.endsWith("_STF"))
+//				startAdBlock = true;
+//			if (adEvent.endsWith("_ENF")) {
+//				endAdBlock = true;
+//				startAdBlock = false;
+//			}
+//			if (startAdBlock)
+//				System.out.println(csvRecord.get(2));
+//		 }		
+		InputStream in = getClass().getResourceAsStream("404_150515.csv");
+		String content = IOUtils.toString(in, StandardCharsets.UTF_8);
+		Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = new TreeMap<>(TvTimetableParser.parseCsvTimeTable(content, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
+		
+		String sd = "2014.08.27 06:10:20";
+		long now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
+		
+		PairEx<Long, Long> p = new PairEx<>(now, 0L);
+		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "404");
+		
+		System.out.println(p3 + "testCsv");		
+		assertTrue(p3.getKey() == 66);	
+		
+		sd = "2014.08.28 00:25:18";
+		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
+		
+		p = new PairEx<>(now, 0L);
+		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "404");
+		
+		System.out.println(p3 + "testCsv");		
+		assertTrue(p3.getKey() == 85);	
+		
+		DirWatchDog dd = new DirWatchDog();
+		//File
+		String path = getClass().getResource("404_150515.csv").toString();
+		Map<PairEx<String, String>, PairEx<String, String>> mOut = dd.readDataFile(new File(new URI(path)));
+		for (Map.Entry<PairEx<String, String>, PairEx<String, String>> me : mOut.entrySet()) {
+			System.out.println(me.getKey());
+			//System.out.println(me.getValue());
+		}
 	}
 }

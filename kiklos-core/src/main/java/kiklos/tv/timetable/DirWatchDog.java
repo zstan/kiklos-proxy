@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -27,7 +26,6 @@ import org.apache.commons.io.input.AutoCloseInputStream;
 import org.redisson.Redisson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.InputSource;
 
 import com.google.common.base.Charsets;
 
@@ -37,11 +35,15 @@ public class DirWatchDog {
 	private static final String TIMETABLE_MAP_NAME = ".timetable";
 	private static final long PAUSE_BEFORE_DELETE = 60 * 1000 * 30;
 	private static final SimpleDateFormat TIME_TABLE_DATE = new SimpleDateFormat("yyMMdd");
-    private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);    
-    private Map<String, PairEx<String, String>> mapExternal; // channel, day, content
+    private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
+    
+    //          (channel, format)         (date, content)
+    private Map<PairEx<String, String>, PairEx<String, String>> mapExternal; // channel, day, content
     private volatile Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mapInternal;
-    private final ExecutorService pool;
+    private ExecutorService pool;
 	
+    public DirWatchDog() {}
+    
 	public DirWatchDog(final Redisson memStorage, final ExecutorService execPool) {
 		LOG.debug("DirWatchDog initialization start");
 		if (!TIME_TABLE_FOLDER.exists())
@@ -54,16 +56,16 @@ public class DirWatchDog {
 		LOG.debug("DirWatchDog initialization complete");
 	}
 	
-	static Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> map2TreeMapCopy(final Map<String, PairEx<String, String>> mIn) {
+	static Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> map2TreeMapCopy(final Map<PairEx<String, String>, PairEx<String, String>> mIn) {
 		Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
-		for (Map.Entry<String, PairEx<String, String>> e : mIn.entrySet()) {
-			final String ch = e.getKey();
+		for (Map.Entry<PairEx<String, String>, PairEx<String, String>> e : mIn.entrySet()) {
+			final String ch = e.getKey().getKey();
+			final String format = e.getKey().getValue();
 			final String date = e.getValue().getKey(); 
 			final String content = e.getValue().getValue();
-			InputSource inputSource = new InputSource(new StringReader(content));
 			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = null;
 			try {
-				tm = TvTimetableParser.parseTimeTable(date, inputSource);
+				tm = TvTimetableParser.parseTimeTable(date, format, content);
 			} catch (IOException e1) {
 				LOG.info("DirWatchDog, timetable file is incorrect, {}", date);
 				e1.printStackTrace();
@@ -89,56 +91,63 @@ public class DirWatchDog {
 		return pp;
 	}
 	
-	private boolean watchDogIt() {
-		Map<String, PairEx<String, String>> tmp = 
-				new HashMap<>(TIME_TABLE_FOLDER.listFiles().length);
-		final Calendar now = Calendar.getInstance();
+	private boolean watchDogIt() {		
 		for (final File fileEntry : TIME_TABLE_FOLDER.listFiles()) {
-			String name, path;
-			if (fileEntry.isFile() && fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml)")) { // sts_210814.txt, 408_140826.xml
-				name = fileEntry.getName();
-				path = fileEntry.getAbsolutePath();
+			if (fileEntry.isFile() && fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml|csv)")) { // sts_210814.txt, 408_140826.xml, 404_140826.csv
+				Map<PairEx<String, String>, PairEx<String, String>> mOut = readDataFile(fileEntry);
+				if (!mOut.isEmpty()) {
+					LOG.debug("DirWatchDog mapExternal, putAll");
+					mapExternal.putAll(mOut);
+				}
 			} else {
+				LOG.warn(fileEntry.getName() + " not under regexp rules");
 				continue;
 			}
-			String channel = name.substring(0, name.indexOf("_"));
-			String date = name.substring(name.indexOf("_") + 1, name.indexOf("."));
-			LOG.debug("DirWatchDog found timetable channel: {}, date: {}", channel, date);
-			Date d;
-			try {
-				d = TIME_TABLE_DATE.parse(date);
-				Calendar c = Calendar.getInstance();
-				c.setTime(d);
-				if (HelperUtils.CalendarDayComparer (now, c)) {
-					
-					InputStream in = new AutoCloseInputStream(new BufferedInputStream(new FileInputStream(path)));
-					BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));
-					
-					String line = reader.readLine();
-					StringBuilder buff = new StringBuilder();
-					
-					while (line != null) {
-						buff.append(line);
-						line = reader.readLine();
-					}
-					
-					reader.close();
-					
-					LOG.debug("DirWatchDog, add new data to external storage ch: {}, date: {}", channel, date);
-					tmp.put(channel, new PairEx<String, String>(date, buff.toString()));
-					
-					LOG.debug("DirWatchDog, move old timetable :{}", path);
-					FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);					
+		}
+		return false;
+	}
+	
+	Map<PairEx<String, String>, PairEx<String, String>> readDataFile(final File fileEntry) {
+		final String name = fileEntry.getName();
+		final String path = fileEntry.getAbsolutePath();
+		final String channel = name.substring(0, name.indexOf("_"));
+		final String date = name.substring(name.indexOf("_") + 1, name.indexOf("."));
+		final String format = name.substring(name.indexOf(".") + 1, name.length());
+		final Calendar now = Calendar.getInstance();
+		int reserve = TIME_TABLE_FOLDER.listFiles() == null ? 0 : TIME_TABLE_FOLDER.listFiles().length;
+		Map<PairEx<String, String>, PairEx<String, String>> tmp = 
+				new HashMap<>(reserve);		
+		LOG.debug("DirWatchDog found timetable channel: {}, date: {}", channel, date);
+		Date d;
+		try {
+			d = TIME_TABLE_DATE.parse(date);
+			Calendar c = Calendar.getInstance();
+			c.setTime(d);
+			if (HelperUtils.CalendarDayComparer (now, c)) {
+				
+				InputStream in = new AutoCloseInputStream(new BufferedInputStream(new FileInputStream(path)));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charsets.UTF_8));
+				
+				String line = reader.readLine();
+				StringBuilder buff = new StringBuilder();
+				
+				while (line != null) {
+					buff.append(line);
+					line = reader.readLine();
 				}
-			} catch (ParseException | IOException e) {
-				e.printStackTrace();
-			}			 
-		}
-		if (!tmp.isEmpty()) {
-			LOG.debug("DirWatchDog mapExternal, putAll");
-			mapExternal.putAll(tmp);
-		}
-		return tmp.isEmpty() ? false : true;
+				
+				reader.close();
+				
+				LOG.debug("DirWatchDog, add new data to external storage ch: {}, date: {}", channel, date);
+				tmp.put(new PairEx<String, String>(channel, format), new PairEx<String, String>(date, buff.toString()));
+				
+				LOG.debug("DirWatchDog, move old timetable :{}", path);
+				FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);					
+			}
+		} catch (ParseException | IOException e) {
+			e.printStackTrace();
+		}			 
+		return tmp;		
 	}
 	
     private class MapUpdater implements Runnable {

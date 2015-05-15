@@ -13,8 +13,7 @@ public class SimpleStrategy implements AbstractStrategy {
 	private static final Logger LOG = LoggerFactory.getLogger(SimpleStrategy.class);
 	private static List<Integer> durationsList;
 	
-	public static List<String> formAdList(final DurationSettings settings, final int summaryDuration) {
-		durationsList = settings.getDurationsList();
+	public static List<String> formAdList(final DurationSettings settings, final int summaryDuration) {		
 		if (summaryDuration < durationsList.get(0) && summaryDuration != -1)
 			return Collections.emptyList();
 		LOG.debug("duration list size: {}, summary duration: {}", durationsList.size(), summaryDuration);
@@ -32,7 +31,7 @@ public class SimpleStrategy implements AbstractStrategy {
 	}
 	
 	// вставляем длительности по очереди 5, 10, 15 пока вставляется, когда не всатвляется - вставляем минимальные.
-	private static ArrayIntList getTimeTable(final int summaryDuration) {		
+	private static ArrayIntList getTimeTable(final int summaryDuration) {
 		ArrayIntList lOut = new ArrayIntList();
 		int remain = summaryDuration;
 		int pos = 0;
