@@ -312,7 +312,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
 		c.setMaxAge(COOKIE_MAX_AGE);
 		c.setPath("/");
-		c.setDomain(".beintv.ru");
+		c.setDomain(".adinsertion.pro");
 		c.setHttpOnly(true);
 		return c;
 	}

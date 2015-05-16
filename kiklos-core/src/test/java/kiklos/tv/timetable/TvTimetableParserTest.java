@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import kiklos.proxy.core.HelperUtils;
@@ -206,11 +207,16 @@ public class TvTimetableParserTest {
 		
 		DirWatchDog dd = new DirWatchDog();
 		//File
-		String path = getClass().getResource("404_150515.csv").toString();
+		String path = getClass().getResource("1481_150516.csv").toString();
 		Map<PairEx<String, String>, PairEx<String, String>> mOut = dd.readDataFile(new File(new URI(path)));
 		for (Map.Entry<PairEx<String, String>, PairEx<String, String>> me : mOut.entrySet()) {
 			System.out.println(me.getKey());
 			//System.out.println(me.getValue());
 		}
+		
+		TimeZone tz = TimeZone.getDefault();
+		System.out.println(tz);
+		Calendar cl = Calendar.getInstance(tz);
+		System.out.println(cl.get(Calendar.HOUR_OF_DAY));
 	}
 }

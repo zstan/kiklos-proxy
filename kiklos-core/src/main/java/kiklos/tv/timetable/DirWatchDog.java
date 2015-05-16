@@ -86,22 +86,25 @@ public class DirWatchDog {
 			LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
 			return null;
 		}
-		PairEx<Long, Long> p = new PairEx<>(now.getTime(), now.getTime());
+		long current_time = ch.equals("1481") ? now.getTime() + 14400000 : now.getTime();
+		PairEx<Long, Long> p = new PairEx<>(current_time, current_time); // STUB !!!!!
 		PairEx<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m, ch);
 		return pp;
 	}
 	
 	private boolean watchDogIt() {		
 		for (final File fileEntry : TIME_TABLE_FOLDER.listFiles()) {
-			if (fileEntry.isFile() && fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml|csv)")) { // sts_210814.txt, 408_140826.xml, 404_140826.csv
-				Map<PairEx<String, String>, PairEx<String, String>> mOut = readDataFile(fileEntry);
-				if (!mOut.isEmpty()) {
-					LOG.debug("DirWatchDog mapExternal, putAll");
-					mapExternal.putAll(mOut);
+			if (fileEntry.isFile()) { 
+				if (fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml|csv)")) { // sts_210814.txt, 408_140826.xml, 404_140826.csv
+					Map<PairEx<String, String>, PairEx<String, String>> mOut = readDataFile(fileEntry);
+					if (!mOut.isEmpty()) {
+						LOG.debug("DirWatchDog mapExternal, putAll");
+						mapExternal.putAll(mOut);
+					} else {
+						LOG.warn(fileEntry.getName() + " not under regexp rules");
+						continue;					
+					}
 				}
-			} else {
-				LOG.warn(fileEntry.getName() + " not under regexp rules");
-				continue;
 			}
 		}
 		return false;

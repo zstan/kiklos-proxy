@@ -125,7 +125,6 @@ public class TvTimetableParser {
 		midDay.set(Calendar.HOUR, 12);
 		midDay.set(Calendar.MINUTE, 0);
 		midDay.set(Calendar.SECOND, 0);
-		//System.out.println("midDay: " + midDay.getTimeInMillis());
 			
 		boolean afterMidDay = false;
 		boolean startAdBlock = false, endAdBlock = false;
