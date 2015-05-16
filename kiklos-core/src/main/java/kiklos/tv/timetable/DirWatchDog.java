@@ -132,7 +132,7 @@ public class DirWatchDog {
 				StringBuilder buff = new StringBuilder();
 				
 				while (line != null) {
-					buff.append(line);
+					buff.append(line + '\n');
 					line = reader.readLine();
 				}
 				
