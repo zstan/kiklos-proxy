@@ -134,7 +134,6 @@ public class TvTimetableParser {
 		List<Short> durationsList = new ArrayList<>();;
 		
 		for (CSVRecord csvRecord : parser) {
-			LOG.debug(csvRecord.get(0));
 			String adEvent = csvRecord.get(6);
 			if (adEvent.endsWith("_STR")) {
 				startAdBlock = true;

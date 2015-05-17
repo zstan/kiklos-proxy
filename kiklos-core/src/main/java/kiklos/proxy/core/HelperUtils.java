@@ -101,7 +101,7 @@ public class HelperUtils {
 	public static boolean CalendarDayComparer (final Calendar now, final Calendar c) {
 		return now.get(Calendar.YEAR) == c.get(Calendar.YEAR) && 
 				now.get(Calendar.MONTH) == c.get(Calendar.MONTH) && 
-				now.get(Calendar.DAY_OF_MONTH) == c.get(Calendar.DAY_OF_MONTH);		
+				now.get(Calendar.DAY_OF_MONTH) <= c.get(Calendar.DAY_OF_MONTH);		
 	}
 	
 	public static void try2sleep(TimeUnit unit, long duration) {

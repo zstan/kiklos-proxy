@@ -205,15 +205,6 @@ public class TvTimetableParserTest {
 		System.out.println(p3 + "testCsv");		
 		assertTrue(p3.getKey() == 85);	
 		
-		DirWatchDog dd = new DirWatchDog();
-		//File
-		String path = getClass().getResource("1481_150516.csv").toString();
-		Map<PairEx<String, String>, PairEx<String, String>> mOut = dd.readDataFile(new File(new URI(path)));
-		for (Map.Entry<PairEx<String, String>, PairEx<String, String>> me : mOut.entrySet()) {
-			System.out.println(me.getKey());
-			//System.out.println(me.getValue());
-		}
-		
 		TimeZone tz = TimeZone.getDefault();
 		System.out.println(tz);
 		Calendar cl = Calendar.getInstance(tz);
