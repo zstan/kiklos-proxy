@@ -33,7 +33,7 @@ public class DirWatchDog {
 	private final static File TIME_TABLE_FOLDER = new File("./timetable");
 	private final static File OLD_DATA_FOLDER = new File("./timetable/old");
 	private static final String TIMETABLE_MAP_NAME = ".timetable";
-	private static final long PAUSE_BEFORE_DELETE = 60 * 1000 * 30;
+	private static final long PAUSE_BEFORE_DELETE = 60 * 1000 * 30; // 30 min
 	private static final SimpleDateFormat TIME_TABLE_DATE = new SimpleDateFormat("yyMMdd");
     private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
     
@@ -77,20 +77,19 @@ public class DirWatchDog {
 	}
 	
 	public PairEx<Short, List<Short>> getAdListFromTimeTable(final String ch) {
-		Calendar c = Calendar.getInstance();
-		Date now = c.getTime();
+		Date now = Calendar.getInstance().getTime(); // gmt
+		long current_time = ch.equals("1481") ? now.getTime() + 25200000 : now.getTime(); // STUB !!!!!
 		// currentDate and date before !!! fix it !
 		final String currentDate = HelperUtils.DATE_FILE_FORMAT.format(now);
 		NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
 		if (m == null) {
 			LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
 			return null;
-		}
-		long current_time = ch.equals("1481") ? now.getTime() + 25200000 : now.getTime();
-		PairEx<Long, Long> p = new PairEx<>(current_time, current_time); // STUB !!!!!
+		}		
+		PairEx<Long, Long> p = new PairEx<>(current_time, current_time); 
 		LOG.debug("looking for window: " + current_time);
-		PairEx<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m, ch);
-		return pp;
+		PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, m, ch);
+		return durationAdList;
 	}
 	
 	private boolean watchDogIt() {		
