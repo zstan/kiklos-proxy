@@ -88,6 +88,7 @@ public class DirWatchDog {
 		}
 		long current_time = ch.equals("1481") ? now.getTime() + 25200000 : now.getTime();
 		PairEx<Long, Long> p = new PairEx<>(current_time, current_time); // STUB !!!!!
+		LOG.debug("looking for window: " + current_time);
 		PairEx<Short, List<Short>> pp = TvTimetableParser.getWindow(p, m, ch);
 		return pp;
 	}
