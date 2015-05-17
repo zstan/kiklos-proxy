@@ -158,8 +158,6 @@ public class TvTimetableParser {
 				endAdBlock = true;
 				startAdBlock = false;
 				window = new PairEx<>(onAir, onAir + duration * 1000);
-				duration += (short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3)));
-				durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3))));
 				tOut.put(window, new PairEx<>(duration, durationsList));
 				
 				continue;
