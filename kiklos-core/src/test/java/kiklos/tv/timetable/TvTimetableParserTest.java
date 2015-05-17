@@ -194,7 +194,7 @@ public class TvTimetableParserTest {
 		PairEx<Short, List<Short>> p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "404");
 		
 		System.out.println(p3 + "testCsv");		
-		assertTrue(p3.getKey() == 66);	
+		assertTrue(p3.getKey() == 63);	
 		
 		sd = "2014.08.28 00:25:18";
 		now = TvTimetableParser.DATE_TV_FORMAT.parse(sd).getTime();
@@ -203,7 +203,7 @@ public class TvTimetableParserTest {
 		p3 = TvTimetableParser.getWindow(p, new TreeMap<>(m), "404");
 		
 		System.out.println(p3 + "testCsv");		
-		assertTrue(p3.getKey() == 85);	
+		assertTrue(p3.getKey() == 80);	
 		
 		TimeZone tz = TimeZone.getDefault();
 		System.out.println(tz);
