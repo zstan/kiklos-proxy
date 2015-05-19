@@ -83,7 +83,7 @@ public class DirWatchDog {
 		final String currentDate = HelperUtils.DATE_FILE_FORMAT.format(current_time);		
 		//NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
 		for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> me: mapInternal.entrySet()) {
-			LOG.debug("searching " + currentDate + " in map" + me.getKey());
+			LOG.debug("searching " + currentDate + " in map" + me.getKey().toString());
 /*			if (m == null) {
 				LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
 				return null;

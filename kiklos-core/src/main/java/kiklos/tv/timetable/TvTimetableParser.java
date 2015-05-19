@@ -43,7 +43,7 @@ import com.google.common.base.Charsets;
 
 enum TvChannelRange {
 	STS (24, 26),
-	DEFAULT (30, 30);
+	DEFAULT (5, 5);
 	
 	final int lower, upper;
 	
