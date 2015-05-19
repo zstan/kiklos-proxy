@@ -304,10 +304,13 @@ public class TvTimetableParser {
 		long deltha = -1;
 		TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
 		
+		final long current = moment.getKey();
+		LOG.debug("searching: " + current);
+		
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {
 			final long lower = e.getKey().getKey();
 			final long upper = e.getKey().getValue();
-            final long current = moment.getKey();
+			LOG.debug("lower: " + lower);
 			
 			if (current >= lower - range.lower && current <= upper + range.upper) {
 				

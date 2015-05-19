@@ -81,6 +81,7 @@ public class DirWatchDog {
 		long current_time = ch.equals("1481") ? now.getTime() + 25200000 : now.getTime(); // STUB !!!!!
 		// currentDate and date before !!! fix it !
 		final String currentDate = HelperUtils.DATE_FILE_FORMAT.format(current_time);
+		LOG.debug("searching " + currentDate + " in map");
 		NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
 		if (m == null) {
 			LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
