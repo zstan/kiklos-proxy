@@ -310,7 +310,7 @@ public class TvTimetableParser {
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {
 			final long lower = e.getKey().getKey();
 			final long upper = e.getKey().getValue();
-			LOG.debug("lower: " + lower);
+			//LOG.debug("lower: " + lower);
 			
 			if (current >= lower - range.lower && current <= upper + range.upper) {
 				

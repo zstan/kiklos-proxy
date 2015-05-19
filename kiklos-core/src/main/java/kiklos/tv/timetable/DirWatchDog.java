@@ -80,17 +80,21 @@ public class DirWatchDog {
 		Date now = Calendar.getInstance().getTime(); // gmt
 		long current_time = ch.equals("1481") ? now.getTime() + 25200000 : now.getTime(); // STUB !!!!!
 		// currentDate and date before !!! fix it !
-		final String currentDate = HelperUtils.DATE_FILE_FORMAT.format(current_time);
-		LOG.debug("searching " + currentDate + " in map");
-		NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
-		if (m == null) {
-			LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
-			return null;
-		}		
-		PairEx<Long, Long> p = new PairEx<>(current_time, current_time); 
-		LOG.debug("looking for window: " + current_time);
-		PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, m, ch);
-		return durationAdList;
+		final String currentDate = HelperUtils.DATE_FILE_FORMAT.format(current_time);		
+		//NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
+		for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> me: mapInternal.entrySet()) {
+			LOG.debug("searching " + currentDate + " in map" + me.getKey());
+/*			if (m == null) {
+				LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
+				return null;
+			}		
+*/			PairEx<Long, Long> p = new PairEx<>(current_time, current_time); 
+			LOG.debug("looking for window: " + current_time);
+			PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, me.getValue(), ch);
+			return durationAdList;		
+		}
+		LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
+		return null;
 	}
 	
 	private boolean watchDogIt() {		
@@ -178,7 +182,7 @@ public class DirWatchDog {
 					if (now.getTimeInMillis() > lastEntry.getKey().getValue() + PAUSE_BEFORE_DELETE) {
 						LOG.info("DirWatchDog MapCleaner, delete old: {}", e.getKey().toString());
 						mapExternal.remove(e.getKey());
-						mapInternal.remove(e.getKey());
+						mapInternal.remove(e.getKey()); // todo !!! удаляется не то - не удаляется !!!
 					}
 	            
 					HelperUtils.try2sleep(TimeUnit.MINUTES, 30);
