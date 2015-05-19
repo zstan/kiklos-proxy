@@ -60,8 +60,8 @@ public class DirWatchDog {
 		Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
 		for (Map.Entry<PairEx<String, String>, PairEx<String, String>> e : mIn.entrySet()) {
 			final String ch = e.getKey().getKey();
-			final String format = e.getKey().getValue();
-			final String date = e.getValue().getKey(); 
+			final String date = e.getKey().getValue();
+			final String format = e.getValue().getKey(); 
 			final String content = e.getValue().getValue();
 			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = null;
 			try {
@@ -142,7 +142,7 @@ public class DirWatchDog {
 				reader.close();
 				
 				LOG.debug("DirWatchDog, add new data to external storage ch: {}, date: {}", channel, date);
-				tmp.put(new PairEx<String, String>(channel, format), new PairEx<String, String>(date, buff.toString()));
+				tmp.put(new PairEx<String, String>(channel, date), new PairEx<String, String>(format, buff.toString()));
 				
 				LOG.debug("DirWatchDog, move old timetable :{}", path);
 				FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);					
