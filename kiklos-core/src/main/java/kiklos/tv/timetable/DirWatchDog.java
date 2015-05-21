@@ -97,7 +97,8 @@ public class DirWatchDog {
 		return null;
 	}
 	
-	private boolean watchDogIt() {		
+	private boolean watchDogIt() {
+		boolean bResult = false;
 		for (final File fileEntry : TIME_TABLE_FOLDER.listFiles()) {
 			if (fileEntry.isFile()) { 
 				if (fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml|csv)")) { // sts_210814.txt, 408_140826.xml, 404_140826.csv
@@ -105,6 +106,7 @@ public class DirWatchDog {
 					if (!mOut.isEmpty()) {
 						LOG.debug("DirWatchDog mapExternal, putAll");
 						mapExternal.putAll(mOut);
+						bResult = true;
 					} else {
 						LOG.warn(fileEntry.getName() + " not under regexp rules");
 						continue;					
@@ -112,7 +114,7 @@ public class DirWatchDog {
 				}
 			}
 		}
-		return false;
+		return bResult;
 	}
 	
 	Map<PairEx<String, String>, PairEx<String, String>> readDataFile(final File fileEntry) {
@@ -125,7 +127,7 @@ public class DirWatchDog {
 		int reserve = TIME_TABLE_FOLDER.listFiles() == null ? 0 : TIME_TABLE_FOLDER.listFiles().length;
 		Map<PairEx<String, String>, PairEx<String, String>> tmp = 
 				new HashMap<>(reserve);		
-		LOG.debug("DirWatchDog found timetable channel: {}, date: {}", channel, date);
+		LOG.debug("found timetable channel: {}, date: {}", channel, date);
 		Date d;
 		try {
 			d = TIME_TABLE_DATE.parse(date);
@@ -146,7 +148,7 @@ public class DirWatchDog {
 				
 				reader.close();
 				
-				LOG.debug("DirWatchDog, add new data to external storage ch: {}, date: {}", channel, date);
+				LOG.debug("add new data to external storage ch: {}, date: {}", channel, date);
 				tmp.put(new PairEx<String, String>(channel, date), new PairEx<String, String>(format, buff.toString()));
 				
 				LOG.debug("DirWatchDog, move old timetable :{}", path);
