@@ -7,3 +7,6 @@ sudo add-apt-repository ppa:chris-lea/redis-server
 sudo add-apt repository ppa:chris-lea/redis-server
 add-apt-repository ppa:chris-lea/redis-server
 add-apt-repository ppa:chris-lea/redis-server
+
+hkeys "\".timetable\""
+hdel  "\".timetable\"" "{\"@class\":\"kiklos.proxy.core.PairEx\",\"key\":\"1481\",\"value\":\"150521\"}"
