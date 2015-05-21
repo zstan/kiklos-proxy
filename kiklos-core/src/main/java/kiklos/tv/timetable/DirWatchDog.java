@@ -58,11 +58,12 @@ public class DirWatchDog {
 	
 	static Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> map2TreeMapCopy(final Map<PairEx<String, String>, PairEx<String, String>> mIn) {
 		Map<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
-		for (Map.Entry<PairEx<String, String>, PairEx<String, String>> e : mIn.entrySet()) {
+		for (Map.Entry<PairEx<String, String>, PairEx<String, String>> e : mIn.entrySet()) {			
 			final String ch = e.getKey().getKey();
 			final String date = e.getKey().getValue();
 			final String format = e.getValue().getKey(); 
 			final String content = e.getValue().getValue();
+			LOG.debug("parse 2 append {} date", date);
 			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = null;
 			try {
 				tm = TvTimetableParser.parseTimeTable(date, format, content);
@@ -83,7 +84,7 @@ public class DirWatchDog {
 		final String currentDate = HelperUtils.DATE_FILE_FORMAT.format(current_time);		
 		//NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = mapInternal.get(new PairEx<>(ch, currentDate));
 		for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> me: mapInternal.entrySet()) {
-			LOG.debug("searching " + currentDate + " in map" + me.getKey().toString());
+			LOG.debug("searching " + currentDate + " in map" + me.getKey().toString() + " map size: " + mapInternal.size());
 /*			if (m == null) {
 				LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
 				return null;
@@ -104,7 +105,7 @@ public class DirWatchDog {
 				if (fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml|csv)")) { // sts_210814.txt, 408_140826.xml, 404_140826.csv
 					Map<PairEx<String, String>, PairEx<String, String>> mOut = readDataFile(fileEntry);
 					if (!mOut.isEmpty()) {
-						LOG.debug("DirWatchDog mapExternal, putAll");
+						LOG.debug("DirWatchDog mapExternal, putAll size: {}", mOut.size());
 						mapExternal.putAll(mOut);
 						bResult = true;
 					} else {
