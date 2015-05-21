@@ -89,9 +89,9 @@ public class DirWatchDog {
 				LOG.info("timetable for {} channel for {} date not found", ch, currentDate);
 				return null;
 			}		
-*/			PairEx<Long, Long> p = new PairEx<>(current_time, current_time); 
-			LOG.debug("looking for window: " + current_time);
+*/			PairEx<Long, Long> p = new PairEx<>(current_time, current_time); 			
 			PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, me.getValue(), ch);
+			LOG.debug("looking for window: " + current_time + " durationAdList " + durationAdList);
 			if (durationAdList != null)	
 				return durationAdList;
 		}
