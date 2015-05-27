@@ -98,7 +98,7 @@ public class DirWatchDog {
 			if (durationAdList != null)	
 				return durationAdList;
 		}
-		LOG.info("durations for {} channel for {} time (-3hour) not found", ch, currentTimeStr); // todo: все в московское время перевести !!!
+		LOG.info("durations for {} channel for {} time not found", ch, currentTimeStr); // todo: все в московское время перевести !!!
 		return null;
 	}
 	
@@ -106,16 +106,18 @@ public class DirWatchDog {
 		boolean bResult = false;
 		for (final File fileEntry : TIME_TABLE_FOLDER.listFiles()) {
 			if (fileEntry.isFile()) { 
-				if (fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml|csv|xlsx)")) { // sts_210814.txt, 408_140826.xml, 404_140826.csv
+				if (fileEntry.getName().matches("\\w+_\\d{6}\\.(txt|xml|csv|xslx)")) { // sts_210814.txt, 408_140826.xml, 404_140826.csv
 					Map<PairEx<String, String>, PairEx<String, String>> mOut = readDataFile(fileEntry);
 					if (!mOut.isEmpty()) {
 						LOG.debug("DirWatchDog mapExternal, putAll size: {}", mOut.size());
 						mapExternal.putAll(mOut);
 						bResult = true;
 					} else {
-						LOG.warn(fileEntry.getName() + " not under regexp rules");
+						LOG.warn(fileEntry.getName() + " can`t parse file or file is empty");
 						continue;					
 					}
+				} else {
+					LOG.warn(fileEntry.getName() + " not under regexp rules");
 				}
 			}
 		}
