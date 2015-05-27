@@ -67,8 +67,7 @@ public class TvTimetableParser {
 	private static final XPath xPath = XPathFactory.newInstance().newXPath();
 	private static XPathExpression xpathExpr = null;
 	
-	static final SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-	static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
+	static final SimpleDateFormat DATE_TV_FORMAT = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");	
 	
 	private static final byte TV_ITEMS_COUNT = 6;
 	private static Calendar calendar = Calendar.getInstance();  
@@ -137,11 +136,11 @@ public class TvTimetableParser {
 			String adEvent = csvRecord.get(6);
 			if (adEvent.endsWith("_STR")) {
 				startAdBlock = true;
-				duration = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3)));
-				durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3))));
+				duration = (short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3)));
+				durationsList.add((short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3))));
 				durationsList = new ArrayList<>();
 				
-				onAirCalendar.setTime(TIME_TV_FORMAT.parse(csvRecord.get(1)));
+				onAirCalendar.setTime(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(1)));
 				onAirCalendar = HelperUtils.updateCalendar(cl, onAirCalendar);
 				if (afterMidDay || onAirCalendar.after(midDay)) { 
 					afterMidDay = true;
@@ -163,8 +162,8 @@ public class TvTimetableParser {
 				continue;
 			}
 			if (startAdBlock) {				
-				duration += (short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3)));
-				durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(csvRecord.get(3))));
+				duration += (short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3)));
+				durationsList.add((short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3))));
 			}			
 		 }	
 		return tOut;
@@ -214,15 +213,15 @@ public class TvTimetableParser {
 		try {
 			if(nodeList.getLength() > 0) {
 				PairEx<Long, Long> window;
-				Date midDay = TIME_TV_FORMAT.parse("12:00:00");
-				Date midNight = TIME_TV_FORMAT.parse("00:00:00");
+				Date midDay = HelperUtils.TIME_TV_FORMAT.parse("12:00:00");
+				Date midNight = HelperUtils.TIME_TV_FORMAT.parse("00:00:00");
 				boolean afterMidDay = false;
 				for(int i = 0 ; i < nodeList.getLength(); ++i) {
 					Element el = (Element)nodeList.item(i);
 					short duration;
 					long onAir;
-					duration = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(el.getAttribute("Duration")));
-					onAirCalendar.setTime(TIME_TV_FORMAT.parse(el.getAttribute("OnAir")));
+					duration = (short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(el.getAttribute("Duration")));
+					onAirCalendar.setTime(HelperUtils.TIME_TV_FORMAT.parse(el.getAttribute("OnAir")));
 					if (afterMidDay || onAirCalendar.after(midDay)) { 
 						afterMidDay = true;
 						if (onAirCalendar.after(midNight)) {
@@ -236,7 +235,7 @@ public class TvTimetableParser {
 					for (int j = 0; j < spots.getLength(); ++j) {
 						Element spot = (Element)spots.item(j);
 						final String dur = spot. getAttribute("Duration");
-						durationsList.add((short)dateHMToSeconds(TIME_TV_FORMAT.parse(dur)));
+						durationsList.add((short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(dur)));
 					}
 					tOut.put(window, new PairEx<>(duration, durationsList));
 				} 				
@@ -276,9 +275,9 @@ public class TvTimetableParser {
 					block = tOut.get(window);
 					
 					if (block == null) {
-						summary = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(items[4]));
+						summary = (short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(items[4]));
 					}
-					adBlockTime = (short)dateHMToSeconds(TIME_TV_FORMAT.parse(items[3]));					
+					adBlockTime = (short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(items[3]));					
 				} catch (ParseException e) {
 					LOG.error("malformed items parse: {}", line);
 					continue;

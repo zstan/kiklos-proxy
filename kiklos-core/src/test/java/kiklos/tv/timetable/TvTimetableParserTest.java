@@ -168,21 +168,6 @@ public class TvTimetableParserTest {
 	
 	@Test
 	public void testCsv() throws IOException, ParseException, URISyntaxException {
-//		URL path = getClass().getResource("PERREG.csv");
-//		File csvData = new File(path.getPath());
-//		CSVParser parser = CSVParser.parse(csvData, StandardCharsets.UTF_8, CSVFormat.EXCEL);
-//		boolean startAdBlock = false, endAdBlock = false;
-//		for (CSVRecord csvRecord : parser) {
-//			String adEvent = csvRecord.get(6);
-//			if (adEvent.endsWith("_STF"))
-//				startAdBlock = true;
-//			if (adEvent.endsWith("_ENF")) {
-//				endAdBlock = true;
-//				startAdBlock = false;
-//			}
-//			if (startAdBlock)
-//				System.out.println(csvRecord.get(2));
-//		 }		
 		InputStream in = getClass().getResourceAsStream("404_150515.csv");
 		String content = IOUtils.toString(in, StandardCharsets.UTF_8);
 		Map<PairEx<Long, Long>, PairEx<Short, List<Short>>> m = new TreeMap<>(TvTimetableParser.parseCsvTimeTable(content, HelperUtils.DATE_FILE_FORMAT.parse("140827")));		
@@ -209,5 +194,9 @@ public class TvTimetableParserTest {
 		System.out.println(tz);
 		Calendar cl = Calendar.getInstance(tz);
 		System.out.println(cl.get(Calendar.HOUR_OF_DAY));
+	}
+	
+	@Test
+	public void testExcel() {
 	}
 }

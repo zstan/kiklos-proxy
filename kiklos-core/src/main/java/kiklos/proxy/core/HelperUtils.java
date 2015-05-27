@@ -20,6 +20,7 @@ public class HelperUtils {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(HelperUtils.class);
 	public static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
+	public static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
 
 	static int getRequiredAdDuration(final String req) {
 		Map<String, List<String>> params = (new QueryStringDecoder(req)).parameters();
@@ -98,11 +99,16 @@ public class HelperUtils {
 		}
 	}
 	
-	public static boolean CalendarDayComparer (final Calendar now, final Calendar c) {
+	public static boolean calendarDayComparer(final Calendar now, final Calendar c) {
 		return now.get(Calendar.YEAR) == c.get(Calendar.YEAR) && 
 				now.get(Calendar.MONTH) == c.get(Calendar.MONTH) && 
 				now.get(Calendar.DAY_OF_MONTH) <= c.get(Calendar.DAY_OF_MONTH);		
 	}
+	
+	public static boolean calendarDayComparer(final Calendar c) {
+		final Calendar now = Calendar.getInstance();
+		return calendarDayComparer(now, c);		
+	}	
 	
 	public static void try2sleep(TimeUnit unit, long duration) {
         try {
