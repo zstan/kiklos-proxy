@@ -90,6 +90,8 @@ public class XLSX2CSV {
 	class MyXSSFSheetHandler extends DefaultHandler {
 
 		SimpleDateFormat initialFormatter = new SimpleDateFormat("HmmssSS");
+		SimpleDateFormat initialFormatter_ss = new SimpleDateFormat("ssSS");
+		SimpleDateFormat initialFormatter_mm = new SimpleDateFormat("mmssSS");
 		SimpleDateFormat outputFormatter = new SimpleDateFormat("HH:mm:ss:SS");
 		
 		/**
@@ -269,7 +271,13 @@ public class XLSX2CSV {
 					if (this.formatString != null) {
 						if (this.formatString.equals("00\\:00\\:00\\:00")) {
 							try {
-								Date d = initialFormatter.parse(n);
+								Date d;
+								if (n.length() <= 4)
+									d = initialFormatter_ss.parse(n);
+								else if (n.length() >= 7)									
+									d = initialFormatter.parse(n);
+								else
+									d = initialFormatter_mm.parse(n);
 								thisStr = outputFormatter.format(d);
 							} catch (ParseException e) {
 								thisStr = formatter.formatRawCellContents(Double.parseDouble(n),
