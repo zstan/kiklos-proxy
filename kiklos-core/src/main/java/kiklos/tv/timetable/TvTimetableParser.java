@@ -77,8 +77,8 @@ public class TvTimetableParser {
 		return calendar.get(Calendar.HOUR_OF_DAY) * 3600 + calendar.get(Calendar.MINUTE) * 60 + calendar.get(Calendar.SECOND);
 	}	
 	
-	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String dateStr, final String format, final String content) 
-			throws IOException {
+	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String dateStr, final String format, final String content) throws IOException 
+	{
 		Date date;
 		try {
 			LOG.debug("parseTimeTable: {}", dateStr);
@@ -97,15 +97,15 @@ public class TvTimetableParser {
 		} else if (format.equals("csv") || format.equals("xslx")) { // excel
 			try {
 				return parseCsvTimeTable(content, date);
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+		} 
 		return null;
 	}
 	
 	static TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseCsvTimeTable(final String content, 
-			final Date date) throws IOException, ParseException {
+			final Date date) throws ParseException, IOException, ArrayIndexOutOfBoundsException {
 		if (date == null) {
 			return null;
 		}
@@ -133,6 +133,8 @@ public class TvTimetableParser {
 		List<Short> durationsList = new ArrayList<>();;
 		
 		for (CSVRecord csvRecord : parser) {
+			if (csvRecord.size() < 6)
+				continue;
 			String adEvent = csvRecord.get(6);
 			if (adEvent.endsWith("_STR")) {
 				startAdBlock = true;

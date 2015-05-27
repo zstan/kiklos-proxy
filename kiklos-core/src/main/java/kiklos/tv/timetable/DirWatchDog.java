@@ -190,7 +190,7 @@ public class DirWatchDog {
 	            Calendar now = Calendar.getInstance();
 	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
 	            	final NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> curMap = e.getValue();
-	            	LOG.info("DirWatchDog MapCleaner, delete old: {} {}", e.getKey().toString());
+	            	LOG.info("DirWatchDog MapCleaner, delete old: {}", e.getKey().toString());
 	            	Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> lastEntry = curMap.lastEntry();
 					if (now.getTimeInMillis() > lastEntry.getKey().getValue() + PAUSE_BEFORE_DELETE) {
 						LOG.info("DirWatchDog MapCleaner, delete old: {}", e.getKey().toString());
