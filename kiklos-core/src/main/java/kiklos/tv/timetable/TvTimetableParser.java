@@ -94,7 +94,7 @@ public class TvTimetableParser {
 			//return parseVimbTimeTable(in);
 		} else if (format.equals("xml")) { // vi			
 			return parseXmlTimeTable(content, date);
-		} else if (format.equals("csv")) { // excel
+		} else if (format.equals("csv") || format.equals("xslx")) { // excel
 			try {
 				return parseCsvTimeTable(content, date);
 			} catch (ParseException e) {
