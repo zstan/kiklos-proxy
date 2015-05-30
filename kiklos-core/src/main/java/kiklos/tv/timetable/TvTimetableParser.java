@@ -77,18 +77,8 @@ public class TvTimetableParser {
 		return calendar.get(Calendar.HOUR_OF_DAY) * 3600 + calendar.get(Calendar.MINUTE) * 60 + calendar.get(Calendar.SECOND);
 	}	
 	
-	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final String dateStr, final String format, final String content) throws IOException 
+	public static NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> parseTimeTable(final Date date, final String format, final String content) throws IOException 
 	{
-		Date date;
-		try {
-			LOG.debug("parseTimeTable: {}", dateStr);
-			date = HelperUtils.DATE_FILE_FORMAT.parse(dateStr);			
-		} catch (ParseException e) {
-			LOG.error("bad format " + dateStr);
-			e.printStackTrace();
-			return null;
-		}	
-		
 		if (format.equals("txt")) { // vimb
 			//in = new BufferedInputStream(new FileInputStream(path));
 			//return parseVimbTimeTable(in);
