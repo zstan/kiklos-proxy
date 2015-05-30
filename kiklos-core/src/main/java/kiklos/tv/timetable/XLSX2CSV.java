@@ -94,7 +94,6 @@ public class XLSX2CSV {
 		SimpleDateFormat initialFormatter_ss = new SimpleDateFormat("ssSS");
 		SimpleDateFormat initialFormatter_mm = new SimpleDateFormat("mmssSS");
 		SimpleDateFormat outputFormatter = new SimpleDateFormat("HH:mm:ss:SS");
-		int cnt;
 		
 		/**
 		 * Table with styles
@@ -329,8 +328,7 @@ public class XLSX2CSV {
 				}
 
 				// We're onto a new row
-				cnt++;
-				output.append(cnt + "\n");
+				output.append('\n');
 				lastColumnNumber = -1;
 			}
 
