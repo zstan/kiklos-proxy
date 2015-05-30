@@ -163,6 +163,8 @@ public class DirWatchDog {
 				
 				LOG.debug("DirWatchDog, move old timetable : {}", path);
 				FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);					
+			} else {
+				LOG.debug("file is old enough: {}", path);	
 			}
 		} catch (ParseException | IOException | OpenXML4JException | ParserConfigurationException | SAXException e) {
 			e.printStackTrace();
@@ -186,6 +188,7 @@ public class DirWatchDog {
     private class MapCleaner implements Runnable {
         @Override
         public void run() {
+        	HelperUtils.try2sleep(TimeUnit.SECONDS, 10);
         	while (true) {	            
 	            Calendar now = Calendar.getInstance();
 	            for (Map.Entry<PairEx<String, String>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {

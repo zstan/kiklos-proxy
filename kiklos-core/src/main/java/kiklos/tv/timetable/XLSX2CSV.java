@@ -89,10 +89,12 @@ public class XLSX2CSV {
 	 */
 	class MyXSSFSheetHandler extends DefaultHandler {
 
-		SimpleDateFormat initialFormatter = new SimpleDateFormat("HmmssSS");
+		SimpleDateFormat initialFormatter = new SimpleDateFormat("HHmmssSS");
+		SimpleDateFormat initialFormatter_H = new SimpleDateFormat("HmmssSS");
 		SimpleDateFormat initialFormatter_ss = new SimpleDateFormat("ssSS");
 		SimpleDateFormat initialFormatter_mm = new SimpleDateFormat("mmssSS");
 		SimpleDateFormat outputFormatter = new SimpleDateFormat("HH:mm:ss:SS");
+		int cnt;
 		
 		/**
 		 * Table with styles
@@ -274,7 +276,9 @@ public class XLSX2CSV {
 								Date d;
 								if (n.length() <= 4)
 									d = initialFormatter_ss.parse(n);
-								else if (n.length() >= 7)									
+								else if (n.length() == 7)									
+									d = initialFormatter_H.parse(n);
+								else if (n.length() > 7)
 									d = initialFormatter.parse(n);
 								else
 									d = initialFormatter_mm.parse(n);
@@ -325,7 +329,8 @@ public class XLSX2CSV {
 				}
 
 				// We're onto a new row
-				output.append('\n');
+				cnt++;
+				output.append(cnt + "\n");
 				lastColumnNumber = -1;
 			}
 
@@ -435,7 +440,7 @@ public class XLSX2CSV {
 	public static void main(String[] args) throws Exception {
 
 		args = new String[2];
-		args[0] = "G:\\WORK\\batya\\kiklos-proxy\\PERREG.xlsx";;
+		args[0] = "G:\\WORK\\batya\\kiklos-proxy\\1481_150529.xslx";;
 		args[1] = "10";
 
 		if (args.length < 1) {
@@ -465,6 +470,7 @@ public class XLSX2CSV {
 		String output = myFormatter.parse("6000000").toString();
 		System.out.println(output);
 		return;*/
+		
 	}
 
 }
