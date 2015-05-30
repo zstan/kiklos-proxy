@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
+import kiklos.tv.timetable.AdProcessing;
 import kiklos.tv.timetable.DirWatchDog;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.ClientCookieEncoder;
@@ -65,15 +66,16 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
     private final DirWatchDog watchDog;
+    private final AdProcessing adProcessing;
 	
-	HttpRequestHandler(AsyncHttpClient client, final PlacementsMapping placements, final MemoryLogStorage logStorage, 
-			final CookieFabric cookie, final DurationSettings ds, final DirWatchDog wd) {
-		httpClient = client;
-		placementsMapping = placements;
-		memLogStorage = logStorage;
-		cookieFabric = cookie;
-		durationSettings = ds;
-		watchDog = wd;
+	HttpRequestHandler(HttpServerPipelineFactory instance) {
+		httpClient = instance.getHttpClient();
+		placementsMapping = instance.getPlacementsMap();
+		memLogStorage = instance.getMemLogStorage();
+		cookieFabric = instance.getCookieFabric();
+		durationSettings = instance.getDurationsConfig();
+		watchDog = instance.getTimeTableWatchDog();
+		adProcessing = instance.getAdProcessing();
 	}
 	
 	private List<String> reqTransformer(final String req) {
@@ -90,7 +92,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				if (vastList.isEmpty()) {
 					int reqDuration = HelperUtils.getRequiredAdDuration(req);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
-					PairEx<Short, List<Short>> tt4ch = watchDog.getAdListFromTimeTable(HelperUtils.getChannelFromParams(params));
+					PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(params));
 					if (tt4ch != null) {
 						reqDuration = tt4ch.getKey();
 						vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
@@ -204,7 +206,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			
 			if (!debugParams.isEmpty()) { 
 				String ch = debugParams.get(CHANNEL);
-				PairEx<Short, List<Short>> adList = watchDog.getAdListFromTimeTable(ch);
+				PairEx<Short, List<Short>> adList = adProcessing.getAdListFromTimeTable(ch);
 				writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<Cookie>(), null, "text/plain");
 				return;
 			}			

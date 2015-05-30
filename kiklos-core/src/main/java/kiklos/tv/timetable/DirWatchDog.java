@@ -11,7 +11,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -42,62 +41,21 @@ public class DirWatchDog {
 	private static final SimpleDateFormat TIME_TABLE_DATE = new SimpleDateFormat("yyMMdd");
     private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
     private static final String TIME_TABLE_FORMAT = "\\w+_\\d{6}\\.(txt|xml|csv|xslx)";// sts_210814.txt, 408_140826.xml, 404_140826.csv
+    private AdProcessing adProcessing;
     
     //          (channel, date)         (format, content)
-    private Map<PairEx<String, Date>, PairEx<String, String>> mapExternal; // channel, day, content
-    private volatile Map<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mapInternal;
-    private ExecutorService pool;
+    private Map<PairEx<String, Date>, PairEx<String, String>> mapExternal; // channel, day, content    
 	
     public DirWatchDog() {}
     
-	public DirWatchDog(final Redisson memStorage, final ExecutorService execPool) {
-		if (!TIME_TABLE_FOLDER.exists())
-			TIME_TABLE_FOLDER.mkdirs();
+	public DirWatchDog(final Redisson memStorage, final ExecutorService execPool, final AdProcessing adProcessing) {
+		if (!OLD_DATA_FOLDER.exists())
+			OLD_DATA_FOLDER.mkdirs();
+		this.adProcessing = adProcessing;
 		mapExternal = memStorage.getMap(TIMETABLE_MAP_NAME);
-		mapInternal = map2TreeMapCopy(mapExternal);
-		pool = execPool;
-		pool.execute(new MapUpdater());
-		pool.execute(new MapCleaner());		
-	}
-	
-	static private Map<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> map2TreeMapCopy(final Map<PairEx<String, Date>, PairEx<String, String>> mIn) {
-		Map<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mOut = new HashMap<>(mIn.size());
-		for (Map.Entry<PairEx<String, Date>, PairEx<String, String>> e : mIn.entrySet()) {			
-			final String ch = e.getKey().getKey();
-			final Date date = e.getKey().getValue();
-			final String format = e.getValue().getKey(); 
-			final String content = e.getValue().getValue();
-			LOG.debug("parse 2 append {} date", date);
-			NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tm = null;
-			try {
-				tm = TvTimetableParser.parseTimeTable(date, format, content);
-			} catch (final IOException e1) {
-				LOG.info("DirWatchDog, timetable file is incorrect, {}", date);
-				e1.printStackTrace();
-			}
-			
-			mOut.put(new PairEx<String, Date>(ch, date), tm);
-		}
-		return mOut;
-	}
-	
-	public PairEx<Short, List<Short>> getAdListFromTimeTable(final String ch) {
-		Date now = Calendar.getInstance().getTime(); // gmt
-		long currentTime = now.getTime();
-		currentTime = ch.equals("1481") ? currentTime + 25200000 : currentTime; // STUB !!!!!
-		final String currentDateStr = HelperUtils.DATE_FILE_FORMAT.format(currentTime);
-		final String currentTimeStr = HelperUtils.TIME_TV_FORMAT.format(currentTime);
-		// currentDate and date before !!! fix it !
-		for (Map.Entry<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> me: mapInternal.entrySet()) {
-			LOG.debug("searching " + currentDateStr + " in map" + me.getKey().toString() + " map size: " + mapInternal.size());
-			PairEx<Long, Long> p = new PairEx<>(currentTime, currentTime); 			
-			PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, me.getValue(), ch);
-			LOG.debug("looking for window: " + currentTime + " durationAdList " + durationAdList);
-			if (durationAdList != null)	
-				return durationAdList;
-		}
-		LOG.info("durations for {} channel for {} time not found", ch, currentTimeStr); // todo: все в московское время перевести !!!
-		return null;
+		adProcessing.mapUpdater(mapExternal);
+		execPool.execute(new MapUpdater());
+		execPool.execute(new MapCleaner());		
 	}
 	
 	private boolean watchDogIt() {
@@ -176,7 +134,7 @@ public class DirWatchDog {
         	while (true) {
 	            LOG.debug("check timetable dir");;
             	if (watchDogIt()) {
-            		mapInternal = map2TreeMapCopy(mapExternal);
+            		adProcessing.mapUpdater(mapExternal);
             	}
             	HelperUtils.try2sleep(TimeUnit.MINUTES, 10);
         	}
@@ -191,14 +149,14 @@ public class DirWatchDog {
 	            Calendar now = Calendar.getInstance();
 	            now.roll(Calendar.DAY_OF_YEAR, false); // day before
 	            
-	            for (Map.Entry<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : mapInternal.entrySet()) {
+	            for (Map.Entry<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> e : adProcessing.getTimeTableMap().entrySet()) {
 	            	final PairEx<String, Date> cannelDate = e.getKey();	            	
 	            	Date timeTableDate = cannelDate.getValue();	    			
 					if (now.after(timeTableDate)) {
 						LOG.info("DirWatchDog MapCleaner, delete old: {}", e.getKey().toString());
-						mapExternal.remove(e.getKey());
-						mapInternal.remove(e.getKey());
-						LOG.info("mapExternal.size: {} mapInternal.size: {}", mapExternal.size(), mapInternal.size());
+						mapExternal.remove(e.getKey());						
+						adProcessing.removeOldTimeTable(e.getKey());
+						LOG.info("mapExternal.size: {}", mapExternal.size());
 					}
 	            
 					HelperUtils.try2sleep(TimeUnit.MINUTES, 30);
