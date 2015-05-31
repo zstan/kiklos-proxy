@@ -92,6 +92,7 @@ public class XLSX2CSV {
 		SimpleDateFormat initialFormatter = new SimpleDateFormat("HHmmssSS");
 		SimpleDateFormat initialFormatter_H = new SimpleDateFormat("HmmssSS");
 		SimpleDateFormat initialFormatter_ss = new SimpleDateFormat("ssSS");
+		SimpleDateFormat initialFormatter_s = new SimpleDateFormat("sSS");
 		SimpleDateFormat initialFormatter_mm = new SimpleDateFormat("mmssSS");
 		SimpleDateFormat initialFormatter_m = new SimpleDateFormat("mssSS");
 		SimpleDateFormat outputFormatter = new SimpleDateFormat("HH:mm:ss:SS");
@@ -274,7 +275,9 @@ public class XLSX2CSV {
 						if (this.formatString.equals("00\\:00\\:00\\:00")) {
 							try {
 								Date d;
-								if (n.length() <= 4)
+								if (n.length() == 3)
+									d = initialFormatter_s.parse(n);
+								else if (n.length() == 4)
 									d = initialFormatter_ss.parse(n);
 								else if (n.length() == 5)
 									d = initialFormatter_m.parse(n);
