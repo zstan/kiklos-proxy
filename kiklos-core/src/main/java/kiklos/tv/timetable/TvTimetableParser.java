@@ -296,7 +296,8 @@ public class TvTimetableParser {
 		TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
 		
 		final long current = moment.getKey();
-		LOG.debug("searching: " + current);
+		LOG.debug("searching1: " + current);
+		LOG.debug("map size: " + m.size());
 		
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {
 			final long lower = e.getKey().getKey();

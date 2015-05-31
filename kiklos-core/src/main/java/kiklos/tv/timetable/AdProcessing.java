@@ -16,7 +16,7 @@ import kiklos.proxy.core.PairEx;
 
 public class AdProcessing {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AdProcessing.class);
 	private volatile Map<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> mapInternal;
 
 	public PairEx<Short, List<Short>> getAdListFromTimeTable(final String ch) {
@@ -27,8 +27,9 @@ public class AdProcessing {
 		final String currentTimeStr = HelperUtils.TIME_TV_FORMAT.format(currentTime);
 		// currentDate and date before !!! fix it !
 		for (Map.Entry<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> me: mapInternal.entrySet()) {
-			LOG.debug("searching " + currentDateStr + " in map" + me.getKey().toString() + " map size: " + mapInternal.size());
-			PairEx<Long, Long> p = new PairEx<>(currentTime, currentTime); 			
+			LOG.debug("searching " + currentTimeStr + " in map" + me.getKey().toString() + " map size: " + mapInternal.size());
+			PairEx<Long, Long> p = new PairEx<>(currentTime, currentTime);
+			LOG.debug("me.getValue(): " + me.getValue());
 			PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, me.getValue(), ch);
 			LOG.debug("looking for window: " + currentTime + " durationAdList " + durationAdList);
 			if (durationAdList != null)	
@@ -39,6 +40,7 @@ public class AdProcessing {
 	}
 	
 	public void mapUpdater(final Map<PairEx<String, Date>, PairEx<String, String>> mapExternal) {
+		LOG.info("mapInternal.size: {}", mapInternal.size());
 		mapInternal = map2TreeMapCopy(mapExternal);	
 	}
 	
