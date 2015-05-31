@@ -121,7 +121,7 @@ public class TvTimetableParser {
 		short duration = 0;
 		long onAir = 0;
 		PairEx<Long, Long> window;
-		List<Short> durationsList = new ArrayList<>();;
+		List<Short> durationsList = new ArrayList<>();
 		
 		for (CSVRecord csvRecord : parser) {
 			if (csvRecord.size() < 6)
@@ -129,9 +129,9 @@ public class TvTimetableParser {
 			String adEvent = csvRecord.get(6);
 			if (adEvent.endsWith("_STR")) {
 				startAdBlock = true;
-				duration = (short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3)));
-				durationsList.add((short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3))));
 				durationsList = new ArrayList<>();
+				duration = (short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3)));				
+				durationsList.add((short)dateHMToSeconds(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(3))));				
 				
 				onAirCalendar.setTime(HelperUtils.TIME_TV_FORMAT.parse(csvRecord.get(1)));
 				onAirCalendar = HelperUtils.updateCalendar(cl, onAirCalendar);
