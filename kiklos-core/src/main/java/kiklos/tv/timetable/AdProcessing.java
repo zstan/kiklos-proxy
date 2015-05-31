@@ -39,9 +39,9 @@ public class AdProcessing {
 		return null;
 	}
 	
-	public void mapUpdater(final Map<PairEx<String, Date>, PairEx<String, String>> mapExternal) {
+	public void mapUpdater(final Map<PairEx<String, Date>, PairEx<String, String>> mapExternal) {		
+		mapInternal = map2TreeMapCopy(mapExternal);
 		LOG.info("mapInternal.size: {}", mapInternal.size());
-		mapInternal = map2TreeMapCopy(mapExternal);	
 	}
 	
 	public void removeOldTimeTable(final PairEx<String, Date> key) {
