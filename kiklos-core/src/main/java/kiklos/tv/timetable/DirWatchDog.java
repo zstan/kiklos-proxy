@@ -40,7 +40,7 @@ public class DirWatchDog {
 	private static final String TIMETABLE_MAP_NAME = ".timetable";
 	private static final SimpleDateFormat TIME_TABLE_DATE = new SimpleDateFormat("yyMMdd");
     private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
-    private static final String TIME_TABLE_FORMAT = "\\w+_\\d{6}\\.(txt|xml|csv|xslx)";// sts_210814.txt, 408_140826.xml, 404_140826.csv
+    private static final String TIME_TABLE_FORMAT = "\\w+_\\d{6}\\.(txt|xml|csv|xlsx)";// sts_210814.txt, 408_140826.xml, 404_140826.csv
     private AdProcessing adProcessing;
     
     //          (channel, date)         (format, content)
