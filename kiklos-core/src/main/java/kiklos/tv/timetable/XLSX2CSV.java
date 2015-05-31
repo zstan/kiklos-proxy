@@ -93,6 +93,7 @@ public class XLSX2CSV {
 		SimpleDateFormat initialFormatter_H = new SimpleDateFormat("HmmssSS");
 		SimpleDateFormat initialFormatter_ss = new SimpleDateFormat("ssSS");
 		SimpleDateFormat initialFormatter_mm = new SimpleDateFormat("mmssSS");
+		SimpleDateFormat initialFormatter_m = new SimpleDateFormat("mssSS");
 		SimpleDateFormat outputFormatter = new SimpleDateFormat("HH:mm:ss:SS");
 		
 		/**
@@ -275,6 +276,8 @@ public class XLSX2CSV {
 								Date d;
 								if (n.length() <= 4)
 									d = initialFormatter_ss.parse(n);
+								else if (n.length() == 5)
+									d = initialFormatter_m.parse(n);
 								else if (n.length() == 7)									
 									d = initialFormatter_H.parse(n);
 								else if (n.length() > 7)
@@ -464,10 +467,10 @@ public class XLSX2CSV {
 		xlsx2csv.process();
 		System.out.println(sb.toString());
 
-/*		SimpleDateFormat myFormatter = new SimpleDateFormat("HmmssSS");
-		String output = myFormatter.parse("6000000").toString();
+		SimpleDateFormat myFormatter = new SimpleDateFormat("mssSS");
+		String output = myFormatter.parse("10000").toString();
 		System.out.println(output);
-		return;*/
+		return;
 		
 	}
 

@@ -29,7 +29,6 @@ public class AdProcessing {
 		for (Map.Entry<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> me: mapInternal.entrySet()) {
 			LOG.debug("searching " + currentTimeStr + " in map" + me.getKey().toString() + " map size: " + mapInternal.size());
 			PairEx<Long, Long> p = new PairEx<>(currentTime, currentTime);
-			LOG.debug("me.getValue(): " + me.getValue());
 			PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, me.getValue(), ch);
 			LOG.debug("looking for window: " + currentTime + " durationAdList " + durationAdList);
 			if (durationAdList != null)	
