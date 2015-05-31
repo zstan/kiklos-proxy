@@ -84,13 +84,14 @@ public class TvTimetableParser {
 			//return parseVimbTimeTable(in);
 		} else if (format.equals("xml")) { // vi			
 			return parseXmlTimeTable(content, date);
-		} else if (format.equals("csv") || format.equals("xslx")) { // excel
+		} else if (format.equals("csv") || format.equals("xlsx")) { // excel
 			try {
 				return parseCsvTimeTable(content, date);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		} 
+		}
+		LOG.error("empty map");
 		return null;
 	}
 	
