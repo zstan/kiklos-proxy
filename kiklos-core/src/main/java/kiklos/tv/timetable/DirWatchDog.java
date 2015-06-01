@@ -40,7 +40,7 @@ public class DirWatchDog {
 	private static final String TIMETABLE_MAP_NAME = ".timetable";
 	private static final SimpleDateFormat TIME_TABLE_DATE = new SimpleDateFormat("yyMMdd");
     private static final Logger LOG = LoggerFactory.getLogger(DirWatchDog.class);
-    private static final String TIME_TABLE_FORMAT = "\\w+_\\d{6}\\.(txt|xml|csv|xlsx)";// sts_210814.txt, 408_140826.xml, 404_140826.csv
+    private static final String TIME_TABLE_FORMAT = "(?i)\\w+_\\d{6}\\.(txt|xml|csv|xlsx)";// sts_210814.txt, 408_140826.xml, 404_140826.csv
     private AdProcessing adProcessing;
     
     //          (channel, date)         (format, content)
@@ -85,7 +85,7 @@ public class DirWatchDog {
 		final String path = fileEntry.getAbsolutePath();
 		final String channel = name.substring(0, name.indexOf("_"));
 		final String date = name.substring(name.indexOf("_") + 1, name.indexOf("."));
-		final String format = name.substring(name.indexOf(".") + 1, name.length());		
+		final String format = name.substring(name.indexOf(".") + 1, name.length()).toLowerCase();		
 		
 		PairEx<PairEx<String, Date>, PairEx<String, String>> result = null;		
 		LOG.debug("found timetable channel: {}, date: {}", channel, date);
