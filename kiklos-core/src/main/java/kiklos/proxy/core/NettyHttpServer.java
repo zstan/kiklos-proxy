@@ -1,6 +1,10 @@
 package kiklos.proxy.core;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -19,12 +23,14 @@ public class NettyHttpServer
 {
 	public static void main(String[] args) throws Exception
 	{		
-	    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-	    StatusPrinter.print(lc);
-	    InputStream resource = NettyHttpServer.class.getResourceAsStream("logback.xml");
-	    System.out.println(resource);
 	    int procCount = Runtime.getRuntime().availableProcessors();
 	    System.out.println("proc count: " + procCount);
+		String host = "127.0.0.1";
+
+		if (args.length != 0) {
+			System.out.println("bind to host: " + args[0]);
+			host = args[0];
+		}
 	    
         EventLoopGroup bossGroup = new NioEventLoopGroup(procCount * 2);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -36,14 +42,22 @@ public class NettyHttpServer
         	.childHandler(new HttpServerPipelineFactory());
 		
 		try {
-			Channel ch = bootstrap.bind(80).sync().channel();
-			ch.closeFuture().sync();
+
+			List<Integer> ports = Arrays.asList(8080, 8081);
+			Collection<Channel> channels = new ArrayList<>(ports.size());
+
+			for (int port : ports) {
+				Channel ch = bootstrap.bind(host, port).sync().channel();
+				channels.add(ch);
+			}
+
+			for (Channel ch : channels) {
+				ch.closeFuture().sync();
+			}
+
 		 } finally {
 		        bossGroup.shutdownGracefully();
 		        workerGroup.shutdownGracefully();
-
-		        bossGroup.terminationFuture().sync();
-		        workerGroup.terminationFuture().sync();
-		 }          		
+		 }
 	}
 }

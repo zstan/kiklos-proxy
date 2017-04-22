@@ -1,42 +1,31 @@
 package kiklos.proxy.core;
 
-import java.util.Date;
+import java.util.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.handler.codec.http.*;
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
 import kiklos.tv.timetable.AdProcessing;
 import kiklos.tv.timetable.DirWatchDog;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.ClientCookieEncoder;
-import io.netty.handler.codec.http.DefaultCookie;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.ServerCookieEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.HttpRequest;
+
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.REFERER;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.USER_AGENT;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import org.apache.commons.collections.primitives.adapters.CollectionBooleanCollection;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,135 +38,74 @@ import com.ning.http.client.ListenableFuture;
 import com.ning.http.client.Response;
 
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
-	private final AsyncHttpClient httpClient;
-	private final PlacementsMapping placementsMapping;
-	private final DurationSettings durationSettings;
-	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
-	private static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
+
+	//private final AsyncHttpClient httpClient;
 	private final CookieFabric cookieFabric;
 	private static final String FILE_ENCODING = UTF_8.name();
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
-	public static final String DURATION = "t";
-	public static final String CHANNEL = "ch";
-	public static final String DEFAULT_CHANNEL = "408";
+	private static final String IGIF_CONTENT_TYPE = "image/gif";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	public static short MAX_DURATION_BLOCK = 900;
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
-    private final DirWatchDog watchDog;
-    private final AdProcessing adProcessing;
-	
-	HttpRequestHandler(HttpServerPipelineFactory instance) {
-		httpClient = instance.getHttpClient();
-		placementsMapping = instance.getPlacementsMap();
-		memLogStorage = instance.getMemLogStorage();
-		cookieFabric = instance.getCookieFabric();
-		durationSettings = instance.getDurationsConfig();
-		watchDog = instance.getTimeTableWatchDog();
-		adProcessing = instance.getAdProcessing();
-	}
-	
-	private List<String> reqTransformer(final String req) {
-		
-		QueryStringDecoder decoder = new QueryStringDecoder(req);		
-		Map<String, List<String>> params = decoder.parameters(); 
-		
-		if (!params.isEmpty()) {
-			final List<String> idList = params.get("id");
-			if (!idList.isEmpty() && !idList.get(0).isEmpty()) {
-				final String id = idList.get(0);
-				List<String> vastList =  placementsMapping.getMappingVASTList(id);
-				
-				if (vastList.isEmpty()) {
-					int reqDuration = HelperUtils.getRequiredAdDuration(req);
-					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
-					PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(params));
-					if (tt4ch != null) {
-						reqDuration = tt4ch.getKey();
-						vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
-					} else {
-						vastList = Collections.emptyList(); // empty for unknown channel !!!
-					}
-				}
-				
-				if (!vastList.isEmpty()) {
-					LOG.debug("reqTransformer vastList size: {}", vastList.size());
-					List<String> vastUriList = new ArrayList<>(vastList.size());
-					params.remove("id");
-					params.remove(DURATION);
-					params.remove(CHANNEL);
-					
-					String query = HelperUtils.queryParams2String(params);
-					
-					if (!Strings.isNullOrEmpty(query)) {
-						for (String v: vastList) {
-							if (new QueryStringDecoder(v).parameters().isEmpty())
-								v += "?";
-							else	
-								v += "&";
-							vastUriList.add(v + query);
-						}				
-					} else {
-						vastUriList = vastList;	
-					}	
-					return vastUriList;
-				}
-			}	
-		}
-		return Collections.emptyList();
-	}
-	
-	private Map<String, String> getDebugParams(final String req) {
-		final QueryStringDecoder decoder = new QueryStringDecoder(req);
-		Map<String, String> mOut = new HashMap<>();
-		final Map<String, List<String>> params = decoder.parameters();
-		if (params.keySet().contains("debug")) {
-			if (params.get(CHANNEL) != null) {
-				mOut.put(CHANNEL, params.get(CHANNEL).get(0));
-			}
-		}
-		return mOut;
-	}
-	
-	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
-		final String date = DATE_FORMAT.format(new Date());
-		final String Uri = req.getUri();
-		String cookieString = "<e>";
-		final String cString = req.headers().get(COOKIE);
-		try {
-			if (cString != null)
-				cookieString = URLEncoder.encode(cString, "UTF-8");
-		} catch (UnsupportedEncodingException e1) {
-			LOG.error("can`t encode cookie: {}", cString);
-		}
-		return String.format("%s\t%s\t%s\t%s\t%s", date, Uri, newUri, cookieString, remoteHost);
+
+	static byte[] trackingGif = { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, (byte) 0x80, 0x0, 0x0, (byte)  0xff, (byte)  0xff,  (byte) 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b };
+	static byte[] trackingPng = {(byte)0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A,0x00,0x00,0x00,0x0D,0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x08,0x06,0x00,0x00,0x00,0x1F,0x15,(byte)0xC4,(byte)0x89,0x00,0x00,0x00,0x0B,0x49,0x44,0x41,0x54,0x78,(byte)0xDA,0x63,0x60,0x00,0x02,0x00,0x00,0x05,0x00,0x01,(byte)0xE9,(byte)0xFA,(byte)0xDC,(byte)0xD8,0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,(byte)0xAE,0x42,0x60,(byte)0x82};
+
+	public static byte[] get1x1PixelImage() {
+		return trackingGif;   // trackingGif is about 38 bytes where trackingPng is 68
 	}
 
-	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg, 
-			final String buff, List<Cookie> cookieList, final Cookie stCookie) {
-		writeResp(ctx, msg, buff, cookieList, stCookie, XML_CONTENT_TYPE);
+	HttpRequestHandler(HttpServerPipelineFactory instance) {
+		//httpClient = instance.getHttpClient();
+		memLogStorage = instance.getMemLogStorage();
+		cookieFabric = instance.getCookieFabric();
+	}
+	
+	private String composeLogString(final HttpRequest req, final String remoteHost) {
+		final String date = DATE_FORMAT.format(new Date());
+		final String uri = req.getUri();
+		String cookieStr = req.headers().get(COOKIE);
+		String refererStr = req.headers().get(REFERER);
+		String userAgentStr = req.headers().get(USER_AGENT);
+
+		Set<Cookie> cookie = CookieDecoder.decode(cookieStr == null ? "" : cookieStr);
+
+		return String.format("%s\t%s\t%s\t%s\t%s\t%s", date, uri, refererStr, userAgentStr, cookie.toString(), remoteHost);
+	}
+
+	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
+						   final byte[] buff, List<Cookie> cookieList, final Cookie stCookie) {
+		writeResp(ctx, msg, buff, cookieList, IGIF_CONTENT_TYPE);
 	}
 	
 	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg, 
-			final String buff, List<Cookie> cookieList, final Cookie stCookie, final String contentType) {
-		ByteBuf bb = Unpooled.wrappedBuffer(buff.getBytes());
+			final byte[] buff, List<Cookie> cookieList, final String contentType) {
+
+		ByteBuf bb = Unpooled.wrappedBuffer(buff);
 		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
-		if (stCookie == null) {					
-			cookieList.add(getOurCookie());			
-		}
+
+		Pair<Cookie, List<Cookie>> ourAndSessionCookPair = CookieFabric.getUserSessionCookies(msg);
+		final Cookie stCookie = ourAndSessionCookPair.getKey();
+		final List<Cookie> sessionCookieList = ourAndSessionCookPair.getValue();
+
+		LOG.debug("sessionCookieList: " + sessionCookieList.size());
+
+		if (sessionCookieList.isEmpty())
+			cookieList.add(createCookie());
 				
 		LOG.debug(cookieList.toString());
 		for (Cookie c: cookieList) {
-			c.setDomain(".adinsertion.pro");
+			//c.setDomain("91.238.227.60");
 			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
 			LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
 		}
-		
-		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length);
+		LOG.debug("!!!!2");
+		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.length);
 		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
 		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
-		
+		LOG.debug("!!!!3");
 		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
         if (!keepAlive) {
             ctx.write(response).addListener(ChannelFutureListener.CLOSE);
@@ -189,114 +117,30 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
     @Override    
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		
+
         if (msg instanceof HttpRequest) {
         	
             HttpRequest request = (HttpRequest) msg;
 			if (HttpHeaders.is100ContinueExpected(request)) {
 				ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
-			}		
-			final String reqUri = request.getUri();		
+			}
+
+			final String reqUri = request.getUri();
+
 			if ("/favicon.ico".equals(reqUri)) {
 				ctx.channel().close();
 				return;			
 			}
-			
-			Map<String, String> debugParams = getDebugParams(reqUri); 
-			
-			if (!debugParams.isEmpty()) { 
-				String ch = debugParams.get(CHANNEL);
-				PairEx<Short, List<Short>> adList = adProcessing.getAdListFromTimeTable(ch);
-				writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<Cookie>(), null, "text/plain");
-				return;
-			}			
-			
-			/*if (this.getRequiredAdDuration(reqUri) == -1) {
-				return empty vast
-			}*/
-			
-			final List<String> VASTUrlList = reqTransformer(reqUri);
-			LOG.debug("VASTUrlList size: {}", VASTUrlList.size());
-			
-			final InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress(); 
+
+			final InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress();
 		    final String remoteHost = sa.getAddress().getHostAddress();
-		    LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));						
-			
-			if (!VASTUrlList.isEmpty()) {
-				memLogStorage.put(composeLogString(request, "", remoteHost));
-			} else {
-				ctx.channel().close();
-				return;
-			}
-			
-			Pair<Cookie, List<Cookie>> ourAndSessionCookPair = CookieFabric.getUserSessionCookies(request);
-			final Cookie stCookie = ourAndSessionCookPair.getKey();
-			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getValue();
-			
-			if (VASTUrlList.size() > 1) {
-				List<ListenableFuture<Response>> pool = new ArrayList<>();
-				List<String> vastPool = new ArrayList<>();
-				
-				for (String vs : VASTUrlList) {
-					LOG.debug("try to create request: {}", vs);
-					pool.add(createResponse(sessionCookieList, vs));
-				}
-				LOG.debug("response pool size: {}", pool.size());
-				
-				boolean cookieAccepted = false;
-				
-				while (!pool.isEmpty()) {				
-					ListenableFuture<Response> p = pool.get(0);
-					if (p.isDone() || p.isCancelled()) {
-						LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
-						Response resp = p.get();
-						final String respVast = resp.getResponseBody();
-						vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
-						if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
-							sessionCookieList.addAll(CookieFabric.getResponseCookies(resp));
-							cookieAccepted = true;
-						}						
-						pool.remove(p);
-						LOG.debug("response pool remove");
-					}
-					else {
-						HelperUtils.try2sleep(TimeUnit.MILLISECONDS, 1);
-					}
-				}
-				
-				final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);
-				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);				
-				return;
-			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
-				ListenableFuture<Response> respFut = createResponse(sessionCookieList, VASTUrlList.get(0));
-				while (true) {
-					if (respFut.isDone() || respFut.isCancelled()) {
-						Response response = respFut.get();
-						final String body = response.getResponseBody();
-						List<Cookie> cookieList = CookieFabric.getResponseCookies(response);
-						writeResp(ctx, (HttpRequest)msg, body.isEmpty() ? EMPTY_VAST : body, cookieList, stCookie);
-						return;
-					}
-				}
-			}	
+		    LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));
+			System.err.println(composeLogString(request, remoteHost));
+
+			writeResp(ctx, (HttpRequest)msg, get1x1PixelImage(), new ArrayList<>(), IGIF_CONTENT_TYPE);
+
+			//ctx.channel().close();
         }
-	}
-	
-	private ListenableFuture<Response> createResponse(final List<Cookie> sessionCookieList, 
-			final String newPath) throws IOException {
-		final BoundRequestBuilder rb = httpClient.prepareGet(newPath);
-		for (Cookie c : sessionCookieList) {
-			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
-		}
-		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {
-			
-			@Override
-			public Response onCompleted(Response response) throws Exception {
-				LOG.info("req completed : {} status code : {}, response size: {}", newPath, response.getStatusCode(), response.getResponseBody().length());
-				return response;
-			}
-		});
-		return f;
 	}
 	
     @Override
@@ -310,11 +154,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		ctx.close();
 	}
 	
-	private Cookie getOurCookie() {	
+	private Cookie createCookie() {
 		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
 		c.setMaxAge(COOKIE_MAX_AGE);
 		c.setPath("/");
-		c.setDomain(".adinsertion.pro");
+		//c.setDomain(".adinsertion.pro");
 		c.setHttpOnly(true);
 		return c;
 	}

@@ -470,8 +470,8 @@ public class XLSX2CSV {
 		xlsx2csv.process();
 		System.out.println(sb.toString());
 
-		SimpleDateFormat myFormatter = new SimpleDateFormat("mssSS");
-		String output = myFormatter.parse("10000").toString();
+		SimpleDateFormat myFormatter = new SimpleDateFormat("sSS");
+		String output = myFormatter.parse("500").toString();
 		System.out.println(output);
 		return;
 		

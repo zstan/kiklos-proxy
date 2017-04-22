@@ -5,9 +5,14 @@
     <property name="log.file" value="${mrtl.log.file:-kiklos-proxy.log}" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>%yellow(%d{HH:mm:ss.SSS}) [%thread] %highlight(%-5level) %gray(%logger{10}) - %msg%n</pattern>
+            <!-- <pattern>%yellow(%d{HH:mm:ss.SSS}) [%thread] %highlight(%-5level) %gray(%logger{10}) - %msg%n</pattern> -->
         </encoder>
     </appender>
 
@@ -41,12 +46,10 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
-        <appender-ref ref="STDOUT" />
+    <root level="INFO">
+        <!-- <appender-ref ref="STDOUT" /> -->
         <appender-ref ref="FILE" />
         <appender-ref ref="ERROR_FILE" />
     </root>
-
-    <logger name="org.apache.zookeeper" level="INFO"/>
 
 </configuration>

@@ -33,46 +33,23 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 		.setFollowRedirect(true)
 		.build();
 	
-	private final AsyncHttpClient httpClient = new AsyncHttpClient(cfg);
-	
-	private final ExecutorService pool = Executors.newCachedThreadPool(new MinPriorityThreadFactory());
-	private final PlacementsMapping placementsMap = new PlacementsMapping(storage, pool);
-	private final DurationSettings durationsConfig = new DurationSettings(storage, pool);
+	//private final AsyncHttpClient httpClient = new AsyncHttpClient(cfg);
 	private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage);
-	private final AdProcessing adProcessing = new AdProcessing();
-	private final DirWatchDog timeTableWatchDog = new DirWatchDog(storage, pool, adProcessing);	
-	private final CookieFabric cookieFabric;	
+	private final CookieFabric cookieFabric;
 	
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
         p.addLast(new HttpServerCodec());
-        //p.addLast(new HttpRequestHandler(httpClient, placementsMap, memLogStorage, cookieFabric, durationsConfig, timeTableWatchDog));
         p.addLast(new HttpRequestHandler(this));
     }
     
-	public AsyncHttpClient getHttpClient() {
+/*	public AsyncHttpClient getHttpClient() {
 		return httpClient;
-	}
-
-	public PlacementsMapping getPlacementsMap() {
-		return placementsMap;
-	}
-
-	public DurationSettings getDurationsConfig() {
-		return durationsConfig;
-	}
+	}*/
 
 	public MemoryLogStorage getMemLogStorage() {
 		return memLogStorage;
-	}
-
-	public DirWatchDog getTimeTableWatchDog() {
-		return timeTableWatchDog;
-	}
-
-	public AdProcessing getAdProcessing() {
-		return adProcessing;
 	}
 
 	public CookieFabric getCookieFabric() {
@@ -80,13 +57,4 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 	}
     
 }
-
-class MinPriorityThreadFactory implements ThreadFactory {
-	   public Thread newThread(Runnable r) {
-		 Thread t = new Thread(r);
-		 t.setPriority(Thread.MIN_PRIORITY);
-	     return t;
-	   }
- }
-
 
