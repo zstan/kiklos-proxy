@@ -1,18 +1,10 @@
 package kiklos.proxy.core;
 
 import java.util.*;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.concurrent.TimeUnit;
 
 import io.netty.handler.codec.http.*;
-import kiklos.planner.DurationSettings;
-import kiklos.planner.SimpleStrategy;
-import kiklos.tv.timetable.AdProcessing;
-import kiklos.tv.timetable.DirWatchDog;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -25,17 +17,9 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.USER_AGENT;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import org.apache.commons.collections.primitives.adapters.CollectionBooleanCollection;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Strings;
-import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
-import com.ning.http.client.ListenableFuture;
-import com.ning.http.client.Response;
 
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
@@ -65,7 +49,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
 	private String composeLogString(final HttpRequest req, final String remoteHost) {
 		final String date = DATE_FORMAT.format(new Date());
-		final String uri = req.getUri();
+		final String uri = req.uri();
 		String cookieStr = req.headers().get(COOKIE);
 		String refererStr = req.headers().get(REFERER);
 		String userAgentStr = req.headers().get(USER_AGENT);
@@ -76,12 +60,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
-						   final byte[] buff, List<Cookie> cookieList, final Cookie stCookie) {
-		writeResp(ctx, msg, buff, cookieList, IGIF_CONTENT_TYPE);
-	}
-	
-	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg, 
 			final byte[] buff, List<Cookie> cookieList, final String contentType) {
+
+		System.err.println(HttpRequestHandler.class.getName());
 
 		ByteBuf bb = Unpooled.wrappedBuffer(buff);
 		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
@@ -97,15 +78,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				
 		LOG.debug(cookieList.toString());
 		for (Cookie c: cookieList) {
-			//c.setDomain("91.238.227.60");
 			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
 			LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
 		}
-		LOG.debug("!!!!2");
 		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.length);
 		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
 		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
-		LOG.debug("!!!!3");
 		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
         if (!keepAlive) {
             ctx.write(response).addListener(ChannelFutureListener.CLOSE);
@@ -127,19 +105,17 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
 			final String reqUri = request.getUri();
 
-			if ("/favicon.ico".equals(reqUri)) {
+			if ("/favicon.ico".equals(reqUri.toLowerCase())) {
 				ctx.channel().close();
 				return;			
 			}
 
 			final InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress();
 		    final String remoteHost = sa.getAddress().getHostAddress();
-		    LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));
-			System.err.println(composeLogString(request, remoteHost));
+		    //LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));
+			LOG.info(composeLogString(request, remoteHost));
 
 			writeResp(ctx, (HttpRequest)msg, get1x1PixelImage(), new ArrayList<>(), IGIF_CONTENT_TYPE);
-
-			//ctx.channel().close();
         }
 	}
 	
@@ -158,7 +134,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
 		c.setMaxAge(COOKIE_MAX_AGE);
 		c.setPath("/");
-		//c.setDomain(".adinsertion.pro");
 		c.setHttpOnly(true);
 		return c;
 	}

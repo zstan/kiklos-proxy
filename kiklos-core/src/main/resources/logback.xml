@@ -3,6 +3,7 @@
 
     <property name="log.dir" value="${mrtl.log.dir:-./logs}" />
     <property name="log.file" value="${mrtl.log.file:-kiklos-proxy.log}" />
+    <property name="counter.file" value="${mrtl.log.file:-counter.log}" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 
@@ -16,6 +17,24 @@
         </encoder>
     </appender>
 
+    <appender name="KIKFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.dir}/${counter.file}</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/${counter.file}.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+          <pattern>%msg%n</pattern>
+        </encoder>
+<!--
+        <encoder>
+            <pattern>%date %-5level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+        </encoder>
+-->
+    </appender>
+
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.dir}/${log.file}</file>
 
@@ -23,7 +42,6 @@
             <fileNamePattern>${log.dir}/${log.file}.%d{yyyy-MM-dd}</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
-
         <encoder>
             <pattern>%date %-5level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
         </encoder>
@@ -47,9 +65,13 @@
     </appender>
 
     <root level="INFO">
-        <!-- <appender-ref ref="STDOUT" /> -->
+        <appender-ref ref="KIKFILE" />
         <appender-ref ref="FILE" />
         <appender-ref ref="ERROR_FILE" />
     </root>
+
+    <logger name="kiklos.proxy.core.HttpRequestHandler" additivity="false" level="INFO">
+        <appender-ref ref="KIKFILE"/>
+    </logger>
 
 </configuration>

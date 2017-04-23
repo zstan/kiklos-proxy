@@ -1,6 +1,7 @@
 package kiklos.proxy.core;
 
 
+import io.netty.handler.ssl.SslContext;
 import kiklos.planner.DurationSettings;
 import kiklos.tv.timetable.AdProcessing;
 import kiklos.tv.timetable.DirWatchDog;
@@ -20,7 +21,10 @@ import com.ning.http.client.AsyncHttpClientConfig;
 
 public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel> {
 
-	public HttpServerPipelineFactory() {
+	private final SslContext sslContext;
+
+	public HttpServerPipelineFactory(SslContext context) {
+		this.sslContext = context;
 		cookieFabric = CookieFabric.buildCookieFabric();
 	}
 
@@ -40,6 +44,9 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
+		if (this.sslContext != null) {
+			p.addLast(this.sslContext.newHandler(ch.alloc()));
+		}
         p.addLast(new HttpServerCodec());
         p.addLast(new HttpRequestHandler(this));
     }
