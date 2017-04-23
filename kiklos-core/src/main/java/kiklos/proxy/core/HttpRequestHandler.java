@@ -4,6 +4,7 @@ import java.util.*;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
