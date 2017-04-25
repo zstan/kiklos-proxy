@@ -13,10 +13,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpRequest;
-
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +90,7 @@ public class CookieFabric {
 		return new String(uuid);
 	}
 	
-	public static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {		
+	public static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
 		
 		LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
@@ -102,21 +101,21 @@ public class CookieFabric {
 			return Pair.of(null, httpCookieList);		
 		
 		for (String cookieString : cookieStrings) {
-			Set<Cookie> cookies = CookieDecoder.decode(cookieString);
+			Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookieString);
 			httpCookieList.addAll(cookies);
 		}
 		LOG.debug("getUserSessionCookies size: {}", httpCookieList.size());
 		
 		Cookie ourCookie = null;
 		for (Cookie cookie : httpCookieList) {
-			if (cookie.getName().equals(OUR_COOKIE_NAME)) {
+			if (cookie.name().equals(OUR_COOKIE_NAME)) {
 				ourCookie = cookie;
 			}
 		}
 		return Pair.of(ourCookie, httpCookieList);
 	}
 	
-	public static List<Cookie> getResponseCookies(final Response request) {		
+/*	public static List<Cookie> getResponseCookies(final Response request) {
 		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
 		List<Cookie> httpCookieList = new ArrayList<>();
 		
@@ -133,7 +132,7 @@ public class CookieFabric {
 			}
 		}
 		return httpCookieList;
-	}		
+	}*/
 	
 	public static void main(String[] arg) {
 		CookieFabric cf = new CookieFabric();

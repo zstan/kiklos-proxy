@@ -4,8 +4,6 @@ import java.util.*;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 
-import io.netty.channel.Channel;
-import io.netty.handler.codec.http.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -18,6 +16,18 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.USER_AGENT;
 import static org.jboss.netty.util.CharsetUtil.UTF_8;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,22 +58,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		cookieFabric = instance.getCookieFabric();
 	}
 	
-	private String composeLogString(final HttpRequest req, final String remoteHost) {
+	private String composeLogString(final io.netty.handler.codec.http.HttpRequest req, final String remoteHost) {
 		final String date = DATE_FORMAT.format(new Date());
 		final String uri = req.uri();
 		String cookieStr = req.headers().get(COOKIE);
 		String refererStr = req.headers().get(REFERER);
 		String userAgentStr = req.headers().get(USER_AGENT);
 
-		Set<Cookie> cookie = CookieDecoder.decode(cookieStr == null ? "" : cookieStr);
+		Set<Cookie> cookie = ServerCookieDecoder.STRICT.decode(cookieStr == null ? "" : cookieStr);
 
 		return String.format("%s\t%s\t%s\t%s\t%s\t%s", date, uri, refererStr, userAgentStr, cookie.toString(), remoteHost);
 	}
 
-	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
+	private void writeResp(final ChannelHandlerContext ctx, final io.netty.handler.codec.http.HttpRequest msg,
 			final byte[] buff, List<Cookie> cookieList, final String contentType) {
-
-		System.err.println(HttpRequestHandler.class.getName());
 
 		ByteBuf bb = Unpooled.wrappedBuffer(buff);
 		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
@@ -78,18 +86,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			cookieList.add(createCookie());
 				
 		LOG.debug(cookieList.toString());
+
 		for (Cookie c: cookieList) {
-			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
-			LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
+			response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(c));
+			LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.STRICT.encode(c));
 		}
-		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.length);
-		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
-		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
-		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
+		response.headers().add(HttpHeaderNames.CONTENT_LENGTH, buff.length);
+		response.headers().add(HttpHeaderNames.CONTENT_TYPE, contentType);
+		response.headers().add(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE);
+
+		boolean keepAlive =  HttpUtil.isKeepAlive(msg);
         if (!keepAlive) {
             ctx.write(response).addListener(ChannelFutureListener.CLOSE);
         } else {
-            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
             ctx.write(response);
         }						
 	}
@@ -100,7 +110,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequest) {
         	
             HttpRequest request = (HttpRequest) msg;
-			if (HttpHeaders.is100ContinueExpected(request)) {
+			if (HttpUtil.is100ContinueExpected(request)) {
 				ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
 			}
 
