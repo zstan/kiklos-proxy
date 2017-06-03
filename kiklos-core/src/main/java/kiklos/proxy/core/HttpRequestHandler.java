@@ -31,6 +31,7 @@ import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.amberdata.dal.DataAccess;
 
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
@@ -44,6 +45,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
+	private final DataAccess dal;
 
 	static byte[] trackingGif = { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, (byte) 0x80, 0x0, 0x0, (byte)  0xff, (byte)  0xff,  (byte) 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b };
 	static byte[] trackingPng = {(byte)0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A,0x00,0x00,0x00,0x0D,0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x08,0x06,0x00,0x00,0x00,0x1F,0x15,(byte)0xC4,(byte)0x89,0x00,0x00,0x00,0x0B,0x49,0x44,0x41,0x54,0x78,(byte)0xDA,0x63,0x60,0x00,0x02,0x00,0x00,0x05,0x00,0x01,(byte)0xE9,(byte)0xFA,(byte)0xDC,(byte)0xD8,0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,(byte)0xAE,0x42,0x60,(byte)0x82};
@@ -56,9 +58,26 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		//httpClient = instance.getHttpClient();
 		memLogStorage = instance.getMemLogStorage();
 		cookieFabric = instance.getCookieFabric();
+		dal = instance.getDal();
 	}
-	
-	private String composeLogString(final io.netty.handler.codec.http.HttpRequest req, final String remoteHost) {
+
+	private Map<String, String> composeDbEntryMap(final HttpRequest req, final String remoteHost) {
+		final String date = DATE_FORMAT.format(new Date());
+		final String uri = req.uri();
+		String cookieStr = req.headers().get(COOKIE);
+		String refererStr = req.headers().get(REFERER);
+		String userAgentStr = req.headers().get(USER_AGENT);
+
+		Set<Cookie> cookie = ServerCookieDecoder.STRICT.decode(cookieStr == null ? "" : cookieStr);
+
+		Map<String, String> m = new TreeMap<>();
+		m.put("key", date);
+		m.put("value", String.format("%s\t%s\t%s\t%s\t%s\t%s", date, uri, refererStr, userAgentStr, cookie.toString(), remoteHost));
+
+		return m;
+	}
+
+	private String composeLogString(final HttpRequest req, final String remoteHost) {
 		final String date = DATE_FORMAT.format(new Date());
 		final String uri = req.uri();
 		String cookieStr = req.headers().get(COOKIE);
@@ -125,6 +144,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		    final String remoteHost = sa.getAddress().getHostAddress();
 		    //LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));
 			LOG.info(composeLogString(request, remoteHost));
+			dal.addEntry(composeDbEntryMap(request, remoteHost));
 
 			writeResp(ctx, (HttpRequest)msg, get1x1PixelImage(), new ArrayList<>(), IGIF_CONTENT_TYPE);
         }

@@ -2,14 +2,12 @@ package ru.amberdata.dal.pg;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ru.amberdata.dal.DataAccess;
+import ru.amberdata.dal.SqlQueueProcessor;
 
 public class PgDataAccessImpl implements DataAccess, AutoCloseable {
 
@@ -17,90 +15,56 @@ public class PgDataAccessImpl implements DataAccess, AutoCloseable {
     private final static String DATABASE_NAME = "counter";
     private final static String DATABASE_URI = "127.0.0.1:26257";
     private final static String DATABASE_USER = "kiklos";
-    private static int batchSize = 100;
     private static Connection conn;
-    private static ConcurrentLinkedQueue<Map<String, String>> batchQueue = new ConcurrentLinkedQueue<>();
-    private static AtomicInteger queueCount = new AtomicInteger();
+    private static ConcurrentLinkedQueue<String> batchQueue = new ConcurrentLinkedQueue<>();
     private final static String INSERT_STMT = "INSERT INTO " + DATABASE_NAME + "(%s) VALUES (%s);";
+    private static SqlQueueProcessor processor = new SqlQueueProcessor();
 
     private PgDataAccessImpl() {
     }
 
-    public static PgDataAccessImpl build() throws ClassNotFoundException, SQLException {
+    public static PgDataAccessImpl build() {
         if (INSTANCE != null)
             return INSTANCE;
 
-        batchSize = Integer.valueOf(System.getProperty("DB_BATCH_SIZE", "100"));
+        try {
+            Class.forName("org.postgresql.Driver");
+            final String connStr = String.format("jdbc:postgresql://%s/%s?sslmode=disable", DATABASE_URI, DATABASE_NAME);
+            conn = DriverManager.getConnection(connStr, DATABASE_USER, null);
 
-        Class.forName("org.postgresql.Driver");
-        final String connStr = String.format("jdbc:postgresql://%s/%s?sslmode=disable", DATABASE_URI, DATABASE_NAME);
-        conn = DriverManager.getConnection(connStr, DATABASE_USER, null);
+            if (conn != null) {
+                System.out.println("You made it, take control your database now!");
+            } else {
+                System.err.println("Failed to make connection!");
+                return null;
+            }
 
-        if (conn != null) {
-            System.out.println("You made it, take control your database now!");
-        } else {
-            throw new SQLException("Failed to make connection!");
+            INSTANCE = new PgDataAccessImpl();
+            processor.process(conn, batchQueue);
+
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
         }
 
-        INSTANCE = new PgDataAccessImpl();
         return INSTANCE;
     }
 
-    public void addEntry(Map<String, String> entry) throws SQLException {
+    public void addEntry(Map<String, String> entry) {
 
-        batchQueue.add(entry);
+        String columns = "";
+        String values = "";
 
-        int count = queueCount.incrementAndGet();
-
-        if (count >= batchSize) {
-            synchronized (this) {
-                queueCount.set(0);
-                Statement stmt = conn.createStatement();
-                conn.setAutoCommit(false);
-                Map<String, String> m = batchQueue.poll();
-
-                while (m != null) {
-
-                    String columns = "";
-                    String values = "";
-
-                    for (Map.Entry<String, String> e : m.entrySet()) {
-                        columns += !columns.isEmpty() ? ',' + e.getKey() : e.getKey();
-                        values += !values.isEmpty() ? ',' + e.getValue() : e.getValue();
-                    }
-                    stmt.addBatch(String.format(INSERT_STMT, columns, values));
-                    m = batchQueue.poll();
-                    connection.createStatement().execute("INSERT INTO accounts (id, balance) VALUES (1, 1000), (2, 250)");
-                }
-            }
+        for (Map.Entry<String, String> e : entry.entrySet()) {
+            columns += !columns.isEmpty() ? ',' + e.getKey() : e.getKey();
+            values += !values.isEmpty() ? ',' + e.getValue() : e.getValue();
         }
-
-        //connection.createStatement().execute("CREATE TABLE IF NOT EXISTS accounts (id INT PRIMARY KEY, balance INT)");
-
-
-
-        // Print out the balances.
-        System.out.println("Initial balances:");
-        ResultSet res = connection.createStatement().executeQuery("SELECT id, balance FROM accounts");
-        while (res.next()) {
-            System.out.printf("\taccount %s: %s\n", res.getInt("id"), res.getInt("balance"));
-        }
-
-        connection.close();
+        batchQueue.add(String.format(INSERT_STMT, columns, values));
     }
 
     @Override
     public void close() throws Exception {
         if (conn != null)
             conn.close();
-    }
-
-    public static class CountEntry {
-
-        public CountEntry() {
-
-        }
-
     }
 
 }

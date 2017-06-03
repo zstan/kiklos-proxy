@@ -147,6 +147,12 @@
             <version>1.10.3.ASG-SNAPSHOT</version>
         </dependency>
 
+        <dependency>
+            <groupId>kiklos.ad</groupId>
+            <artifactId>data.acc.layer</artifactId>
+            <version>0.4-SNAPSHOT</version>
+        </dependency>
+
 
         <dependency>
             <groupId>ch.qos.logback</groupId>

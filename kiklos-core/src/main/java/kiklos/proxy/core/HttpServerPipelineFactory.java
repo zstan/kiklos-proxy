@@ -18,6 +18,8 @@ import org.redisson.Redisson;
 
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
+import ru.amberdata.dal.DataAccess;
+import ru.amberdata.dal.pg.PgDataAccessImpl;
 
 public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel> {
 
@@ -26,7 +28,9 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 	public HttpServerPipelineFactory(SslContext context) {
 		this.sslContext = context;
 		cookieFabric = CookieFabric.buildCookieFabric();
-	}
+        if (dal == null)
+            System.exit(100);
+    }
 
 	private final Redisson storage = Redisson.create();
 	AsyncHttpClientConfig cfg = new AsyncHttpClientConfig.Builder()
@@ -40,7 +44,8 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 	//private final AsyncHttpClient httpClient = new AsyncHttpClient(cfg);
 	private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage);
 	private final CookieFabric cookieFabric;
-	
+    private final PgDataAccessImpl dal = PgDataAccessImpl.build();
+
     @Override
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
@@ -62,6 +67,9 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 	public CookieFabric getCookieFabric() {
 		return cookieFabric;
 	}
-    
+
+    public DataAccess getDal() {
+        return dal;
+    }
 }
 

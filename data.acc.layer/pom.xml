@@ -9,7 +9,7 @@
     <artifactId>data.acc.layer</artifactId>
     <packaging>jar</packaging>
 
-    <name>kiklos.core</name>
+    <name>adl.core</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
