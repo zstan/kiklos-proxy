@@ -12,7 +12,7 @@ import ru.amberdata.dal.SqlQueueProcessor;
 public class PgDataAccessImpl implements DataAccess, AutoCloseable {
 
     private static PgDataAccessImpl INSTANCE;
-    private final static String DATABASE_NAME = "counter";
+    private final static String DATABASE_NAME = "test.counter";
     private final static String DATABASE_URI = "127.0.0.1:26257";
     private final static String DATABASE_USER = "kiklos";
     private static Connection conn;
@@ -55,9 +55,10 @@ public class PgDataAccessImpl implements DataAccess, AutoCloseable {
         String values = "";
 
         for (Map.Entry<String, String> e : entry.entrySet()) {
-            columns += !columns.isEmpty() ? ',' + e.getKey() : e.getKey();
-            values += !values.isEmpty() ? ',' + e.getValue() : e.getValue();
+            columns += !columns.isEmpty() ? "," + e.getKey() : e.getKey();
+            values += !values.isEmpty() ? ",\'" + e.getValue() + '\'' : '\'' + e.getValue() + '\'';
         }
+        System.out.println(String.format(INSERT_STMT, columns, values));
         batchQueue.add(String.format(INSERT_STMT, columns, values));
     }
 

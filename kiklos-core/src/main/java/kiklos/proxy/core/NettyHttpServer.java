@@ -31,7 +31,7 @@ public class NettyHttpServer
 	{		
 	    int procCount = Runtime.getRuntime().availableProcessors();
 		String host = "127.0.0.1";
-		String ports = "8080,8081";
+		String ports = "8082,8081";
 
 		if (args.length != 0) {
 			System.out.println("bind to host: " + args[0] + " port(s): " + args[1]);
