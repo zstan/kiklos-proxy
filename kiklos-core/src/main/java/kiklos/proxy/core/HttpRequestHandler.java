@@ -1,15 +1,21 @@
 package kiklos.proxy.core;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
+import java.util.stream.Collectors;
 
+import com.google.common.base.Splitter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.REFERER;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.USER_AGENT;
@@ -42,7 +48,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String IGIF_CONTENT_TYPE = "image/gif";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	public static short MAX_DURATION_BLOCK = 900;
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
 	private final DataAccess dal;
@@ -68,13 +74,38 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		String refererStr = req.headers().get(REFERER);
 		String userAgentStr = req.headers().get(USER_AGENT);
 
+		URL url = null;
+
 		Set<Cookie> cookie = ServerCookieDecoder.STRICT.decode(cookieStr == null ? "" : cookieStr);
+		try {
+			url = new URL(uri);
+			String[] items = url.getPath().split("/");
+			String type = items.length >= 2 ? items[1] : "";
+			String parId = items.length >= 3 ? items[2] : "";
+			String counterId = items.length >= 4 ? items[3] : "";
 
-		Map<String, String> m = new TreeMap<>();
-		m.put("key", date);
-		m.put("value", String.format("%s\t%s\t%s\t%s\t%s\t%s", date, uri, refererStr, userAgentStr, cookie.toString(), remoteHost));
+			String query = url.getQuery();
+			final Map<String, String> map = Splitter.on('&').trimResults().withKeyValueSeparator("=").split(query);
 
-		return m;
+			Map<String, String> m = new TreeMap<>();
+			m.put("cookie", cookie.toString());
+			m.put("ts", date);
+			m.put("type", type);
+			m.put("par_id", parId);
+			m.put("counter_id", counterId);
+			m.put("site_id", map.get("a"));
+			m.put("referer", refererStr);
+			m.put("page", map.get("u"));
+			m.put("screen", map.get("m"));
+			m.put("ua", userAgentStr);
+			m.put("host", remoteHost);
+			m.put("value", String.format("%s\t%s\t%s\t%s\t%s\t%s", date, uri, refererStr, userAgentStr, cookie.toString(), remoteHost));
+
+			return m;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return Collections.emptyMap();
 	}
 
 	private String composeLogString(final HttpRequest req, final String remoteHost) {
@@ -167,6 +198,32 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		c.setPath("/");
 		c.setHttpOnly(true);
 		return c;
+	}
+
+	static private Map<String, List<String>> splitQuery(URL url) {
+		if (url.getQuery().isEmpty()) {
+			return Collections.emptyMap();
+		}
+		return Arrays.stream(url.getQuery().split("&"))
+				.map(HttpRequestHandler::splitQueryParameter)
+				.collect(Collectors.groupingBy(PairEx::getKey, LinkedHashMap::new, mapping(Map.Entry::getValue, toList())));
+	}
+
+	static private PairEx<String, String> splitQueryParameter(String it) {
+		final int idx = it.indexOf("=");
+		final String key = idx > 0 ? it.substring(0, idx) : it;
+		final String value = idx > 0 && it.length() > idx + 1 ? it.substring(idx + 1) : null;
+		return new PairEx(key, value);
+	}
+
+	public static void main(String[] a) throws MalformedURLException {
+		URL u = new URL("http://www.ru/1/33/i/a?a=32345&d=https%3A//www.google.pl/&u=http%3A//bivan.ru/&m=412*732*32&r=972561448779191");
+		System.out.println(u.getFile());
+		System.out.println(u.getHost());
+		u.getPath().split("/");
+		String query = u.getQuery();
+		final Map<String, String> map = Splitter.on('&').trimResults().withKeyValueSeparator("=").split(query);
+		System.out.println(map.get("aaa"));
 	}
 	
 }
