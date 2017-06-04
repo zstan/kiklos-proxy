@@ -56,7 +56,10 @@ public class PgDataAccessImpl implements DataAccess, AutoCloseable {
 
         for (Map.Entry<String, String> e : entry.entrySet()) {
             columns += !columns.isEmpty() ? "," + e.getKey() : e.getKey();
-            values += !values.isEmpty() ? ",\'" + e.getValue() + '\'' : '\'' + e.getValue() + '\'';
+            if (e.getKey().equals("type") || e.getKey().equals("par_id") || e.getKey().equals("site_id"))
+                values += !values.isEmpty() ? "," + e.getValue() : e.getValue();
+            else
+                values += !values.isEmpty() ? ",\'" + e.getValue() + '\'' : '\'' + e.getValue() + '\'';
         }
         System.out.println(String.format(INSERT_STMT, columns, values));
         batchQueue.add(String.format(INSERT_STMT, columns, values));
