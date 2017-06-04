@@ -78,7 +78,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
 		Set<Cookie> cookie = ServerCookieDecoder.STRICT.decode(cookieStr == null ? "" : cookieStr);
 		try {
-			url = new URL(uri);
+			url = new URL("http://localhost" + uri);
 			String[] items = url.getPath().split("/");
 			String type = items.length >= 2 ? items[1] : "";
 			String parId = items.length >= 3 ? items[2] : "";
@@ -87,7 +87,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			String query = url.getQuery();
 			final Map<String, String> map = Splitter.on('&').trimResults().withKeyValueSeparator("=").split(query);
 
-			Map<String, String> m = new TreeMap<>();
+			Map<String, String> m = new LinkedHashMap<>();
 			m.put("cookie", cookie.toString());
 			m.put("ts", date);
 			m.put("type", type);
