@@ -5,7 +5,6 @@ import java.net.URL;
 import java.util.*;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
-import java.util.stream.Collectors;
 
 import com.google.common.base.Splitter;
 import io.netty.buffer.ByteBuf;
@@ -14,8 +13,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.REFERER;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.USER_AGENT;
@@ -52,6 +49,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
 	private final DataAccess dal;
+	private final static boolean FILE_LOGER_ENABLED = Boolean.valueOf(System.getProperty("FILE_LOGER_ENABLED", "true"));
 
 	static byte[] trackingGif = { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x1, 0x0, 0x1, 0x0, (byte) 0x80, 0x0, 0x0, (byte)  0xff, (byte)  0xff,  (byte) 0xff, 0x0, 0x0, 0x0, 0x2c, 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x1, 0x0, 0x0, 0x2, 0x2, 0x44, 0x1, 0x0, 0x3b };
 	static byte[] trackingPng = {(byte)0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A,0x00,0x00,0x00,0x0D,0x49,0x48,0x44,0x52,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x01,0x08,0x06,0x00,0x00,0x00,0x1F,0x15,(byte)0xC4,(byte)0x89,0x00,0x00,0x00,0x0B,0x49,0x44,0x41,0x54,0x78,(byte)0xDA,0x63,0x60,0x00,0x02,0x00,0x00,0x05,0x00,0x01,(byte)0xE9,(byte)0xFA,(byte)0xDC,(byte)0xD8,0x00,0x00,0x00,0x00,0x49,0x45,0x4E,0x44,(byte)0xAE,0x42,0x60,(byte)0x82};
@@ -74,11 +72,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		String refererStr = req.headers().get(REFERER);
 		String userAgentStr = req.headers().get(USER_AGENT);
 
-		URL url = null;
-
 		Set<Cookie> cookie = ServerCookieDecoder.STRICT.decode(cookieStr == null ? "" : cookieStr);
 		try {
-			url = new URL(uri);
+			URL url = new URL(uri);
 			String[] items = url.getPath().split("/");
 			String type = items.length >= 2 ? items[1] : "";
 			String parId = items.length >= 3 ? items[2] : "";
@@ -99,7 +95,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			m.put("screen", map.get("m"));
 			m.put("ua", userAgentStr);
 			m.put("host", remoteHost);
-			m.put("value", String.format("%s\t%s\t%s\t%s\t%s\t%s", date, uri, refererStr, userAgentStr, cookie.toString(), remoteHost));
+			m.put("value", "");
 
 			return m;
 		} catch (MalformedURLException e) {
@@ -174,8 +170,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress();
 		    final String remoteHost = sa.getAddress().getHostAddress();
 		    //LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));
-			LOG.info(composeLogString(request, remoteHost));
-			dal.addEntry(composeDbEntryMap(request, remoteHost));
+			if (FILE_LOGER_ENABLED)
+				LOG.info(composeLogString(request, remoteHost));
+
+			Map<String, String> m = composeDbEntryMap(request, remoteHost);
+			if (!m.isEmpty())
+				dal.addEntry(m);
 
 			writeResp(ctx, (HttpRequest)msg, get1x1PixelImage(), new ArrayList<>(), IGIF_CONTENT_TYPE);
         }
@@ -199,31 +199,4 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		c.setHttpOnly(true);
 		return c;
 	}
-
-	static private Map<String, List<String>> splitQuery(URL url) {
-		if (url.getQuery().isEmpty()) {
-			return Collections.emptyMap();
-		}
-		return Arrays.stream(url.getQuery().split("&"))
-				.map(HttpRequestHandler::splitQueryParameter)
-				.collect(Collectors.groupingBy(PairEx::getKey, LinkedHashMap::new, mapping(Map.Entry::getValue, toList())));
-	}
-
-	static private PairEx<String, String> splitQueryParameter(String it) {
-		final int idx = it.indexOf("=");
-		final String key = idx > 0 ? it.substring(0, idx) : it;
-		final String value = idx > 0 && it.length() > idx + 1 ? it.substring(idx + 1) : null;
-		return new PairEx(key, value);
-	}
-
-	public static void main(String[] a) throws MalformedURLException {
-		URL u = new URL("http://www.ru/1/33/i/a?a=32345&d=https%3A//www.google.pl/&u=http%3A//bivan.ru/&m=412*732*32&r=972561448779191");
-		System.out.println(u.getFile());
-		System.out.println(u.getHost());
-		u.getPath().split("/");
-		String query = u.getQuery();
-		final Map<String, String> map = Splitter.on('&').trimResults().withKeyValueSeparator("=").split(query);
-		System.out.println(map.get("aaa"));
-	}
-	
 }

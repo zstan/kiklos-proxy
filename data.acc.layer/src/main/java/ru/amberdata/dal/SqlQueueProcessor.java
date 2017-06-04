@@ -36,7 +36,7 @@ public class SqlQueueProcessor {
                     while (true) {
                         String sql = queue.poll();
                         while (sql == null) {
-                            Thread.sleep(1000);
+                            Thread.sleep(50);
                             sql = queue.poll();
                         }
                         try {
