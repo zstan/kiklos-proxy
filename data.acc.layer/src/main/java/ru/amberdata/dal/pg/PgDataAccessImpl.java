@@ -4,7 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import ru.amberdata.dal.DataAccess;
 import ru.amberdata.dal.SqlQueueProcessor;
@@ -12,11 +13,11 @@ import ru.amberdata.dal.SqlQueueProcessor;
 public class PgDataAccessImpl implements DataAccess, AutoCloseable {
 
     private static PgDataAccessImpl INSTANCE;
-    private final static String DATABASE_NAME = "test.counter";
+    private final static String DATABASE_NAME = "kiklos.counter";
     private final static String DATABASE_URI = "127.0.0.1:26257";
     private final static String DATABASE_USER = "kiklos";
     private static Connection conn;
-    private static ConcurrentLinkedQueue<String> batchQueue = new ConcurrentLinkedQueue<>();
+    private static Queue<String> batchQueue = new LinkedBlockingQueue<>();
     private final static String INSERT_STMT = "INSERT INTO " + DATABASE_NAME + "(%s) VALUES (%s);";
     private static SqlQueueProcessor processor = new SqlQueueProcessor();
 

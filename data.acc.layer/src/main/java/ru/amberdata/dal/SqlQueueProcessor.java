@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
  */
 public class SqlQueueProcessor {
 
-    private static int queueSize = Integer.parseInt(System.getProperty("SQL_PROCESS_THREADS", "1"));
+    private static int queueSize = Integer.parseInt(System.getProperty("SQL_PROCESS_THREADS", "2"));
     private static int batchSize = Integer.valueOf(System.getProperty("DB_BATCH_SIZE", "1"));
 
     private static ExecutorService execServ = Executors.newFixedThreadPool(queueSize);
@@ -35,10 +35,6 @@ public class SqlQueueProcessor {
 
                     while (true) {
                         String sql = queue.poll();
-                        while (sql == null) {
-                            Thread.sleep(1000);
-                            sql = queue.poll();
-                        }
                         try {
                             System.out.println("sql:" + sql);
                             stmt.addBatch(sql);
@@ -47,10 +43,8 @@ public class SqlQueueProcessor {
                             e.printStackTrace();
                         }
                         if (size >= batchSize) {
-                            System.out.println("exec");
                             stmt.executeBatch();
                             conn.commit();
-                            System.out.println("commit");
                             size = 0;
                         }
                     }

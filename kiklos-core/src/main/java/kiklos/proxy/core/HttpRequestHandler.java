@@ -94,12 +94,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			m.put("par_id", parId);
 			m.put("counter_id", counterId);
 			m.put("site_id", map.get("a"));
-			m.put("referer", refererStr);
+			m.put("referer", map.get("d"));
 			m.put("page", map.get("u"));
 			m.put("screen", map.get("m"));
 			m.put("ua", userAgentStr);
 			m.put("host", remoteHost);
-			m.put("value", String.format("%s\t%s\t%s\t%s\t%s\t%s", date, uri, refererStr, userAgentStr, cookie.toString(), remoteHost));
+			m.put("value", uri);
 
 			return m;
 		} catch (MalformedURLException e) {
