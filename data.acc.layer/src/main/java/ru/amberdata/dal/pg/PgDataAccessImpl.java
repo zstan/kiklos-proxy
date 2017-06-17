@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import ru.amberdata.dal.DataAccess;
@@ -17,7 +17,7 @@ public class PgDataAccessImpl implements DataAccess, AutoCloseable {
     private final static String DATABASE_URI = "127.0.0.1:26257";
     private final static String DATABASE_USER = "kiklos";
     private static Connection conn;
-    private static Queue<String> batchQueue = new LinkedBlockingQueue<>();
+    private static BlockingQueue<String> batchQueue = new LinkedBlockingQueue<>();
     private final static String INSERT_STMT = "INSERT INTO " + DATABASE_NAME + "(%s) VALUES (%s);";
     private static SqlQueueProcessor processor = new SqlQueueProcessor();
 
@@ -62,7 +62,7 @@ public class PgDataAccessImpl implements DataAccess, AutoCloseable {
             else
                 values += !values.isEmpty() ? ",\'" + e.getValue() + '\'' : '\'' + e.getValue() + '\'';
         }
-        System.out.println(String.format(INSERT_STMT, columns, values));
+        //System.out.println(String.format(INSERT_STMT, columns, values));
         batchQueue.add(String.format(INSERT_STMT, columns, values));
     }
 
