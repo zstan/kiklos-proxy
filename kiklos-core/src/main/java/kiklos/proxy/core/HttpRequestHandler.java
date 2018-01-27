@@ -95,7 +95,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 						vastList = Collections.emptyList(); // empty for unknown channel !!!
 					}
 				}
-				
+
 				if (!vastList.isEmpty()) {
 					LOG.debug("reqTransformer vastList size: {}", vastList.size());
 					List<String> vastUriList = new ArrayList<>(vastList.size());

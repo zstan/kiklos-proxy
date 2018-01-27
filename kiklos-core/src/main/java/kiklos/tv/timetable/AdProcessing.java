@@ -38,17 +38,17 @@ public class AdProcessing {
 		return null;
 	}
 	
-	public void mapUpdater(final Map<PairEx<String, Date>, PairEx<String, String>> mapExternal) {		
+	void mapUpdater(final Map<PairEx<String, Date>, PairEx<String, String>> mapExternal) {
 		mapInternal = map2TreeMapCopy(mapExternal);
 		LOG.info("mapInternal.size: {}", mapInternal.size());
 	}
 	
-	public void removeOldTimeTable(final PairEx<String, Date> key) {
+	void removeOldTimeTable(final PairEx<String, Date> key) {
 		mapInternal.remove(key);
 		LOG.info("mapInternal.size: {}", mapInternal.size());
 	}
 	
-	public Map<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> getTimeTableMap() {
+	Map<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> getTimeTableMap() {
 		return mapInternal;
 	}
 	

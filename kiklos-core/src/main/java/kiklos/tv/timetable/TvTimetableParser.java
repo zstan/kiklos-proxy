@@ -108,7 +108,6 @@ public class TvTimetableParser {
 		TreeMap<PairEx<Long, Long>, PairEx<Short, List<Short>>> tOut = new TreeMap<>();
 		Calendar onAirCalendar = Calendar.getInstance();
 		
-		
 		Calendar midDay = Calendar.getInstance();
 		midDay.setTime(date);
 		midDay.set(Calendar.HOUR, 12);

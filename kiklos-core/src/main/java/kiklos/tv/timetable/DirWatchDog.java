@@ -115,7 +115,7 @@ public class DirWatchDog {
 				}
 				
 				LOG.debug("add new data to external storage ch: {}, date: {}", channel, date);
-				result = new PairEx<>(new PairEx<String, Date>(channel, fileDate.getTime()), new PairEx<String, String>(format, buff.toString()));
+				result = new PairEx<>(new PairEx<>(channel, fileDate.getTime()), new PairEx<>(format, buff.toString()));
 				
 				LOG.debug("DirWatchDog, move old timetable : {}", path);
 				FileUtils.moveFileToDirectory(fileEntry, OLD_DATA_FOLDER, true);					
