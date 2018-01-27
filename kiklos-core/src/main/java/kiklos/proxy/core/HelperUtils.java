@@ -1,6 +1,5 @@
 package kiklos.proxy.core;
 
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 
 import java.net.URISyntaxException;
@@ -17,14 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HelperUtils {
-	
 	private static final Logger LOG = LoggerFactory.getLogger(HelperUtils.class);
 	public static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
 	public static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
 
-	static int getRequiredAdDuration(final String req) {
-		Map<String, List<String>> params = (new QueryStringDecoder(req)).parameters();
-		List<String> dur = params.get(HttpRequestHandler.DURATION); 
+	static int getRequiredAdDuration(final Map<String, List<String>> params) {
+		List<String> dur = params.get(HttpRequestHandler.DURATION);
 		if (dur != null) {
 			try {
 				int d = Integer.parseInt(dur.get(0)); 
@@ -64,8 +61,7 @@ public class HelperUtils {
 			return channel.remove(0);
 		}
 	}
-	
-	
+
 	public static Calendar updateCalendar(final Calendar dst, final Calendar c) {
 		Calendar out = Calendar.getInstance();
 		out.setTime(dst.getTime());
@@ -99,7 +95,7 @@ public class HelperUtils {
 		}
 	}
 	
-	public static boolean calendarDayComparer(final Calendar now, final Calendar c) {
+	static boolean calendarDayComparer(final Calendar now, final Calendar c) {
 		return now.get(Calendar.YEAR) == c.get(Calendar.YEAR) && 
 				now.get(Calendar.MONTH) == c.get(Calendar.MONTH) && 
 				now.get(Calendar.DAY_OF_MONTH) <= c.get(Calendar.DAY_OF_MONTH);		
@@ -114,7 +110,7 @@ public class HelperUtils {
         try {
         	unit.sleep(duration);
 		} catch (InterruptedException e1) {
-				e1.printStackTrace();
+			e1.printStackTrace();
 		}
 	}
 }

@@ -71,7 +71,7 @@
         		<configuration>
                 	<archive>
             			<manifest>
-              				<mainClass>kiklos.proxy.core.NettyHttpServer</mainClass>
+              				<mainClass>kiklos.proxy.core.TimeTableResponder</mainClass>
             			</manifest>
           			</archive>
           			<descriptorRefs>

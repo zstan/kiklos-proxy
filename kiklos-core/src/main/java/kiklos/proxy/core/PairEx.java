@@ -6,19 +6,16 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class PairEx<K,V>
-    implements Entry<K,V>, java.io.Serializable, Comparable<PairEx<K, V>>
-{
+    implements Entry<K,V>, java.io.Serializable, Comparable<PairEx<K, V>> {
     private static final long serialVersionUID = -8499721149061103585L;
 
     private K key;
     private V value;
 
-    
 	@Override
 	public int compareTo(final PairEx<K, V> o) {
 		return Pair.of(this.getKey(), this.getValue()).compareTo(Pair.of(o.getKey(), o.getValue()));
 	}
-	
     
     /**
      * Creates an entry representing a mapping from the specified
@@ -27,10 +24,6 @@ public class PairEx<K,V>
      * @param key the key represented by this entry
      * @param value the value represented by this entry
      */
-	
-    public PairEx() {
-    }
-    
     public PairEx(K key, V value) {
         this.key   = key;
         this.value = value;
@@ -142,5 +135,3 @@ public class PairEx<K,V>
     }
     
 }
-
-

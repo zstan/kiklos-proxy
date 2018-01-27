@@ -1,6 +1,5 @@
 package kiklos.proxy.core;
 
-
 import kiklos.planner.DurationSettings;
 import kiklos.tv.timetable.AdProcessing;
 import kiklos.tv.timetable.DirWatchDog;
@@ -24,7 +23,6 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 		cookieFabric = CookieFabric.buildCookieFabric();
 	}
 
-	private final Redisson storage = Redisson.create();
 	AsyncHttpClientConfig cfg = new AsyncHttpClientConfig.Builder()
 		.setCompressionEnforced(true)
 		.setConnectTimeout(1000)
@@ -34,7 +32,7 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 		.build();
 	
 	private final AsyncHttpClient httpClient = new AsyncHttpClient(cfg);
-	
+	private final Redisson storage = Redisson.create();
 	private final ExecutorService pool = Executors.newCachedThreadPool(new MinPriorityThreadFactory());
 	private final PlacementsMapping placementsMap = new PlacementsMapping(storage, pool);
 	private final DurationSettings durationsConfig = new DurationSettings(storage, pool);
@@ -47,46 +45,42 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
     public void initChannel(SocketChannel ch) {
         ChannelPipeline p = ch.pipeline();
         p.addLast(new HttpServerCodec());
-        //p.addLast(new HttpRequestHandler(httpClient, placementsMap, memLogStorage, cookieFabric, durationsConfig, timeTableWatchDog));
         p.addLast(new HttpRequestHandler(this));
     }
     
-	public AsyncHttpClient getHttpClient() {
+	AsyncHttpClient getHttpClient() {
 		return httpClient;
 	}
 
-	public PlacementsMapping getPlacementsMap() {
+	PlacementsMapping getPlacementsMap() {
 		return placementsMap;
 	}
 
-	public DurationSettings getDurationsConfig() {
+	DurationSettings getDurationsConfig() {
 		return durationsConfig;
 	}
 
-	public MemoryLogStorage getMemLogStorage() {
+	MemoryLogStorage getMemLogStorage() {
 		return memLogStorage;
 	}
 
-	public DirWatchDog getTimeTableWatchDog() {
+	DirWatchDog getTimeTableWatchDog() {
 		return timeTableWatchDog;
 	}
 
-	public AdProcessing getAdProcessing() {
+	AdProcessing getAdProcessing() {
 		return adProcessing;
 	}
 
-	public CookieFabric getCookieFabric() {
+	CookieFabric getCookieFabric() {
 		return cookieFabric;
 	}
-    
 }
 
 class MinPriorityThreadFactory implements ThreadFactory {
-	   public Thread newThread(Runnable r) {
-		 Thread t = new Thread(r);
-		 t.setPriority(Thread.MIN_PRIORITY);
-	     return t;
-	   }
+	public Thread newThread(Runnable r) {
+			Thread t = new Thread(r);
+			t.setPriority(Thread.MIN_PRIORITY);
+	    	return t;
+	}
  }
-
-

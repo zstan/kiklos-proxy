@@ -49,7 +49,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.amrmostafa.experiments.netty.NettyHttpServer</mainClass>
+							<mainClass>org.amrmostafa.experiments.netty.TimeTableResponder</mainClass>
 							<addClasspath>true</addClasspath>
 							
 								This is the default path used by mvn dependency:copy-dependencies

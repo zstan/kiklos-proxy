@@ -15,16 +15,16 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.util.StatusPrinter;
 
-public class NettyHttpServer
+public class TimeTableResponder
 {
 	public static void main(String[] args) throws Exception
 	{		
 	    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 	    StatusPrinter.print(lc);
-	    InputStream resource = NettyHttpServer.class.getResourceAsStream("logback.xml");
+	    InputStream resource = TimeTableResponder.class.getResourceAsStream("logback.xml");
 	    System.out.println(resource);
 	    int procCount = Runtime.getRuntime().availableProcessors();
-	    System.out.println("proc count: " + procCount);
+	    System.out.println("system procs count: " + procCount);
 	    
         EventLoopGroup bossGroup = new NioEventLoopGroup(procCount * 2);
         EventLoopGroup workerGroup = new NioEventLoopGroup();

@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
 import kiklos.tv.timetable.AdProcessing;
-import kiklos.tv.timetable.DirWatchDog;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultCookie;
@@ -55,31 +54,27 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
 	private static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
 	private final CookieFabric cookieFabric;
-	private static final String FILE_ENCODING = UTF_8.name();
-	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + FILE_ENCODING;
-	public static final String DURATION = "t";
-	public static final String CHANNEL = "ch";
-	public static final String DEFAULT_CHANNEL = "408";
+	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + UTF_8.name();
+	static final String DURATION = "t";
+	static final String CHANNEL = "ch";
+	static final String DEFAULT_CHANNEL = "408";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
-	public static short MAX_DURATION_BLOCK = 900;
+	static short MAX_DURATION_BLOCK = 900;
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
-    private final DirWatchDog watchDog;
     private final AdProcessing adProcessing;
 	
-	HttpRequestHandler(HttpServerPipelineFactory instance) {
-		httpClient = instance.getHttpClient();
-		placementsMapping = instance.getPlacementsMap();
-		memLogStorage = instance.getMemLogStorage();
-		cookieFabric = instance.getCookieFabric();
-		durationSettings = instance.getDurationsConfig();
-		watchDog = instance.getTimeTableWatchDog();
-		adProcessing = instance.getAdProcessing();
+	HttpRequestHandler(HttpServerPipelineFactory handler) {
+		httpClient = handler.getHttpClient();
+		placementsMapping = handler.getPlacementsMap();
+		memLogStorage = handler.getMemLogStorage();
+		cookieFabric = handler.getCookieFabric();
+		durationSettings = handler.getDurationsConfig();
+		adProcessing = handler.getAdProcessing();
 	}
 	
 	private List<String> reqTransformer(final String req) {
-		
 		QueryStringDecoder decoder = new QueryStringDecoder(req);		
 		Map<String, List<String>> params = decoder.parameters(); 
 		
@@ -90,7 +85,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				List<String> vastList =  placementsMapping.getMappingVASTList(id);
 				
 				if (vastList.isEmpty()) {
-					int reqDuration = HelperUtils.getRequiredAdDuration(req);
+					int reqDuration = HelperUtils.getRequiredAdDuration(params);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
 					PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(params));
 					if (tt4ch != null) {
@@ -164,7 +159,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		ByteBuf bb = Unpooled.wrappedBuffer(buff.getBytes());
 		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
 		if (stCookie == null) {					
-			cookieList.add(getOurCookie());			
+			cookieList.add(currentCookie());
 		}
 				
 		LOG.debug(cookieList.toString());
@@ -191,12 +186,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		
         if (msg instanceof HttpRequest) {
-        	
             HttpRequest request = (HttpRequest) msg;
+
 			if (HttpHeaders.is100ContinueExpected(request)) {
 				ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
-			}		
-			final String reqUri = request.getUri();		
+			}
+
+			final String reqUri = request.getUri();
+
 			if ("/favicon.ico".equals(reqUri)) {
 				ctx.channel().close();
 				return;			
@@ -266,7 +263,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				
 				final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);
 				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);				
-				return;
 			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
 				ListenableFuture<Response> respFut = createResponse(sessionCookieList, VASTUrlList.get(0));
 				while (true) {
@@ -289,7 +285,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
 		}
 		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {
-			
 			@Override
 			public Response onCompleted(Response response) throws Exception {
 				LOG.info("req completed : {} status code : {}, response size: {}", newPath, response.getStatusCode(), response.getResponseBody().length());
@@ -310,13 +305,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		ctx.close();
 	}
 	
-	private Cookie getOurCookie() {	
-		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId(System.currentTimeMillis()));
+	private Cookie currentCookie() {
+		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId());
 		c.setMaxAge(COOKIE_MAX_AGE);
 		c.setPath("/");
 		c.setDomain(".adinsertion.pro");
 		c.setHttpOnly(true);
 		return c;
 	}
-	
 }

@@ -58,7 +58,6 @@ enum TvChannelRange {
 			default: return DEFAULT;
 		}
 	}
-	
 }
 
 public class TvTimetableParser {

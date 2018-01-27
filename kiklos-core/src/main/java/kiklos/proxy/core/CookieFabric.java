@@ -45,11 +45,13 @@ public class CookieFabric {
 		return cf;
 	}
 	
-	public String generateUserId(long sessionCreationTime) {
-		
-		String cString = Long.toString(sessionCreationTime);
-		cString += Integer.toString(random.nextInt());
+	public String generateUserId() {
+		long sessionCreationTime = System.currentTimeMillis();
+
+		String cString = Long.toString(sessionCreationTime) + Integer.toString(random.nextInt());
+
 		byte[] bytesOfMessage;
+
 		try {
 			bytesOfMessage = cString.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -91,7 +93,7 @@ public class CookieFabric {
 		return new String(uuid);
 	}
 	
-	public static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {		
+	static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
 		
 		LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
@@ -116,7 +118,7 @@ public class CookieFabric {
 		return Pair.of(ourCookie, httpCookieList);
 	}
 	
-	public static List<Cookie> getResponseCookies(final Response request) {		
+	static List<Cookie> getResponseCookies(final Response request) {
 		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
 		List<Cookie> httpCookieList = new ArrayList<>();
 		
@@ -139,7 +141,7 @@ public class CookieFabric {
 		CookieFabric cf = new CookieFabric();
 		Set<String> ss = new HashSet<>();
 		for (int i = 0; i< 1000000; ++i) {
-			String s = cf.generateUserId(System.currentTimeMillis());
+			String s = cf.generateUserId();
 			if (ss.contains(s))
 				System.out.println("!!!");
 			else
