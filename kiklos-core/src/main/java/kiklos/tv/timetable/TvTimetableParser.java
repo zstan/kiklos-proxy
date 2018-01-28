@@ -295,13 +295,13 @@ public class TvTimetableParser {
 		TvChannelRange range = TvChannelRange.getRange4Channel(Short.parseShort(ch));
 		
 		final long current = moment.getKey();
-		LOG.debug("searching1: " + current);
-		LOG.debug("map size: " + m.size());
+		LOG.debug("current searching: {}", HelperUtils.TIME_TV_FORMAT.format(current));
+		LOG.debug("map size: {}", m.size());
 		
 		for (Map.Entry<PairEx<Long, Long>, PairEx<Short, List<Short>>> e : m.entrySet()) {
 			final long lower = e.getKey().getKey();
 			final long upper = e.getKey().getValue();
-			//LOG.debug("lower: " + lower);
+			LOG.debug("lower: {} upper: {}", HelperUtils.TIME_TV_FORMAT.format(lower), HelperUtils.TIME_TV_FORMAT.format(upper));
 			
 			if (current >= lower - range.lower && current <= upper + range.upper) {
 				
@@ -321,12 +321,14 @@ public class TvTimetableParser {
 				
 				if (current > upper) {
 					deltha = current - upper;
-					prevValue = e.getKey(); 
+					prevValue = e.getKey();
+					LOG.debug("deltha: {}", deltha);
 				}
 				window = e.getKey();
-				LOG.warn("unreachable code, getWindow");
 			}
 		}
+		LOG.debug("window: {}", m.get(window));
+
 		return window == null ? null : m.get(window);
 	}
 }

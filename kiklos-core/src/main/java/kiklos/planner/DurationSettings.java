@@ -21,7 +21,6 @@ public class DurationSettings {
     private final ExecutorService pool;
     
 	public DurationSettings(final Redisson memStorage, final ExecutorService execPool) {
-		
 		durExternal = memStorage.getMap(DURATIONS_MAP_NAME);
 		durationsMap = getRemoteCollection();
 		pool = execPool;

@@ -13,9 +13,14 @@ public class SimpleStrategy implements AbstractStrategy {
 	private static final Logger LOG = LoggerFactory.getLogger(SimpleStrategy.class);
 	private static List<Integer> durationsList;
 	
-	public static List<String> formAdList(final DurationSettings settings, final int summaryDuration) {		
+	public static List<String> formAdList(final DurationSettings settings, final int summaryDuration) {
+		durationsList = settings.getDurationsList();
+
+		LOG.debug("start formAdList, summaryDuration {}", summaryDuration);
+
 		if (summaryDuration < durationsList.get(0) && summaryDuration != -1)
 			return Collections.emptyList();
+
 		LOG.debug("duration list size: {}, summary duration: {}", durationsList.size(), summaryDuration);
 		List<String> lOut = new ArrayList<>();
 		if (summaryDuration == -1) {			

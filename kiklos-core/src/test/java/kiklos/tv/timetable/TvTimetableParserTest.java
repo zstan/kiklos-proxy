@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -198,5 +199,9 @@ public class TvTimetableParserTest {
 	
 	@Test
 	public void testExcel() {
+		Date now = Calendar.getInstance().getTime(); // gmt
+		long currentTime = now.getTime();
+		final String currentTimeStr = HelperUtils.TIME_TV_FORMAT.format(currentTime);
+		System.out.println(currentTimeStr);
 	}
 }

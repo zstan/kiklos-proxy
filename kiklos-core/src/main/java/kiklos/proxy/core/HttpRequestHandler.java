@@ -82,6 +82,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final List<String> idList = params.get("id");
 			if (!idList.isEmpty() && !idList.get(0).isEmpty()) {
 				final String id = idList.get(0);
+
+				// пробуем найти уже замапленные vast url`s
+				// редактируется в редис базе
+				// redis-cli HSET "\".placements\"" "\"212\"" "[\"java.util.ArrayList\",[\"http://asdasdfasdf.com/\", \"http://asg.vidigital.ru/1/50006/c/v/2\", \"http://ib.adnxs.com/ptv?id=2504637\"]]"
+				// берем vast xml или из базы редиса или из расписания, если попадаем в рекламный блок бьем его на части и каждой части смотрим в редис базу
+				// за соотв. записями : redis-cli HSET "\".durations\"" "5" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+				// так же для каждого канала в отдельности конфигурится допуски +- от рекламного блока.
 				List<String> vastList =  placementsMapping.getMappingVASTList(id);
 				
 				if (vastList.isEmpty()) {
@@ -90,14 +97,16 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(params));
 					if (tt4ch != null) {
 						reqDuration = tt4ch.getKey();
+						LOG.debug("reqDuration: {}", reqDuration);
 						vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
 					} else {
 						vastList = Collections.emptyList(); // empty for unknown channel !!!
 					}
 				}
 
+				LOG.debug("vastList size: {}", vastList.size());
+
 				if (!vastList.isEmpty()) {
-					LOG.debug("reqTransformer vastList size: {}", vastList.size());
 					List<String> vastUriList = new ArrayList<>(vastList.size());
 					params.remove("id");
 					params.remove(DURATION);
@@ -246,18 +255,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					ListenableFuture<Response> p = pool.get(0);
 					if (p.isDone() || p.isCancelled()) {
 						LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
-						Response resp = p.get();
-						final String respVast = resp.getResponseBody();
-						vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
-						if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
-							sessionCookieList.addAll(CookieFabric.getResponseCookies(resp));
-							cookieAccepted = true;
-						}						
+						if (p.isDone()) {
+							Response resp = p.get();
+							final String respVast = resp.getResponseBody();
+							vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
+							if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
+								sessionCookieList.addAll(CookieFabric.getResponseCookies(resp));
+								cookieAccepted = true;
+							}
+						}
 						pool.remove(p);
 						LOG.debug("response pool remove");
 					}
 					else {
-						HelperUtils.try2sleep(TimeUnit.MILLISECONDS, 1);
+						HelperUtils.try2sleep(TimeUnit.MILLISECONDS, 10);
 					}
 				}
 				

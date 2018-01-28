@@ -16,7 +16,9 @@ public class PairEx<K,V>
 	public int compareTo(final PairEx<K, V> o) {
 		return Pair.of(this.getKey(), this.getValue()).compareTo(Pair.of(o.getKey(), o.getValue()));
 	}
-    
+
+    public PairEx() { }
+
     /**
      * Creates an entry representing a mapping from the specified
      * key to the specified value.

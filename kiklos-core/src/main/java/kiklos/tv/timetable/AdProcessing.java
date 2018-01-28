@@ -27,7 +27,7 @@ public class AdProcessing {
 		final String currentTimeStr = HelperUtils.TIME_TV_FORMAT.format(currentTime);
 		// currentDate and date before !!! fix it !
 		for (Map.Entry<PairEx<String, Date>, NavigableMap<PairEx<Long, Long>, PairEx<Short, List<Short>>>> me: mapInternal.entrySet()) {
-			LOG.debug("searching " + currentTimeStr + " in map" + me.getKey().toString() + " map size: " + mapInternal.size());
+			LOG.debug("searching " + currentTimeStr + " in map " + me.getKey().toString() + " map size: " + mapInternal.size());
 			PairEx<Long, Long> p = new PairEx<>(currentTime, currentTime);
 			PairEx<Short, List<Short>> durationAdList = TvTimetableParser.getWindow(p, me.getValue(), ch);
 			LOG.debug("looking for window: " + currentTime + " durationAdList " + durationAdList);
