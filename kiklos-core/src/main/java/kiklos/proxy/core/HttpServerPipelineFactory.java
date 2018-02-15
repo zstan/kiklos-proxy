@@ -23,7 +23,7 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 		cookieFabric = CookieFabric.buildCookieFabric();
 	}
 
-	AsyncHttpClientConfig cfg = new AsyncHttpClientConfig.Builder()
+	final static AsyncHttpClientConfig ASYNC_CFG = new AsyncHttpClientConfig.Builder()
 		.setCompressionEnforced(true)
 		.setConnectTimeout(1000)
 		.setRequestTimeout(1000)
@@ -31,7 +31,7 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 		.setFollowRedirect(true)
 		.build();
 	
-	private final AsyncHttpClient httpClient = new AsyncHttpClient(cfg);
+	private final AsyncHttpClient httpClient = new AsyncHttpClient(ASYNC_CFG);
 	private final Redisson storage = Redisson.create();
 	private final ExecutorService pool = Executors.newCachedThreadPool(new MinPriorityThreadFactory());
 	private final PlacementsMapping placementsMap = new PlacementsMapping(storage, pool);
@@ -43,6 +43,8 @@ public class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel>
 	
     @Override
     public void initChannel(SocketChannel ch) {
+		ch.config().setTcpNoDelay(true);
+		ch.config().setConnectTimeoutMillis(3000);
         ChannelPipeline p = ch.pipeline();
         p.addLast(new HttpServerCodec());
         p.addLast(new HttpRequestHandler(this));

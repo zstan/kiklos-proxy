@@ -67,17 +67,16 @@ public class VASTv2Parser {
 	
 	public static VAST3 parseVast3(String s) throws XMLStreamException {
 		XMLObjectReader reader;
-		//try {
+		try {
 			reader = XMLObjectReader.newInstance(new StringReader(s));
 			VAST3 template = reader.read("VAST", VAST3.class);
 			reader.close();
 			return template;
-		/*} catch (XMLStreamException e) {
-			System.out.println(e.getMessage());
+		} catch (XMLStreamException e) {
 			logger.error(e.getMessage());
-			throw new RuntimeException(VASTv2Parser.class.getSimpleName()
-					+ ": unable to parse", e);
-		}*/
+			logger.error("error: ", e);
+			throw new XMLStreamException(VASTv2Parser.class.getSimpleName() + ": unable to parse", e);
+		}
 	}	
 	
 

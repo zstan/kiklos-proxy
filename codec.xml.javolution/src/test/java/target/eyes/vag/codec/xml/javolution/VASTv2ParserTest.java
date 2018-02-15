@@ -177,6 +177,19 @@ public class VASTv2ParserTest {
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	public void testVast3WithSeq1() throws URISyntaxException {
+		InputStream in = getClass().getResourceAsStream("vast3_demo.tremorvideo.com.xml");
+		try {
+			String content = CharStreams.toString(new InputStreamReader(in, Charsets.UTF_8));
+			VASTv2Parser.parseVast3(content);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	@Test
 	public void testVast3WithSeq2() throws URISyntaxException {

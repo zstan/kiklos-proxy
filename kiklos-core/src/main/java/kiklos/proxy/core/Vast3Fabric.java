@@ -94,15 +94,22 @@ public class Vast3Fabric {
 			VAST3 v;
 			Ad ad = null;
 			try {
+				LOG.debug("parseVast3 begin");
+
 				v = VASTv2Parser.parseVast3(vast);
+
 				if (v == null) 
 					throw new XMLStreamException("parseVast3 Exception");
+
 				List<Ad> ads = v.getAds();
+
+				LOG.debug("parseVast3 end, ads size: {}", ads.size());
+
 				if (!ads.isEmpty()) {
 					ad = ads.get(0);
 					ad.setSequence(Integer.toString(i++));
 				}
-			} catch (XMLStreamException|IndexOutOfBoundsException e) {
+			} catch (XMLStreamException | IndexOutOfBoundsException e) {
 				LOG.debug("Vast2ListToVast3 exception: " + e.getMessage()); //put zaglushka here !!!!
 			}
 			
@@ -110,7 +117,7 @@ public class Vast3Fabric {
 				adList.add(ad);			
 		}
 		LOG.debug("Vast2ListToVast3 adList {}", adList.size());
-		//LOG.debug("Vast2ListToVast3 raw: {}", VastToString(vast3));
+		LOG.debug("Vast2ListToVast3 raw: {}", VastToString(vast3));
 		return VastToString(vast3);
 	}
 }

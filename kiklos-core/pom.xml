@@ -90,7 +90,7 @@
 		<dependency>
 		  <groupId>com.ning</groupId>
 		  <artifactId>async-http-client</artifactId>
-		  <version>1.9.25</version>
+		  <version>1.9.40</version>
  	    	<exclusions>
 		    <exclusion>
 			    <groupId>org.slf4j</groupId>
