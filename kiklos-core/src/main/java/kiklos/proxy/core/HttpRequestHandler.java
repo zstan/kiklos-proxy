@@ -57,6 +57,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + UTF_8.name();
 	static final String DURATION = "t";
 	static final String CHANNEL = "ch";
+    static final String ID = "id";
 	static final String DEFAULT_CHANNEL = "408";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	static short MAX_DURATION_BLOCK = 900;
@@ -73,13 +74,17 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		durationSettings = handler.getDurationsConfig();
 		adProcessing = handler.getAdProcessing();
 	}
-	
+
+	/**
+	 * @param req request string
+	 * @return list for Ad uri`s
+     */
 	private List<String> reqTransformer(final String req) {
 		QueryStringDecoder decoder = new QueryStringDecoder(req);		
 		Map<String, List<String>> params = decoder.parameters(); 
 		
 		if (!params.isEmpty()) {
-			final List<String> idList = params.get("id");
+			final List<String> idList = params.get(ID);
 			if (!idList.isEmpty() && !idList.get(0).isEmpty()) {
 				final String id = idList.get(0);
 
@@ -90,7 +95,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				// за соотв. записями : redis-cli HSET "\".durations\"" "5" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
 				// так же для каждого канала в отдельности конфигурится допуски +- от рекламного блока.
 				List<String> vastList =  placementsMapping.getMappingVASTList(id);
-				
+
+				// Если не нашли в редис, лезем в расписание
 				if (vastList.isEmpty()) {
 					int reqDuration = HelperUtils.getRequiredAdDuration(params);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
@@ -104,11 +110,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					}
 				}
 
-				LOG.debug("vastList size: {}", vastList.size());
+				if (LOG.isDebugEnabled())
+					LOG.debug("vastList size: {}", vastList.size());
 
 				if (!vastList.isEmpty()) {
 					List<String> vastUriList = new ArrayList<>(vastList.size());
-					params.remove("id");
+					params.remove(ID);
 					params.remove(DURATION);
 					params.remove(CHANNEL);
 					
@@ -193,9 +200,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
     @Override    
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		
         if (msg instanceof HttpRequest) {
-            HttpRequest request = (HttpRequest) msg;
+            HttpRequest request = (HttpRequest)msg;
 
 			if (HttpHeaders.is100ContinueExpected(request)) {
 				ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
@@ -221,14 +227,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				return empty vast
 			}*/
 			
-			final List<String> VASTUrlList = reqTransformer(reqUri);
-			LOG.debug("VASTUrlList size: {}", VASTUrlList.size());
+			final List<String> vastUrls = reqTransformer(reqUri);
+            if (LOG.isDebugEnabled())
+			    LOG.debug("VASTUrlList size: {}", vastUrls.size());
 			
 			final InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress(); 
 		    final String remoteHost = sa.getAddress().getHostAddress();
-		    LOG.info(String.format("host: %s port: %d", remoteHost, sa.getPort()));						
+		    LOG.info("remote host: {}:{}", remoteHost, sa.getPort());
 			
-			if (!VASTUrlList.isEmpty()) {
+			if (!vastUrls.isEmpty()) {
 				memLogStorage.put(composeLogString(request, "", remoteHost));
 			} else {
 				ctx.channel().close();
@@ -239,53 +246,51 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final Cookie stCookie = ourAndSessionCookPair.getKey();
 			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getValue();
 			
-			if (VASTUrlList.size() > 1) {
-				List<ListenableFuture<Response>> pool = new ArrayList<>();
+			if (vastUrls.size() > 1) {
+				List<ListenableFuture<Response>> requestsPool = new ArrayList<>();
 				List<String> vastPool = new ArrayList<>();
 				
-				for (String vs : VASTUrlList) {
-					LOG.debug("try to create request: {}", vs);
-					pool.add(createResponse(sessionCookieList, vs));
+				for (String vs : vastUrls) {
+					if (LOG.isDebugEnabled())
+						LOG.debug("try to create request: {}", vs);
+					requestsPool.add(createResponse(sessionCookieList, vs));
 				}
-				LOG.debug("response pool size: {}", pool.size());
+
+				if (LOG.isDebugEnabled())
+					LOG.debug("response pool size: {}", requestsPool.size());
 				
 				boolean cookieAccepted = false;
-				
-				while (!pool.isEmpty()) {				
-					ListenableFuture<Response> p = pool.get(0);
+
+				while (!requestsPool.isEmpty()) {
+					ListenableFuture<Response> p = requestsPool.get(0);
 					if (p.isDone() || p.isCancelled()) {
-						LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
+                        if (LOG.isDebugEnabled())
+						    LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
 						if (p.isDone()) {
-							Response resp = p.get();
-							final String respVast = resp.getResponseBody();
+							final Response response = p.get();
+							final String respVast = response.getResponseBody();
 							vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
 							if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
-								sessionCookieList.addAll(CookieFabric.getResponseCookies(resp));
+								sessionCookieList.addAll(CookieFabric.getResponseCookies(response));
 								cookieAccepted = true;
 							}
 						}
-						pool.remove(p);
+						requestsPool.remove(p);
 						LOG.debug("response pool remove");
 					}
-					else {
+					else
 						HelperUtils.try2sleep(TimeUnit.MILLISECONDS, 10);
-					}
 				}
 				
 				final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);
 				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);				
 			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
-				ListenableFuture<Response> respFut = createResponse(sessionCookieList, VASTUrlList.get(0));
-				while (true) {
-					if (respFut.isDone() || respFut.isCancelled()) {
-						Response response = respFut.get();
-						final String body = response.getResponseBody();
-						List<Cookie> cookieList = CookieFabric.getResponseCookies(response);
-						writeResp(ctx, (HttpRequest)msg, body.isEmpty() ? EMPTY_VAST : body, cookieList, stCookie);
-						return;
-					}
-				}
-			}	
+				final ListenableFuture<Response> respFut = createResponse(sessionCookieList, vastUrls.get(0));
+                final Response response = respFut.get();
+                final String body = response.getResponseBody();
+                final List<Cookie> cookieList = CookieFabric.getResponseCookies(response);
+                writeResp(ctx, (HttpRequest)msg, body.isEmpty() ? EMPTY_VAST : body, cookieList, stCookie);
+			}
         }
 	}
 	

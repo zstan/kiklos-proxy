@@ -32,7 +32,7 @@ public class HelperUtils {
 		} else
 			return -1;
 	}
-	
+
 	static String queryParams2String(final Map<String, List<String>> params) {
 		QueryStringEncoder enc = new QueryStringEncoder(""); 
 		for (Map.Entry<String, List<String>> e: params.entrySet()) {

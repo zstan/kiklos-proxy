@@ -123,10 +123,12 @@ public class CookieFabric {
 		List<Cookie> httpCookieList = new ArrayList<>();
 		
 		if (cookieStrings != null) {
-			LOG.debug("getResponseCookies: {} len: {}", SET_COOKIE, cookieStrings.size());			
+			if (LOG.isDebugEnabled())
+				LOG.debug("getResponseCookies: {} len: {}", SET_COOKIE, cookieStrings.size());
 			for (String cookieString : cookieStrings) {
 				if (cookieString != null) {
-					LOG.debug("{} string: {}", SET_COOKIE, cookieString);
+					if (LOG.isDebugEnabled())
+						LOG.debug("{} string: {}", SET_COOKIE, cookieString);
 					Set<Cookie> cookies = CookieDecoder.decode(cookieString);
 					if (!cookies.isEmpty()) {
 						httpCookieList.addAll(cookies);
