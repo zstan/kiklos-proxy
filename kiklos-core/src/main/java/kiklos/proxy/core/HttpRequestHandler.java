@@ -66,13 +66,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
     private final MemoryLogStorage memLogStorage;
     private final AdProcessing adProcessing;
 	
-	HttpRequestHandler(HttpServerPipelineFactory handler) {
-		httpClient = handler.getHttpClient();
-		placementsMapping = handler.getPlacementsMap();
-		memLogStorage = handler.getMemLogStorage();
-		cookieFabric = handler.getCookieFabric();
-		durationSettings = handler.getDurationsConfig();
-		adProcessing = handler.getAdProcessing();
+	HttpRequestHandler(Configuration config) {
+		httpClient = config.getHttpClient();
+		placementsMapping = config.getPlacementsMap();
+		memLogStorage = config.getMemLogStorage();
+		cookieFabric = config.getCookieFabric();
+		durationSettings = config.getDurationsConfig();
+		adProcessing = config.getAdProcessing();
 	}
 
 	/**

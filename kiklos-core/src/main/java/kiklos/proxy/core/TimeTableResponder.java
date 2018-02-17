@@ -4,9 +4,13 @@ import java.io.InputStream;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
@@ -45,5 +49,18 @@ public class TimeTableResponder
 		        bossGroup.terminationFuture().sync();
 		        workerGroup.terminationFuture().sync();
 		 }          		
+	}
+
+	private static class HttpServerPipelineFactory extends ChannelInitializer<SocketChannel> {
+		private static Configuration config = new Configuration();
+
+		@Override
+		public void initChannel(SocketChannel ch) {
+			ch.config().setTcpNoDelay(true);
+			ch.config().setConnectTimeoutMillis(3000);
+			ChannelPipeline p = ch.pipeline();
+			p.addLast(new HttpServerCodec());
+			p.addLast(new HttpRequestHandler(config));
+		}
 	}
 }
