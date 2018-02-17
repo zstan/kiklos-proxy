@@ -31,10 +31,14 @@ public class Configuration {
             .setFollowRedirect(true)
             .build();
 
+    private NettyAsyncHttpProviderConfig providerConfig = new NettyAsyncHttpProviderConfig();
+
     public Configuration() {
         cookieFabric = CookieFabric.buildCookieFabric();
+/*        System.err.println(httpClient.getConfig().getClass().getName());
+        System.err.println(httpClient.getConfig().getAsyncHttpProviderConfig().getClass().getName());
         NettyAsyncHttpProviderConfig cfg = (NettyAsyncHttpProviderConfig) httpClient.getConfig().getAsyncHttpProviderConfig();
-        cfg.addProperty("tcpNoDelay", true);
+        cfg.addProperty("tcpNoDelay", true);*/
     }
 
     AsyncHttpClient getHttpClient() {
