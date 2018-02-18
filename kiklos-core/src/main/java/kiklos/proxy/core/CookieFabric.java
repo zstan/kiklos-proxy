@@ -7,6 +7,9 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -140,7 +143,8 @@ public class CookieFabric {
 	}		
 	
 	public static void main(String[] arg) {
-		CookieFabric cf = new CookieFabric();
+
+		CookieFabric cf = CookieFabric.buildCookieFabric();
 		Set<String> ss = new HashSet<>();
 		for (int i = 0; i< 1000000; ++i) {
 			String s = cf.generateUserId();

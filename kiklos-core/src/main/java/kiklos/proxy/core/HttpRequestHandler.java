@@ -1,5 +1,8 @@
 package kiklos.proxy.core;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -61,7 +64,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	static final String DEFAULT_CHANNEL = "408";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	static short MAX_DURATION_BLOCK = 900;
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss");
+	private static final DateTimeFormatter datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
     private final AdProcessing adProcessing;
@@ -152,7 +155,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	}
 	
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
-		final String date = DATE_FORMAT.format(new Date());
+		final String date = LocalDateTime.now().format(datePattern);
 		final String Uri = req.getUri();
 		String cookieString = "<e>";
 		final String cString = req.headers().get(COOKIE);
