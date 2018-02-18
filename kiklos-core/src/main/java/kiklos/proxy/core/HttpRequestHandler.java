@@ -191,6 +191,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length);
 		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
 		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
+		response.headers().add("Access-Control-Allow-Origin", "*");
 		
 		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
         if (!keepAlive) {
