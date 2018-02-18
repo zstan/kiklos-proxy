@@ -1,14 +1,11 @@
 package kiklos.proxy.core;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -191,7 +188,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length);
 		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
 		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
-		response.headers().add("Access-Control-Allow-Origin", "*");
+		response.headers().add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 		
 		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
         if (!keepAlive) {
