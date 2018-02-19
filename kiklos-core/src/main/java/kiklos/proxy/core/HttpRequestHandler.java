@@ -154,13 +154,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
 		final String date = LocalDateTime.now().format(datePattern);
 		final String Uri = req.getUri();
-		String cookieString = "<e>";
+		String cookieString = "";
 		final String cString = req.headers().get(COOKIE);
 		try {
 			if (cString != null)
 				cookieString = URLEncoder.encode(cString, "UTF-8");
 		} catch (UnsupportedEncodingException e1) {
 			LOG.error("can`t encode cookie: {}", cString);
+            cookieString = "<e>";
 		}
 		return String.format("%s\t%s\t%s\t%s\t%s", date, Uri, newUri, cookieString, remoteHost);
 	}
