@@ -1,5 +1,6 @@
 package kiklos.proxy.core;
 
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 
 import java.net.URISyntaxException;
@@ -16,25 +17,38 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HelperUtils {
-	private static final Logger LOG = LoggerFactory.getLogger(HelperUtils.class);
-	public static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
-	public static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
+    private static final Logger LOG = LoggerFactory.getLogger(HelperUtils.class);
+    public static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
+    public static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
 
-	static int getRequiredAdDuration(final Map<String, List<String>> params) {
-		List<String> dur = params.get(HttpRequestHandler.DURATION);
-		if (dur != null) {
-			try {
-				int d = Integer.parseInt(dur.get(0)); 
-				return d > HttpRequestHandler.MAX_DURATION_BLOCK ? HttpRequestHandler.MAX_DURATION_BLOCK : d;
-			} catch (NumberFormatException e) {
-				return -1;
-			}			
-		} else
-			return -1;
-	}
+    static int getRequiredAdDuration(final Map<String, List<String>> params) {
+        List<String> dur = params.get(HttpRequestHandler.DURATION);
+        if (dur != null) {
+            try {
+                int d = Integer.parseInt(dur.get(0));
+                return d > HttpRequestHandler.MAX_DURATION_BLOCK ? HttpRequestHandler.MAX_DURATION_BLOCK : d;
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        } else
+            return -1;
+    }
+
+    // TODO : ////123/qwe/a?2 - fail, fix it
+    static String getAccount(String req) {
+        QueryStringDecoder decoder = new QueryStringDecoder(req);
+        String account = decoder.path().split("/")[1];
+        try {
+            Integer.parseInt(account);
+        } catch (NumberFormatException e) {
+            return "";
+        }
+        return account;
+    }
+
 
 	static String queryParams2String(final Map<String, List<String>> params) {
-		QueryStringEncoder enc = new QueryStringEncoder(""); 
+		QueryStringEncoder enc = new QueryStringEncoder("");
 		for (Map.Entry<String, List<String>> e: params.entrySet()) {
 			for (String val: e.getValue()) {
 				enc.addParam(e.getKey(), val);
@@ -47,8 +61,9 @@ public class HelperUtils {
 		} catch (URISyntaxException e1) {
 			e1.printStackTrace();
 		}					
-		
-		LOG.debug("proxy params to vast req: {}", query);
+
+        if (LOG.isDebugEnabled())
+		    LOG.debug("proxy params to vast req: {}", query);
 		return query;
 	}
 	

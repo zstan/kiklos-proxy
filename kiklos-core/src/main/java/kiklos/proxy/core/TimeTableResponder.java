@@ -1,6 +1,9 @@
 package kiklos.proxy.core;
 
+import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -14,6 +17,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
+import io.netty.handler.ssl.SslContext;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -38,6 +42,27 @@ public class TimeTableResponder
         	.channel(NioServerSocketChannel.class)
         	.handler(new LoggingHandler(LogLevel.INFO))
         	.childHandler(new HttpServerPipelineFactory());
+
+/*        String[] portsArr = ports.trim().split(",");
+        Collection<Channel> channels = new ArrayList<>(portsArr.length);
+
+        for (String port : portsArr) {
+
+            bootstrap.childHandler(new HttpServerPipelineFactory(null));
+
+            if (port.indexOf("443") != -1) {
+                SslContext sslCtx = SslContextBuilder.forServer(new File("/etc/apache2/ssl-crt/STAR_tvdesk_ru.crt"), new File("/etc/apache2/ssl-crt/private_tvdesk_ru.key")).build();
+                //SelfSignedCertificate ssc = new SelfSignedCertificate();
+                //SslContext sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+                bootstrap.childHandler(new HttpServerPipelineFactory(sslCtx));
+            }
+            Channel ch = bootstrap.bind(host, Integer.valueOf(port)).sync().channel();
+            channels.add(ch);
+        }
+
+        for (Channel ch : channels) {
+            ch.closeFuture().sync();
+        }*/
 		
 		try {
 			Channel ch = bootstrap.bind(80).sync().channel();

@@ -79,28 +79,32 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	 * @param req request string
 	 * @return list for Ad uri`s
      */
-	private List<String> reqTransformer(final String req) {
-		QueryStringDecoder decoder = new QueryStringDecoder(req);		
-		Map<String, List<String>> params = decoder.parameters(); 
+	private List<String> reqTransformer(String req) {
+        req = req.toLowerCase();
+		QueryStringDecoder decoder = new QueryStringDecoder(req);
+		Map<String, List<String>> queryParams = decoder.parameters();
 		
-		if (!params.isEmpty()) {
-			final List<String> idList = params.get(ID);
-			if (!idList.isEmpty() && !idList.get(0).isEmpty()) {
-				final String id = idList.get(0);
+		if (!queryParams.isEmpty()) {
+            String plID = "";
+            List<String> idList = queryParams.get(ID);
+            if (!idList.isEmpty() && !idList.get(0).isEmpty()) {
+                plID = idList.get(0);
+            }
 
+			if (!plID.isEmpty()) {
 				// пробуем найти уже замапленные vast url`s
 				// редактируется в редис базе
 				// redis-cli HSET "\".placements\"" "\"212\"" "[\"java.util.ArrayList\",[\"http://asdasdfasdf.com/\", \"http://asg.vidigital.ru/1/50006/c/v/2\", \"http://ib.adnxs.com/ptv?id=2504637\"]]"
 				// берем vast xml или из базы редиса или из расписания, если попадаем в рекламный блок бьем его на части и каждой части смотрим в редис базу
 				// за соотв. записями : redis-cli HSET "\".durations\"" "5" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
 				// так же для каждого канала в отдельности конфигурится допуски +- от рекламного блока.
-				List<String> vastList =  placementsMapping.getMappingVASTList(id);
+				List<String> vastList =  placementsMapping.getMappingVASTList(plID);
 
 				// Если не нашли в редис, лезем в расписание
 				if (vastList.isEmpty()) {
-					int reqDuration = HelperUtils.getRequiredAdDuration(params);
+					int reqDuration = HelperUtils.getRequiredAdDuration(queryParams);
 					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
-					PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(params));
+					PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(queryParams));
 					if (tt4ch != null) {
 						reqDuration = tt4ch.getKey();
 						LOG.debug("reqDuration: {}", reqDuration);
@@ -114,25 +118,42 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					LOG.debug("vastList size: {}", vastList.size());
 
 				if (!vastList.isEmpty()) {
-					List<String> vastUriList = new ArrayList<>(vastList.size());
-					params.remove(ID);
-					params.remove(DURATION);
-					params.remove(CHANNEL);
+
+                    // к нашей системе идем с запросом
+                    // http://178.170.237.19/22627[99]/tvd?id=111&puid30=12377&puid6=15&pr=123&eid1=12377:1:123&dl=http://1tv.ru/ott/:www.ru
+                    // выкидываем id все остальные параметры конкатенируем и передаем в AD
+                    //http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid6={priority}
+                    // &puid25=1&puid30={placement}&pr={random}&eid1={placement}:{session}:{random}&dl=http://1tv.ru/ott/:{referer}
+                    // в редис сетим соотв.
+                    // redis-cli HSET "\".placements\"" "\"111\"" "[\"java.util.ArrayList\",[\"http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid25=1\"]]"
+
+                    String account = HelperUtils.getAccount(req);
+
+					queryParams.remove(ID);
+					queryParams.remove(DURATION);
+					queryParams.remove(CHANNEL);
 					
-					String query = HelperUtils.queryParams2String(params);
-					
+					String query = HelperUtils.queryParams2String(queryParams);
+
 					if (!Strings.isNullOrEmpty(query)) {
-						for (String v: vastList) {
-							if (new QueryStringDecoder(v).parameters().isEmpty())
-								v += "?";
-							else	
-								v += "&";
-							vastUriList.add(v + query);
-						}				
-					} else {
-						vastUriList = vastList;	
-					}	
-					return vastUriList;
+                        List<String> vastUriList = new ArrayList<>(vastList.size());
+
+						for (String vastURL: vastList) {
+                            if (!account.isEmpty())
+                                vastURL = vastURL.replace("{account}", account);
+
+							if (queryParams.isEmpty())
+                                vastURL += "?";
+							else
+                                vastURL += "&";
+							vastUriList.add(vastURL + query);
+
+                            if (LOG.isDebugEnabled())
+                                LOG.debug("final ad string: {}{}", vastURL, query);
+						}
+                        return vastUriList;
+					} else
+						return vastList;
 				}
 			}	
 		}
@@ -183,13 +204,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		for (Cookie c: cookieList) {
 			c.setDomain(".adinsertion.pro");
 			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
-			LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
+            if (LOG.isDebugEnabled())
+			    LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
 		}
 		
 		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length);
 		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
 		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
 		response.headers().add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+        response.headers().add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 		
 		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
         if (!keepAlive) {

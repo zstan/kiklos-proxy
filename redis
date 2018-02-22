@@ -1,6 +1,7 @@
 hdel "\".durations\"" "1"
 HKEYS "\".durations\""
 LRANGE "\".access_log\"" 0 600
+LTRIM "\".access_log\"" 1 1
 hkeys "\".timetable\""
 
 sudo add-apt-repository ppa:chris-lea/redis-server

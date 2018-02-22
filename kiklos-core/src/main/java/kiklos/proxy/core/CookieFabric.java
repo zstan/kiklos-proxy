@@ -7,11 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -26,18 +22,18 @@ import org.slf4j.LoggerFactory;
 
 import com.ning.http.client.Response;
 
-public class CookieFabric {
+class CookieFabric {
 	
 	private final static int byteMask = 0x4f;	
 	private final static Random random = new SecureRandom();	
 	private final static String substitunionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";
 	private MessageDigest md;
 	private static final Logger LOG = LoggerFactory.getLogger(CookieFabric.class);
-    public static final String OUR_COOKIE_NAME = "tuid";
+    static final String OUR_COOKIE_NAME = "tuid";
 	
 	private CookieFabric() {}
 	
-	public static CookieFabric buildCookieFabric() {
+	static CookieFabric buildCookieFabric() {
 		CookieFabric cf = new CookieFabric();		
 		try {
 			cf.md = MessageDigest.getInstance("MD5");
@@ -48,7 +44,7 @@ public class CookieFabric {
 		return cf;
 	}
 	
-	public String generateUserId() {
+	String generateUserId() {
 		long sessionCreationTime = System.currentTimeMillis();
 
 		String cString = Long.toString(sessionCreationTime) + Integer.toString(random.nextInt());
@@ -98,8 +94,9 @@ public class CookieFabric {
 	
 	static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
-		
-		LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
+
+        if (LOG.isDebugEnabled())
+		    LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
 		
 		List<Cookie> httpCookieList = new ArrayList<>();
 		
@@ -110,7 +107,8 @@ public class CookieFabric {
 			Set<Cookie> cookies = CookieDecoder.decode(cookieString);
 			httpCookieList.addAll(cookies);
 		}
-		LOG.debug("getUserSessionCookies size: {}", httpCookieList.size());
+        if (LOG.isDebugEnabled())
+		    LOG.debug("getUserSessionCookies size: {}", httpCookieList.size());
 		
 		Cookie ourCookie = null;
 		for (Cookie cookie : httpCookieList) {
@@ -140,24 +138,5 @@ public class CookieFabric {
 			}
 		}
 		return httpCookieList;
-	}		
-	
-	public static void main(String[] arg) {
-
-		CookieFabric cf = CookieFabric.buildCookieFabric();
-		Set<String> ss = new HashSet<>();
-		for (int i = 0; i< 1000000; ++i) {
-			String s = cf.generateUserId();
-			if (ss.contains(s))
-				System.out.println("!!!");
-			else
-				ss.add(s);
-		}
-/*		System.out.println(cf.generateUserId(System.currentTimeMillis()));
-		System.out.println(cf.generateUserId(System.currentTimeMillis()));
-		System.out.println(cf.generateUserId(System.currentTimeMillis()));
-		System.out.println(cf.generateUserId(System.currentTimeMillis()));
-		System.out.println(cf.generateUserId(System.currentTimeMillis()));*/
 	}
-	
 }

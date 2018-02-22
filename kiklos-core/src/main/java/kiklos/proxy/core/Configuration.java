@@ -14,13 +14,13 @@ import java.util.concurrent.Executors;
 public class Configuration {
     private final AsyncHttpClient httpClient = new AsyncHttpClient(ASYNC_CFG);
     private final Redisson storage = Redisson.create();
-    private final ExecutorService pool = Executors.newCachedThreadPool(r ->
-        {Thread t = new Thread(r); t.setPriority(Thread.MIN_PRIORITY); return t;});
-    private final PlacementsMapping placementsMap = new PlacementsMapping(storage, pool);
-    private final DurationSettings durationsConfig = new DurationSettings(storage, pool);
+    private final ExecutorService minPriorityPool = Executors.newCachedThreadPool(r ->
+        {Thread t = new Thread(r, "min-priority-pool"); t.setPriority(Thread.MIN_PRIORITY); return t;});
+    private final PlacementsMapping placementsMap = new PlacementsMapping(storage, minPriorityPool);
+    private final DurationSettings durationsConfig = new DurationSettings(storage, minPriorityPool);
     private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage);
     private final AdProcessing adProcessing = new AdProcessing();
-    private final DirWatchDog timeTableWatchDog = new DirWatchDog(storage, pool, adProcessing);
+    private final DirWatchDog timeTableWatchDog = new DirWatchDog(storage, minPriorityPool, adProcessing);
     private final CookieFabric cookieFabric;
 
     private final static AsyncHttpClientConfig ASYNC_CFG = new AsyncHttpClientConfig.Builder()
