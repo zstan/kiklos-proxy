@@ -91,14 +91,14 @@ class CookieFabric {
 
 		return new String(uuid);
 	}
-	
-	static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {
+
+	static Pair<io.netty.handler.codec.http.cookie.Cookie, List<io.netty.handler.codec.http.cookie.Cookie>> getUserSessionCookies(final HttpRequest request) {
 		List<String> cookieStrings = request.headers().getAll(COOKIE);
 
         if (LOG.isDebugEnabled())
 		    LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
 		
-		List<Cookie> httpCookieList = new ArrayList<>();
+		List<io.netty.handler.codec.http.cookie.Cookie> httpCookieList = new ArrayList<>();
 		
 		if (cookieStrings.isEmpty())
 			return Pair.of(null, httpCookieList);		
@@ -109,19 +109,19 @@ class CookieFabric {
 		}
         if (LOG.isDebugEnabled())
 		    LOG.debug("getUserSessionCookies size: {}", httpCookieList.size());
-		
-		Cookie ourCookie = null;
-		for (Cookie cookie : httpCookieList) {
-			if (cookie.getName().equals(OUR_COOKIE_NAME)) {
+
+        io.netty.handler.codec.http.cookie.Cookie ourCookie = null;
+		for (io.netty.handler.codec.http.cookie.Cookie cookie : httpCookieList) {
+			if (cookie.name().equals(OUR_COOKIE_NAME)) {
 				ourCookie = cookie;
 			}
 		}
 		return Pair.of(ourCookie, httpCookieList);
 	}
 	
-	static List<Cookie> getResponseCookies(final Response request) {
+	static List<io.netty.handler.codec.http.cookie.Cookie> getResponseCookies(final Response request) {
 		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
-		List<Cookie> httpCookieList = new ArrayList<>();
+		List<io.netty.handler.codec.http.cookie.Cookie> httpCookieList = new ArrayList<>();
 		
 		if (cookieStrings != null) {
 			if (LOG.isDebugEnabled())

@@ -13,11 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
+import io.netty.handler.codec.http.cookie.Cookie;
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
 import kiklos.tv.timetable.AdProcessing;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.ClientCookieEncoder;
 import io.netty.handler.codec.http.DefaultCookie;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -25,7 +26,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.ServerCookieEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -202,19 +202,21 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				
 		LOG.debug(cookieList.toString());
 		for (Cookie c: cookieList) {
-			c.setDomain(".adinsertion.pro");
-			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.encode(c));
+			c.setDomain(".1tv.ru");
+			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.STRICT.encode(c));
             if (LOG.isDebugEnabled())
-			    LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.encode(c));
+			    LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.STRICT.encode(c));
 		}
 		
-		response.headers().add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length);
-		response.headers().add(HttpHeaders.Names.CONTENT_TYPE, contentType);
-		response.headers().add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
-		response.headers().add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
-        response.headers().add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+		response.headers()
+                .add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length)
+		        .add(HttpHeaders.Names.CONTENT_TYPE, contentType)
+		        .add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE)
+		        .add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 		
 		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
+
         if (!keepAlive) {
             ctx.write(response).addListener(ChannelFutureListener.CLOSE);
         } else {
@@ -323,16 +325,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final String newPath) throws IOException {
 		final BoundRequestBuilder rb = httpClient.prepareGet(newPath);
 		for (Cookie c : sessionCookieList) {
-			rb.addHeader(COOKIE, ClientCookieEncoder.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
+			rb.addHeader(COOKIE, ClientCookieEncoder.STRICT.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
 		}
-		ListenableFuture<Response> f = rb.execute(new AsyncCompletionHandler<Response>() {
+		return rb.execute(new AsyncCompletionHandler<Response>() {
 			@Override
 			public Response onCompleted(Response response) throws Exception {
 				LOG.info("req completed : {} status code : {}, response size: {}", newPath, response.getStatusCode(), response.getResponseBody().length());
 				return response;
 			}
 		});
-		return f;
 	}
 	
     @Override
