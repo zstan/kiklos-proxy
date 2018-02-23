@@ -1,5 +1,6 @@
 package kiklos.proxy.core;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.io.IOException;
@@ -32,20 +33,23 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
-import static org.jboss.netty.util.CharsetUtil.UTF_8;
+
+import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.AsyncCompletionHandlerBase;
+import org.asynchttpclient.AsyncHandler;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
+import org.asynchttpclient.ListenableFuture;
+import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClient.BoundRequestBuilder;
-import com.ning.http.client.ListenableFuture;
-import com.ning.http.client.Response;
+
 
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private final AsyncHttpClient httpClient;
@@ -54,7 +58,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
 	private static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
 	private final CookieFabric cookieFabric;
-	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + UTF_8.name();
+	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + StandardCharsets.UTF_8.name();
 	static final String DURATION = "t";
 	static final String CHANNEL = "ch";
     static final String ID = "id";
@@ -179,7 +183,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		final String cString = req.headers().get(COOKIE);
 		try {
 			if (cString != null)
-				cookieString = URLEncoder.encode(cString, "UTF-8");
+				cookieString = URLEncoder.encode(cString, StandardCharsets.UTF_8.name());
 		} catch (UnsupportedEncodingException e1) {
 			LOG.error("can`t encode cookie: {}", cString);
             cookieString = "<e>";
@@ -328,11 +332,11 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			rb.addHeader(COOKIE, ClientCookieEncoder.STRICT.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
 		}
 		return rb.execute(new AsyncCompletionHandler<Response>() {
-			@Override
-			public Response onCompleted(Response response) throws Exception {
-				LOG.info("req completed : {} status code : {}, response size: {}", newPath, response.getStatusCode(), response.getResponseBody().length());
-				return response;
-			}
+            @Override
+            public Response onCompleted(Response response) throws Exception {
+                LOG.info("req completed : {} status code : {}, response size: {}", newPath, response.getStatusCode(), response.getResponseBody().length());
+                return response;
+            }
 		});
 	}
 	

@@ -1,18 +1,20 @@
 package kiklos.proxy.core;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import kiklos.planner.DurationSettings;
 import kiklos.tv.timetable.AdProcessing;
 import kiklos.tv.timetable.DirWatchDog;
+import org.asynchttpclient.AsyncHttpClientConfig;
 import org.redisson.Redisson;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+
 public class Configuration {
-    private final AsyncHttpClient httpClient = new AsyncHttpClient(ASYNC_CFG);
+    private final AsyncHttpClient httpClient = asyncHttpClient(ASYNC_CFG);
     private final Redisson storage = Redisson.create();
     private final ExecutorService minPriorityPool = Executors.newCachedThreadPool(r ->
         {Thread t = new Thread(r, "min-priority-pool"); t.setPriority(Thread.MIN_PRIORITY); return t;});
@@ -23,7 +25,7 @@ public class Configuration {
     private final DirWatchDog timeTableWatchDog = new DirWatchDog(storage, minPriorityPool, adProcessing);
     private final CookieFabric cookieFabric;
 
-    private final static AsyncHttpClientConfig ASYNC_CFG = new AsyncHttpClientConfig.Builder()
+    private final static AsyncHttpClientConfig ASYNC_CFG = new DefaultAsyncHttpClientConfig.Builder()
             .setCompressionEnforced(true)
             .setConnectTimeout(1000)
             .setRequestTimeout(1000)
@@ -31,7 +33,7 @@ public class Configuration {
             .setFollowRedirect(true)
             .build();
 
-    private NettyAsyncHttpProviderConfig providerConfig = new NettyAsyncHttpProviderConfig();
+    //private NettyAsyncHttpProviderConfig providerConfig = new NettyAsyncHttpProviderConfig();
 
     public Configuration() {
         cookieFabric = CookieFabric.buildCookieFabric();

@@ -1,7 +1,7 @@
 package kiklos.proxy.core;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -17,10 +17,9 @@ import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpRequest;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.ning.http.client.Response;
 
 class CookieFabric {
 	
