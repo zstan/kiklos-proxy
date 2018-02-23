@@ -1,5 +1,6 @@
 package kiklos.proxy.core;
 
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -8,11 +9,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
@@ -39,8 +43,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.asynchttpclient.AsyncCompletionHandler;
-import org.asynchttpclient.AsyncCompletionHandlerBase;
-import org.asynchttpclient.AsyncHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.ListenableFuture;
@@ -191,12 +193,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		return String.format("%s\t%s\t%s\t%s\t%s", date, Uri, newUri, cookieString, remoteHost);
 	}
 
-	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg, 
+	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
 			final String buff, List<Cookie> cookieList, final Cookie stCookie) {
 		writeResp(ctx, msg, buff, cookieList, stCookie, XML_CONTENT_TYPE);
 	}
-	
-	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg, 
+
+	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
 			final String buff, List<Cookie> cookieList, final Cookie stCookie, final String contentType) {
 		ByteBuf bb = Unpooled.wrappedBuffer(buff.getBytes());
 		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
@@ -238,7 +240,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
 			}
 
-			final String reqUri = request.getUri();
+			final String reqUri = request.uri();
 
 			if ("/favicon.ico".equals(reqUri)) {
 				ctx.channel().close();
@@ -277,58 +279,57 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final Cookie stCookie = ourAndSessionCookPair.getKey();
 			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getValue();
 			
-			if (vastUrls.size() > 1) {
-				List<ListenableFuture<Response>> requestsPool = new ArrayList<>();
-				List<String> vastPool = new ArrayList<>();
-				
-				for (String vs : vastUrls) {
-					if (LOG.isDebugEnabled())
-						LOG.debug("try to create request: {}", vs);
-					requestsPool.add(createResponse(sessionCookieList, vs));
-				}
+            List<CompletableFuture<Response>> requestsPool = new ArrayList<>();
+            List<String> adContents = new ArrayList<>();
 
-				if (LOG.isDebugEnabled())
-					LOG.debug("response pool size: {}", requestsPool.size());
-				
-				boolean cookieAccepted = false;
+            for (String vs : vastUrls) {
+                if (LOG.isDebugEnabled())
+                    LOG.debug("try to create request: {}", vs);
+                requestsPool.add(createResponse(sessionCookieList, vs).toCompletableFuture());
+            }
 
-				while (!requestsPool.isEmpty()) {
-					ListenableFuture<Response> p = requestsPool.get(0);
-					if (p.isDone() || p.isCancelled()) {
-                        if (LOG.isDebugEnabled())
-						    LOG.debug("isDone {}, isCancelled {}", p.isDone(), p.isCancelled());
-						if (p.isDone()) {
-							final Response response = p.get();
-							final String respVast = response.getResponseBody();
-							vastPool.add(respVast.isEmpty() ? EMPTY_VAST : respVast);
-							if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
-								sessionCookieList.addAll(CookieFabric.getResponseCookies(response));
-								cookieAccepted = true;
-							}
-						}
-						requestsPool.remove(p);
-						LOG.debug("response pool remove");
-					}
-					else
-						HelperUtils.try2sleep(TimeUnit.MILLISECONDS, 10);
-				}
-				
-				final String compoundVast = Vast3Fabric.Vast2ListToVast3(vastPool);
-				writeResp(ctx, (HttpRequest)msg, compoundVast, sessionCookieList, stCookie);				
-			} else { /* Отдельный if только потому что тут сетим куки от ответа, а в предыдущей нет, переписать когда будет понятно с куками*/
-				final ListenableFuture<Response> respFut = createResponse(sessionCookieList, vastUrls.get(0));
-                final Response response = respFut.get();
-                final String body = response.getResponseBody();
-                final List<Cookie> cookieList = CookieFabric.getResponseCookies(response);
-                writeResp(ctx, (HttpRequest)msg, body.isEmpty() ? EMPTY_VAST : body, cookieList, stCookie);
-			}
+            if (LOG.isDebugEnabled())
+                LOG.debug("response pool size: {}", requestsPool.size());
+
+            boolean cookieAccepted = false;
+
+            CompletableFuture<Response>[] cfs = requestsPool.toArray(new CompletableFuture[requestsPool.size()]);
+
+            CompletableFuture<List<Response>> completed = CompletableFuture.allOf(cfs).exceptionally(e -> errorHandle(e))
+                    .thenApply(x -> Arrays.stream(cfs).map(CompletableFuture::join).collect(Collectors.toList()));
+
+            for (Response response : completed.get(5000, TimeUnit.MILLISECONDS)) {
+                if (LOG.isDebugEnabled())
+                    LOG.debug("response statusCode: {}", response.getStatusCode());
+
+                final String respBody = response.getResponseBody();
+
+                adContents.add(respBody.isEmpty() ? EMPTY_VAST : respBody);
+                if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
+                    sessionCookieList.addAll(CookieFabric.getResponseCookies(response));
+                    cookieAccepted = true;
+                }
+                LOG.debug("response pool remove");
+            }
+
+            writeResp(ctx, (HttpRequest)msg, vastUrls.size() > 1 ?
+                                Vast3Fabric.Vast2ListToVast3(adContents) :
+                                adContents.isEmpty() ? EMPTY_VAST : adContents.get(0),
+                        sessionCookieList, stCookie);
         }
 	}
+
+    private static Void errorHandle(Throwable e){
+        if (e != null) {
+            LOG.error("error occured: " + e.getCause());
+        }
+        return null;
+    }
 	
-	private ListenableFuture<Response> createResponse(final List<Cookie> sessionCookieList, 
+	private ListenableFuture<Response> createResponse(final List<Cookie> sessionCookies,
 			final String newPath) throws IOException {
 		final BoundRequestBuilder rb = httpClient.prepareGet(newPath);
-		for (Cookie c : sessionCookieList) {
+		for (Cookie c : sessionCookies) {
 			rb.addHeader(COOKIE, ClientCookieEncoder.STRICT.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols
 		}
 		return rb.execute(new AsyncCompletionHandler<Response>() {
