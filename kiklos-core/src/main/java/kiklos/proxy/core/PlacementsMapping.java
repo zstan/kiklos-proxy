@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +18,7 @@ public class PlacementsMapping {
 	private Map<String, List<String>> plExternal;
 	private final ExecutorService pool; 
 	
-	public PlacementsMapping(final Redisson memStorage, final ExecutorService execPool) {
-		
-		//pl.put("111", Arrays.asList("2504637", "some comment1"));
+	public PlacementsMapping(final RedissonClient memStorage, final ExecutorService execPool) {
 		plExternal = memStorage.getMap(PLACEMENTS_MAP_NAME);
 		placements = getRemoteCollection();
 		pool = execPool;

@@ -10,32 +10,39 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MemoryLogStorage {
 	
 	private final List<String> memStorageList;	
-	private static final int LOG_DATA_SIZE = 10;
 	private static final int LOG_DATA_CHUNK_SIZE = 10000;
-	private List<String> logData = new ArrayList<String>(LOG_DATA_SIZE);
+    private final BlockingQueue logData = new LinkedBlockingQueue();
+    private final ExecutorService minPriorityPool;
 	private static final String LOG_NAME = ".access_log";
 	private static final Logger LOG = LoggerFactory.getLogger(MemoryLogStorage.class);
 	
-	MemoryLogStorage(final Redisson memStorage) {
+	MemoryLogStorage(final RedissonClient memStorage, final ExecutorService execPool) {
 		memStorageList = memStorage.getList(LOG_NAME);
+        minPriorityPool = execPool;
+        if (minPriorityPool != null)
+            minPriorityPool.execute(new MemUpdater());
 	}
 	
-	public synchronized void put(final String str) {
-		logData.add(str);
-		if (logData.size() == LOG_DATA_SIZE) {
-			memStorageList.addAll(logData);
-			LOG.debug("MemoryLogStorage put data");
-			logData.clear();
-		}		
-	}
+	public void put(final String str) {
+        try {
+            logData.put(str);
+        } catch (InterruptedException e) {
+            LOG.error("error: ", e);
+        }
+    }
 
 	private void exportData() throws IOException {
 		int memStorageSize = memStorageList.size();
@@ -53,10 +60,36 @@ public class MemoryLogStorage {
 			}
 		}
 	}
-	
-	public static void main(String[] args) {
-		final Redisson storage = Redisson.create();
-		MemoryLogStorage ms = new MemoryLogStorage(storage);
+
+    private class MemUpdater implements Runnable {
+        @Override
+        public void run() {
+            List<String> tmpList = new ArrayList<>();
+
+            while (true) {
+                try {
+                    tmpList.clear();
+
+                    Object data = logData.poll();
+
+                    while (data != null){
+                        tmpList.add((String)data);
+                        data = logData.poll();
+                    }
+                    memStorageList.addAll(tmpList);
+                    LOG.debug("MemoryLogStorage put data");
+
+                    TimeUnit.SECONDS.sleep(2);
+                } catch (Exception e) {
+                    LOG.error("error while put into mem: ", e);
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+		final RedissonClient storage = Redisson.create();
+		MemoryLogStorage ms = new MemoryLogStorage(storage, null);
 		try {
 			ms.exportData();
 		} catch (IOException e) {

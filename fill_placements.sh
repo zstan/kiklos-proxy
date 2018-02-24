@@ -1,9 +1,9 @@
 #!/bin/sh
 
 #smartlabs
-redis-cli HSET "\".placements\"" "\"111\"" "[\"java.util.ArrayList\",[\"http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid25=1\"]]"
+redis-cli HSET ".placements" "\"111\"" "[\"java.util.ArrayList\",[\"http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid25=1\"]]"
 #bcs
-redis-cli HSET "\".placements\"" "\"112\"" "[\"java.util.ArrayList\",[\"http://ib.adnxs.com/ptv?id=2504637\"]]"
+redis-cli HSET ".placements" "\"112\"" "[\"java.util.ArrayList\",[\"http://ib.adnxs.com/ptv?id=2504637\"]]"
 #asg1
 redis-cli HSET "\".placements\"" "\"113\"" "[\"java.util.ArrayList\",[\"http://asg.vidigital.ru/1/50006/c/v/2\"]]"
 #hz1

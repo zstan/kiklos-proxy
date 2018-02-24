@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ public class DurationSettings {
     private volatile List<Integer> keyList = new ArrayList<>();
     private final ExecutorService pool;
     
-	public DurationSettings(final Redisson memStorage, final ExecutorService execPool) {
+	public DurationSettings(final RedissonClient memStorage, final ExecutorService execPool) {
 		durExternal = memStorage.getMap(DURATIONS_MAP_NAME);
 		durationsMap = getRemoteCollection();
 		pool = execPool;

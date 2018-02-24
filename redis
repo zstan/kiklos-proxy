@@ -3,6 +3,7 @@ HKEYS "\".durations\""
 LRANGE "\".access_log\"" 0 600
 LTRIM "\".access_log\"" 1 1
 hkeys "\".timetable\""
+FLUSHDB
 
 sudo add-apt-repository ppa:chris-lea/redis-server
 sudo add-apt repository ppa:chris-lea/redis-server

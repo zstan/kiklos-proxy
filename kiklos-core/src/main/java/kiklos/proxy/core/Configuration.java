@@ -7,6 +7,7 @@ import kiklos.tv.timetable.AdProcessing;
 import kiklos.tv.timetable.DirWatchDog;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,12 +16,12 @@ import static org.asynchttpclient.Dsl.asyncHttpClient;
 
 public class Configuration {
     private final AsyncHttpClient httpClient = asyncHttpClient(ASYNC_CFG);
-    private final Redisson storage = Redisson.create();
+    private final RedissonClient storage = Redisson.create();
     private final ExecutorService minPriorityPool = Executors.newCachedThreadPool(r ->
         {Thread t = new Thread(r, "min-priority-pool"); t.setPriority(Thread.MIN_PRIORITY); return t;});
     private final PlacementsMapping placementsMap = new PlacementsMapping(storage, minPriorityPool);
     private final DurationSettings durationsConfig = new DurationSettings(storage, minPriorityPool);
-    private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage);
+    private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage, minPriorityPool);
     private final AdProcessing adProcessing = new AdProcessing();
     private final DirWatchDog timeTableWatchDog = new DirWatchDog(storage, minPriorityPool, adProcessing);
     private final CookieFabric cookieFabric;

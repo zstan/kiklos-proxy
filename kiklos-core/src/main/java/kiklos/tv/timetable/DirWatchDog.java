@@ -27,7 +27,7 @@ import org.apache.commons.io.input.AutoCloseInputStream;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.openxml4j.opc.PackageAccess;
-import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -48,7 +48,7 @@ public class DirWatchDog {
 	
     public DirWatchDog() {}
     
-	public DirWatchDog(final Redisson memStorage, final ExecutorService execPool, final AdProcessing adProcessing) {
+	public DirWatchDog(final RedissonClient memStorage, final ExecutorService execPool, final AdProcessing adProcessing) {
 		if (!OLD_DATA_FOLDER.exists())
 			OLD_DATA_FOLDER.mkdirs();
 		this.adProcessing = adProcessing;

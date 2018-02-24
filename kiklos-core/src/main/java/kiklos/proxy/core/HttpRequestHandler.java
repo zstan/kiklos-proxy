@@ -1,6 +1,5 @@
 package kiklos.proxy.core;
 
-import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,13 +17,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
 import kiklos.tv.timetable.AdProcessing;
-import io.netty.handler.codec.http.DefaultCookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
@@ -236,39 +236,33 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)msg;
 
-			if (HttpHeaders.is100ContinueExpected(request)) {
-				ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
-			}
+            {
+                if (HttpUtil.is100ContinueExpected(request)) {
+                    ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
+                }
 
-			final String reqUri = request.uri();
+                if ("/favicon.ico".equals(request.uri())) {
+                    ctx.channel().close();
+                    return;
+                }
 
-			if ("/favicon.ico".equals(reqUri)) {
-				ctx.channel().close();
-				return;			
-			}
-			
-			Map<String, String> debugParams = getDebugParams(reqUri); 
-			
-			if (!debugParams.isEmpty()) { 
-				String ch = debugParams.get(CHANNEL);
-				PairEx<Short, List<Short>> adList = adProcessing.getAdListFromTimeTable(ch);
-				writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<Cookie>(), null, "text/plain");
-				return;
-			}			
-			
-			/*if (this.getRequiredAdDuration(reqUri) == -1) {
-				return empty vast
-			}*/
-			
-			final List<String> vastUrls = reqTransformer(reqUri);
+                Map<String, String> debugParams = getDebugParams(request.uri());
+                if (!debugParams.isEmpty()) {
+                    writeDebug(debugParams, ctx, msg);
+                    return;
+                }
+            }
+
+			final List<String> adUrls = reqTransformer(request.uri());
+
             if (LOG.isDebugEnabled())
-			    LOG.debug("VASTUrlList size: {}", vastUrls.size());
+			    LOG.debug("VASTUrlList size: {}", adUrls.size());
 			
 			final InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress(); 
 		    final String remoteHost = sa.getAddress().getHostAddress();
 		    LOG.info("remote host: {}:{}", remoteHost, sa.getPort());
 			
-			if (!vastUrls.isEmpty()) {
+			if (!adUrls.isEmpty()) {
 				memLogStorage.put(composeLogString(request, "", remoteHost));
 			} else {
 				ctx.channel().close();
@@ -282,7 +276,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             List<CompletableFuture<Response>> requestsPool = new ArrayList<>();
             List<String> adContents = new ArrayList<>();
 
-            for (String vs : vastUrls) {
+            for (String vs : adUrls) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("try to create request: {}", vs);
                 requestsPool.add(createResponse(sessionCookieList, vs).toCompletableFuture());
@@ -312,12 +306,19 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 LOG.debug("response pool remove");
             }
 
-            writeResp(ctx, (HttpRequest)msg, vastUrls.size() > 1 ?
+            writeResp(ctx, (HttpRequest)msg, adUrls.size() > 1 ?
                                 Vast3Fabric.Vast2ListToVast3(adContents) :
                                 adContents.isEmpty() ? EMPTY_VAST : adContents.get(0),
                         sessionCookieList, stCookie);
         }
 	}
+
+    private void writeDebug(Map<String, String> debugParams, ChannelHandlerContext ctx, Object msg) {
+        String ch = debugParams.get(CHANNEL);
+        PairEx<Short, List<Short>> adList = adProcessing.getAdListFromTimeTable(ch);
+        writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<>(), null, "text/plain");
+        ctx.channel().close();
+    }
 
     private static Void errorHandle(Throwable e){
         if (e != null) {
@@ -356,7 +357,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId());
 		c.setMaxAge(COOKIE_MAX_AGE);
 		c.setPath("/");
-		c.setDomain(".adinsertion.pro");
+		c.setDomain(".1tv.ru");
 		c.setHttpOnly(true);
 		return c;
 	}
