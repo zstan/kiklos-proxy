@@ -26,7 +26,8 @@ import kiklos.planner.SimpleStrategy;
 import kiklos.tv.timetable.AdProcessing;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -209,26 +210,28 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		LOG.debug(cookieList.toString());
 		for (Cookie c: cookieList) {
 			c.setDomain(".1tv.ru");
-			response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.STRICT.encode(c));
+			response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(c));
             if (LOG.isDebugEnabled())
 			    LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.STRICT.encode(c));
 		}
 		
 		response.headers()
-                .add(HttpHeaders.Names.CONTENT_LENGTH, buff.getBytes().length)
-		        .add(HttpHeaders.Names.CONTENT_TYPE, contentType)
-		        .add(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE)
-		        .add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-                .add(HttpHeaders.Names.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+                .add(HttpHeaderNames.CONTENT_LENGTH, buff.getBytes().length)
+		        .add(HttpHeaderNames.CONTENT_TYPE, contentType)
+		        .add(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
+		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 		
-		boolean keepAlive = HttpHeaders.isKeepAlive(msg);
+		boolean keepAlive = HttpUtil.isKeepAlive(msg);
 
         if (!keepAlive) {
             ctx.write(response).addListener(ChannelFutureListener.CLOSE);
         } else {
-            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
             ctx.write(response);
-        }						
+        }
+
+        bb.release();
 	}
 	
     @Override    
@@ -354,7 +357,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	}
 	
 	private Cookie currentCookie() {
-		Cookie c = new DefaultCookie(CookieFabric.OUR_COOKIE_NAME, cookieFabric.generateUserId());
+		Cookie c = new DefaultCookie(CookieFabric.UID_COOKIE_NAME, cookieFabric.generateUserId());
 		c.setMaxAge(COOKIE_MAX_AGE);
 		c.setPath("/");
 		c.setDomain(".1tv.ru");
