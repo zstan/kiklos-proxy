@@ -219,7 +219,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 .add(HttpHeaderNames.CONTENT_LENGTH, buff.getBytes().length)
 		        .add(HttpHeaderNames.CONTENT_TYPE, contentType)
 		        .add(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
-		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "http://static.1tv.ru")
                 .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 		
 		boolean keepAlive = HttpUtil.isKeepAlive(msg);
@@ -230,8 +230,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
             ctx.write(response);
         }
-
-        bb.release();
 	}
 	
     @Override    
