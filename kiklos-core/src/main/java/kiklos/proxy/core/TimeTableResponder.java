@@ -1,9 +1,6 @@
 package kiklos.proxy.core;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -17,7 +14,6 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
-import io.netty.handler.ssl.SslContext;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -34,8 +30,8 @@ public class TimeTableResponder
 	    int procCount = Runtime.getRuntime().availableProcessors();
 	    System.out.println("system procs count: " + procCount);
 	    
-        EventLoopGroup bossGroup = new NioEventLoopGroup(procCount * 2);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup(procCount * 4);
         
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
