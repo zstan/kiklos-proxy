@@ -54,8 +54,8 @@ public class DirWatchDog {
 		this.adProcessing = adProcessing;
 		mapExternal = memStorage.getMap(TIMETABLE_MAP_NAME);
 		adProcessing.mapUpdater(mapExternal);
-		execPool.execute(new MapUpdater());
-		execPool.execute(new MapCleaner());		
+		//execPool.execute(new MapUpdater());
+		//execPool.execute(new MapCleaner());
 	}
 	
 	private boolean watchDogIt() {

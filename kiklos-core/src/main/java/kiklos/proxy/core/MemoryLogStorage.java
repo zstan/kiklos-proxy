@@ -70,14 +70,17 @@ public class MemoryLogStorage {
                 try {
                     tmpList.clear();
 
-                    Object data = logData.poll();
+                    Object data = logData.take();
 
                     while (data != null){
                         tmpList.add((String)data);
-                        data = logData.poll();
+                        data = logData.poll(1, TimeUnit.SECONDS);
                     }
-                    memStorageList.addAll(tmpList);
-                    LOG.debug("MemoryLogStorage put data");
+                    if (!tmpList.isEmpty())
+                        memStorageList.addAll(tmpList);
+
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("MemoryLogStorage put data, size: " + tmpList.size());
 
                     TimeUnit.SECONDS.sleep(2);
                 } catch (Exception e) {

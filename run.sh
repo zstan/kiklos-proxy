@@ -1,0 +1,1 @@
+nohup java -server -Xms3g -Xmx3g -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=2M -Xloggc:./logs/gc.log -XX:+AlwaysPreTouch -XX:+UseTLAB -jar -Dlogback.configurationFile=./logback.xml kiklos.core-0.4-SNAPSHOT-jar-with-dependencies.jar &
