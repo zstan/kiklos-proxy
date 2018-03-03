@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.codec.http.cookie.ClientCookieEncoder;
@@ -28,7 +29,6 @@ import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -202,7 +202,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
 			final String buff, List<Cookie> cookieList, final Cookie stCookie, final String contentType) {
 		ByteBuf bb = Unpooled.wrappedBuffer(buff.getBytes());
-		HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
 		if (stCookie == null) {					
 			cookieList.add(currentCookie());
 		}
@@ -214,9 +214,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             if (LOG.isDebugEnabled())
 			    LOG.debug("writeResp set cookie: {}", ServerCookieEncoder.STRICT.encode(c));
 		}
-		
+
 		response.headers()
-                .add(HttpHeaderNames.CONTENT_LENGTH, buff.getBytes().length)
+                .add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes())
 		        .add(HttpHeaderNames.CONTENT_TYPE, contentType)
 		        .add(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
 		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "http://static.1tv.ru")

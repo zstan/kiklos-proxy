@@ -37,7 +37,7 @@
         </filter>
 
         <encoder>
-            <pattern>%date [%level] %logger{35} - %msg%n</pattern>
+            <pattern>%date [%level] %logger{35} [%file:%line] - %msg%n</pattern>
         </encoder>
     </appender>
 
