@@ -28,8 +28,8 @@ public class Configuration {
 
     private final static AsyncHttpClientConfig ASYNC_CFG = new DefaultAsyncHttpClientConfig.Builder()
             .setCompressionEnforced(true)
-            .setConnectTimeout(3000)
-            .setRequestTimeout(3000)
+            .setConnectTimeout(5000)
+            .setRequestTimeout(5000)
             .setUserAgent("Opera/9.80 (X11; Linux x86_64) Presto/2.12.388 Version/12.16")
             .setFollowRedirect(true)
             .setTcpNoDelay(true)

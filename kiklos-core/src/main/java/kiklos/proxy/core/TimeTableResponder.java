@@ -10,6 +10,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -78,9 +79,10 @@ public class TimeTableResponder
 		@Override
 		public void initChannel(SocketChannel ch) {
 			ch.config().setTcpNoDelay(true);
-			ch.config().setConnectTimeoutMillis(3000);
+			ch.config().setConnectTimeoutMillis(5000);
 			ChannelPipeline p = ch.pipeline();
 			p.addLast(new HttpServerCodec());
+            p.addLast("compressor", new HttpContentCompressor());
 			p.addLast(new HttpRequestHandler(config));
 		}
 	}

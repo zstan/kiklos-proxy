@@ -181,7 +181,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
 		final String date = LocalDateTime.now().format(datePattern);
-		final String Uri = req.getUri();
+		final String Uri = req.uri();
 		String cookieString = "";
 		final String cString = req.headers().get(COOKIE);
 		try {
@@ -221,7 +221,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		        .add(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
 		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "http://static.1tv.ru")
                 .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-		
+
 		boolean keepAlive = HttpUtil.isKeepAlive(msg);
 
         if (!keepAlive) {
@@ -350,7 +350,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					
 	@Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-		LOG.warn(cause.getMessage());
+		LOG.warn(cause.toString());
 		ctx.close();
 	}
 	
