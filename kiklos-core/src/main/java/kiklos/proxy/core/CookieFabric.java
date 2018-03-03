@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import io.netty.handler.codec.http.HttpRequest;
 
@@ -25,7 +26,7 @@ import org.slf4j.LoggerFactory;
 class CookieFabric {
 	
 	private final static int byteMask = 0x4f;	
-	private final static Random random = new SecureRandom();	
+	private final static Random random = ThreadLocalRandom.current();
 	private final static String substitutionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";
 	private MessageDigest md;
 	private static final Logger LOG = LoggerFactory.getLogger(CookieFabric.class);
@@ -51,7 +52,13 @@ class CookieFabric {
 
 		byte[] bytesOfMessage;
 
-		try {
+        try {
+            md = MessageDigest.getInstance("MD5"); // TODO : thread local
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        try {
 			bytesOfMessage = cString.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

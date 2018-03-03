@@ -308,8 +308,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             }
 
             writeResp(ctx, (HttpRequest)msg, adUrls.size() > 1 ?
-                                Vast3Fabric.Vast2ListToVast3(adContents) :
-                                adContents.isEmpty() ? EMPTY_VAST : adContents.get(0),
+                Vast3Fabric.Vast2ListToVast3(adContents) : adContents.isEmpty() ? EMPTY_VAST : adContents.get(0),
                         sessionCookieList, stCookie);
         }
 	}
@@ -350,7 +349,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 					
 	@Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-		LOG.warn(cause.toString());
+		LOG.warn("netty error: ", cause);
+        cause.printStackTrace();
 		ctx.close();
 	}
 	
