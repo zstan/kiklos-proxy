@@ -43,7 +43,6 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -54,7 +53,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 
-
 public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private final AsyncHttpClient httpClient;
 	private final PlacementsMapping placementsMapping;
@@ -63,12 +61,14 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
 	private final CookieFabric cookieFabric;
 	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + StandardCharsets.UTF_8.name();
+	private static final String ALLOW_ACC_CONTROL = "http://static.1tv.ru";
 	static final String DURATION = "t";
 	static final String CHANNEL = "ch";
     static final String ID = "id";
 	static final String DEFAULT_CHANNEL = "408";
 	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	static short MAX_DURATION_BLOCK = 900;
+	private final int waitTimeout;
 	private static final DateTimeFormatter datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
@@ -81,6 +81,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		cookieFabric = config.getCookieFabric();
 		durationSettings = config.getDurationsConfig();
 		adProcessing = config.getAdProcessing();
+        waitTimeout = httpClient.getConfig().getConnectTimeout();
 	}
 
 	/**
@@ -220,7 +221,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 .add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes())
 		        .add(HttpHeaderNames.CONTENT_TYPE, contentType)
 		        .add(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
-		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "http://static.1tv.ru")
+		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, ALLOW_ACC_CONTROL)
                 .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 
 		boolean keepAlive = HttpUtil.isKeepAlive(msg);
@@ -270,8 +271,9 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 				ctx.channel().close();
 				return;
 			}
-			
-			Pair<Cookie, List<Cookie>> ourAndSessionCookPair = CookieFabric.getUserSessionCookies(request);
+
+            List<String> cookieStrings = request.headers().getAll(COOKIE);
+            Map.Entry<Cookie, List<Cookie>> ourAndSessionCookPair = CookieFabric.getUserSessionCookies(cookieStrings);
 			final Cookie stCookie = ourAndSessionCookPair.getKey();
 			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getValue();
 			
@@ -294,7 +296,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             CompletableFuture<List<Response>> completed = CompletableFuture.allOf(cfs).exceptionally(e -> errorHandle(e))
                     .thenApply(x -> Arrays.stream(cfs).map(CompletableFuture::join).collect(Collectors.toList()));
 
-            for (Response response : completed.get(5000, TimeUnit.MILLISECONDS)) {
+            for (Response response : completed.get(waitTimeout, TimeUnit.MILLISECONDS)) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("response statusCode: {}", response.getStatusCode());
 

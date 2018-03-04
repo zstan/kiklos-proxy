@@ -35,7 +35,7 @@ public class HelperUtils {
     }
 
     // TODO : ////123/qwe/a?2 - fail, fix it
-    static String getAccount(String req) {
+    static String getAccount(final String req) {
         QueryStringDecoder decoder = new QueryStringDecoder(req);
         String account = decoder.path().split("/")[1];
         try {

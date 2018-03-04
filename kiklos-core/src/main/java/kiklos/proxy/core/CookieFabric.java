@@ -1,18 +1,17 @@
 package kiklos.proxy.core;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-
-import io.netty.handler.codec.http.HttpRequest;
 
 import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -39,16 +38,12 @@ class CookieFabric {
 	private static final Logger LOG = LoggerFactory.getLogger(CookieFabric.class);
     static final String UID_COOKIE_NAME = "tuid";
 	
-	private CookieFabric() {}
-	
-	static CookieFabric buildCookieFabric() {
-		return new CookieFabric();
-	}
+	public CookieFabric() {}
 	
 	String generateUserId() {
-		long sessionCreationTime = System.currentTimeMillis();
+        long sessionCreationTime = System.currentTimeMillis();
 
-		String cString = Long.toString(sessionCreationTime) + Integer.toString(random.nextInt());
+        String cString = Long.toString(sessionCreationTime) + Integer.toString(random.nextInt());
 
 		byte[] bytesOfMessage;
 
@@ -93,18 +88,16 @@ class CookieFabric {
 		return new String(uuid);
 	}
 
-	static Pair<Cookie, List<Cookie>> getUserSessionCookies(final HttpRequest request) {
-		List<String> cookieStrings = request.headers().getAll(COOKIE);
-
+	static Map.Entry<Cookie, List<Cookie>> getUserSessionCookies(final List<String> cookieStrings) {
         if (LOG.isDebugEnabled())
 		    LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
 		
-		List<Cookie> httpCookieList = new ArrayList<>();
-		
 		if (cookieStrings.isEmpty())
-			return Pair.of(null, httpCookieList);		
-		
-		for (String cookieString : cookieStrings) {
+			return Pair.of(null, Collections.emptyList());
+
+        List<Cookie> httpCookieList = new ArrayList<>(cookieStrings.size());
+
+        for (String cookieString : cookieStrings) {
 			Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookieString);
 			httpCookieList.addAll(cookies);
 		}

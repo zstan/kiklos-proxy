@@ -24,12 +24,13 @@ public class Configuration {
     private final MemoryLogStorage memLogStorage = new MemoryLogStorage(storage, minPriorityPool);
     private final AdProcessing adProcessing = new AdProcessing();
     private final DirWatchDog timeTableWatchDog = new DirWatchDog(storage, minPriorityPool, adProcessing);
-    private final CookieFabric cookieFabric;
+    private final CookieFabric cookieFabric = new CookieFabric();
+    private static final int timeout = 5000;
 
     private final static AsyncHttpClientConfig ASYNC_CFG = new DefaultAsyncHttpClientConfig.Builder()
             .setCompressionEnforced(true)
-            .setConnectTimeout(5000)
-            .setRequestTimeout(5000)
+            .setConnectTimeout(timeout)
+            .setRequestTimeout(timeout)
             .setUserAgent("Opera/9.80 (X11; Linux x86_64) Presto/2.12.388 Version/12.16")
             .setFollowRedirect(true)
             .setTcpNoDelay(true)
@@ -38,7 +39,6 @@ public class Configuration {
     //private NettyAsyncHttpProviderConfig providerConfig = new NettyAsyncHttpProviderConfig();
 
     public Configuration() {
-        cookieFabric = CookieFabric.buildCookieFabric();
 /*        System.err.println(httpClient.getConfig().getClass().getName());
         System.err.println(httpClient.getConfig().getAsyncHttpProviderConfig().getClass().getName());
         NettyAsyncHttpProviderConfig cfg = (NettyAsyncHttpProviderConfig) httpClient.getConfig().getAsyncHttpProviderConfig();
