@@ -6,7 +6,6 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,7 +18,6 @@ import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.apache.commons.lang3.tuple.Pair;
-import org.asynchttpclient.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,21 +26,23 @@ class CookieFabric {
 	private final static int byteMask = 0x4f;	
 	private final static Random random = ThreadLocalRandom.current();
 	private final static String substitutionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";
-	private MessageDigest md;
+	private final static ThreadLocal<MessageDigest> md = new ThreadLocal<MessageDigest>() {
+        @Override protected MessageDigest initialValue() {
+            try {
+                return MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    };
 	private static final Logger LOG = LoggerFactory.getLogger(CookieFabric.class);
     static final String UID_COOKIE_NAME = "tuid";
 	
 	private CookieFabric() {}
 	
 	static CookieFabric buildCookieFabric() {
-		CookieFabric cf = new CookieFabric();		
-		try {
-			cf.md = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return cf;
+		return new CookieFabric();
 	}
 	
 	String generateUserId() {
@@ -53,18 +53,12 @@ class CookieFabric {
 		byte[] bytesOfMessage;
 
         try {
-            md = MessageDigest.getInstance("MD5"); // TODO : thread local
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        try {
 			bytesOfMessage = cString.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return "";
 		}
-		byte[] thedigest = md.digest(bytesOfMessage);
+		byte[] thedigest = md.get().digest(bytesOfMessage);
 		int seed = random.nextInt();
 		
 		char[] uuid = new char[20];
@@ -126,20 +120,19 @@ class CookieFabric {
 		return Pair.of(ourCookie, httpCookieList);
 	}
 	
-	static List<Cookie> getResponseCookies(final Response request) {
-		List<String> cookieStrings = request.getHeaders(SET_COOKIE);
+	static List<Cookie> getResponseCookies(final List<String> cookies) {
 		List<Cookie> httpCookieList = new ArrayList<>();
 		
-		if (cookieStrings != null) {
+		if (cookies != null) {
 			if (LOG.isDebugEnabled())
-				LOG.debug("getResponseCookies: {} len: {}", SET_COOKIE, cookieStrings.size());
-			for (String cookieString : cookieStrings) {
+				LOG.debug("getResponseCookies: {} len: {}", SET_COOKIE, cookies.size());
+			for (String cookieString : cookies) {
 				if (cookieString != null) {
 					if (LOG.isDebugEnabled())
 						LOG.debug("{} string: {}", SET_COOKIE, cookieString);
-					Cookie cookies = ClientCookieDecoder.STRICT.decode(cookieString);
-					if (cookies != null) {
-						httpCookieList.add(cookies);
+					Cookie cookies0 = ClientCookieDecoder.STRICT.decode(cookieString);
+					if (cookies0 != null) {
+						httpCookieList.add(cookies0);
 					}
 				}
 			}

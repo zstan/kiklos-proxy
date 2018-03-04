@@ -40,6 +40,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
+import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -301,7 +302,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
                 adContents.add(respBody.isEmpty() ? EMPTY_VAST : respBody);
                 if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
-                    sessionCookieList.addAll(CookieFabric.getResponseCookies(response));
+                    sessionCookieList.addAll(CookieFabric.getResponseCookies(response.getHeaders(SET_COOKIE)));
                     cookieAccepted = true;
                 }
                 LOG.debug("response pool remove");
