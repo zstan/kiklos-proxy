@@ -277,8 +277,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 			final Cookie stCookie = ourAndSessionCookPair.getKey();
 			final List<Cookie> sessionCookieList = ourAndSessionCookPair.getValue();
 			
-            List<CompletableFuture<Response>> requestsPool = new ArrayList<>();
-            List<String> adContents = new ArrayList<>();
+            List<CompletableFuture<Response>> requestsPool = new ArrayList<>(adUrls.size());
+            List<String> adContents = new ArrayList<>(adUrls.size());
 
             for (String vs : adUrls) {
                 if (LOG.isDebugEnabled())
@@ -330,8 +330,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         return null;
     }
 	
-	private ListenableFuture<Response> createResponse(final List<Cookie> sessionCookies,
-			final String newPath) throws IOException {
+	private ListenableFuture<Response> createResponse(final List<Cookie> sessionCookies, final String newPath){
 		final BoundRequestBuilder rb = httpClient.prepareGet(newPath);
 		for (Cookie c : sessionCookies) {
 			rb.addHeader(COOKIE, ClientCookieEncoder.STRICT.encode(c).replace("\"", "")); // read rfc ! adfox don`t like \" symbols

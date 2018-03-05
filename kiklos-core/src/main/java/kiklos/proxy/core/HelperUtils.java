@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ public class HelperUtils {
     private static final Logger LOG = LoggerFactory.getLogger(HelperUtils.class);
     public static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
     public static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
+    private static final Pattern NUM_ACCOUNT = Pattern.compile("(/[0-9]{1,}/)");
 
     static int getRequiredAdDuration(final Map<String, List<String>> params) {
         List<String> dur = params.get(HttpRequestHandler.DURATION);
@@ -34,18 +37,10 @@ public class HelperUtils {
             return -1;
     }
 
-    // TODO : ////123/qwe/a?2 - fail, fix it
     static String getAccount(final String req) {
-        QueryStringDecoder decoder = new QueryStringDecoder(req);
-        String account = decoder.path().split("/")[1];
-        try {
-            Integer.parseInt(account);
-        } catch (NumberFormatException e) {
-            return "";
-        }
-        return account;
+        Matcher m = NUM_ACCOUNT.matcher(req);
+        return m.find() ? req.substring(m.start() + 1, m.end() - 1) : "";
     }
-
 
 	static String queryParams2String(final Map<String, List<String>> params) {
 		QueryStringEncoder enc = new QueryStringEncoder("");

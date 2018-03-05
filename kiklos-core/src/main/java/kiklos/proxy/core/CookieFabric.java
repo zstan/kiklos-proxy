@@ -91,11 +91,11 @@ class CookieFabric {
 	static Map.Entry<Cookie, List<Cookie>> getUserSessionCookies(final List<String> cookieStrings) {
         if (LOG.isDebugEnabled())
 		    LOG.debug("getUserSessionCookies cookieStrings size: {}", cookieStrings.size());
-		
-		if (cookieStrings.isEmpty())
-			return Pair.of(null, Collections.emptyList());
 
         List<Cookie> httpCookieList = new ArrayList<>(cookieStrings.size());
+
+        if (cookieStrings.isEmpty())
+            return Pair.of(null, httpCookieList);
 
         for (String cookieString : cookieStrings) {
 			Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookieString);
