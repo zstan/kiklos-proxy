@@ -85,97 +85,80 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	}
 
 	/**
-	 * @param req request string
+	 * @param queryParams query params
 	 * @return list for Ad uri`s
      */
-	private List<String> reqTransformer(String req) {
-        req = req.toLowerCase();
-		QueryStringDecoder decoder = new QueryStringDecoder(req);
-		Map<String, List<String>> queryParams = decoder.parameters();
-		
-		if (!queryParams.isEmpty()) {
-            String plID = "";
-            List<String> idList = queryParams.get(ID);
-            if (!idList.isEmpty() && !idList.get(0).isEmpty()) {
-                plID = idList.get(0);
+	private List<String> reqTransformer(final String plID, final String account, final Map<String, List<String>> queryParams) {
+        // пробуем найти уже замапленные vast url`s
+        // редактируется в редис базе
+        // redis-cli HSET "\".placements\"" "\"212\"" "[\"java.util.ArrayList\",[\"http://asdasdfasdf.com/\", \"http://asg.vidigital.ru/1/50006/c/v/2\", \"http://ib.adnxs.com/ptv?id=2504637\"]]"
+        // берем vast xml или из базы редиса или из расписания, если попадаем в рекламный блок бьем его на части и каждой части смотрим в редис базу
+        // за соотв. записями : redis-cli HSET "\".durations\"" "5" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
+        // так же для каждого канала в отдельности конфигурится допуски +- от рекламного блока.
+        List<String> vastList =  placementsMapping.getMappingVASTList(plID);
+
+        // Если не нашли в редис, лезем в расписание
+        if (vastList.isEmpty()) {
+            int reqDuration = HelperUtils.getRequiredAdDuration(queryParams);
+            LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
+            PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(queryParams));
+            if (tt4ch != null) {
+                reqDuration = tt4ch.getKey();
+                LOG.debug("reqDuration: {}", reqDuration);
+                vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
+            } else {
+                vastList = Collections.emptyList(); // empty for unknown channel !!!
             }
+        }
 
-			if (!plID.isEmpty()) {
-				// пробуем найти уже замапленные vast url`s
-				// редактируется в редис базе
-				// redis-cli HSET "\".placements\"" "\"212\"" "[\"java.util.ArrayList\",[\"http://asdasdfasdf.com/\", \"http://asg.vidigital.ru/1/50006/c/v/2\", \"http://ib.adnxs.com/ptv?id=2504637\"]]"
-				// берем vast xml или из базы редиса или из расписания, если попадаем в рекламный блок бьем его на части и каждой части смотрим в редис базу
-				// за соотв. записями : redis-cli HSET "\".durations\"" "5" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
-				// так же для каждого канала в отдельности конфигурится допуски +- от рекламного блока.
-				List<String> vastList =  placementsMapping.getMappingVASTList(plID);
+        if (LOG.isDebugEnabled())
+            LOG.debug("vastList size: {}", vastList.size());
 
-				// Если не нашли в редис, лезем в расписание
-				if (vastList.isEmpty()) {
-					int reqDuration = HelperUtils.getRequiredAdDuration(queryParams);
-					LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
-					PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(queryParams));
-					if (tt4ch != null) {
-						reqDuration = tt4ch.getKey();
-						LOG.debug("reqDuration: {}", reqDuration);
-						vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
-					} else {
-						vastList = Collections.emptyList(); // empty for unknown channel !!!
-					}
-				}
+        if (!vastList.isEmpty()) {
 
-				if (LOG.isDebugEnabled())
-					LOG.debug("vastList size: {}", vastList.size());
+            // к нашей системе идем с запросом
+            // http://178.170.237.19/22627[99]/tvd?id=111&puid30=12377&puid6=15&pr=123&eid1=12377:1:123&dl=http://1tv.ru/ott/:www.ru
+            // выкидываем id все остальные параметры конкатенируем и передаем в AD
+            //http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid6={priority}
+            // &puid25=1&puid30={placement}&pr={random}&eid1={placement}:{session}:{random}&dl=http://1tv.ru/ott/:{referer}
+            // в редис сетим соотв.
+            // redis-cli HSET "\".placements\"" "\"111\"" "[\"java.util.ArrayList\",[\"http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid25=1\"]]"
 
-				if (!vastList.isEmpty()) {
+            queryParams.remove(ID);
+            queryParams.remove(DURATION);
+            queryParams.remove(CHANNEL);
 
-                    // к нашей системе идем с запросом
-                    // http://178.170.237.19/22627[99]/tvd?id=111&puid30=12377&puid6=15&pr=123&eid1=12377:1:123&dl=http://1tv.ru/ott/:www.ru
-                    // выкидываем id все остальные параметры конкатенируем и передаем в AD
-                    //http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid6={priority}
-                    // &puid25=1&puid30={placement}&pr={random}&eid1={placement}:{session}:{random}&dl=http://1tv.ru/ott/:{referer}
-                    // в редис сетим соотв.
-                    // redis-cli HSET "\".placements\"" "\"111\"" "[\"java.util.ArrayList\",[\"http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid25=1\"]]"
+            String query = HelperUtils.queryParams2String(queryParams);
 
-                    String account = HelperUtils.getAccount(req);
+            if (!Strings.isNullOrEmpty(query)) {
+                List<String> vastUriList = new ArrayList<>(vastList.size());
 
-					queryParams.remove(ID);
-					queryParams.remove(DURATION);
-					queryParams.remove(CHANNEL);
-					
-					String query = HelperUtils.queryParams2String(queryParams);
+                for (String vastURL: vastList) {
+                    if (!Strings.isNullOrEmpty(account))
+                        vastURL = vastURL.replace("{account}", account);
 
-					if (!Strings.isNullOrEmpty(query)) {
-                        List<String> vastUriList = new ArrayList<>(vastList.size());
+                    if (queryParams.isEmpty())
+                        vastURL += "?";
+                    else
+                        vastURL += "&";
+                    vastUriList.add(vastURL + query);
 
-						for (String vastURL: vastList) {
-                            if (!account.isEmpty())
-                                vastURL = vastURL.replace("{account}", account);
-
-							if (queryParams.isEmpty())
-                                vastURL += "?";
-							else
-                                vastURL += "&";
-							vastUriList.add(vastURL + query);
-
-                            if (LOG.isDebugEnabled())
-                                LOG.debug("final ad string: {}{}", vastURL, query);
-						}
-                        return vastUriList;
-					} else
-						return vastList;
-				}
-			}	
-		}
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("final ad string: {}{}", vastURL, query);
+                }
+                return vastUriList;
+            } else
+                return vastList;
+        }
 		return Collections.emptyList();
 	}
 	
-	private Map<String, String> getDebugParams(final String req) {
-		final QueryStringDecoder decoder = new QueryStringDecoder(req);
+	private Map<String, String> getDebugParams(final Map<String, List<String>> params) {
 		Map<String, String> mOut = new HashMap<>();
-		final Map<String, List<String>> params = decoder.parameters();
+
 		if (params.keySet().contains("debug")) {
 			if (params.get(CHANNEL) != null) {
-				mOut.put(CHANNEL, params.get(CHANNEL).get(0));
+				return Collections.singletonMap(CHANNEL, params.get(CHANNEL).get(0));
 			}
 		}
 		return mOut;
@@ -239,6 +222,12 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)msg;
 
+            Map<String, List<String>> queryParams;
+
+            String plID = "";
+
+            String req = request.uri().toLowerCase();
+
             {
                 if (HttpUtil.is100ContinueExpected(request)) {
                     ctx.write(new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.CONTINUE));
@@ -249,14 +238,35 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                     return;
                 }
 
-                Map<String, String> debugParams = getDebugParams(request.uri());
+                QueryStringDecoder decoder = new QueryStringDecoder(req);
+
+                queryParams = decoder.parameters();
+
+                Map<String, String> debugParams = getDebugParams(queryParams);
+
                 if (!debugParams.isEmpty()) {
                     writeDebug(debugParams, ctx, msg);
+                    ctx.channel().close();
                     return;
+                }
+
+                if (!queryParams.isEmpty()) {
+                    List<String> idList = queryParams.get(ID);
+
+                    if (!idList.isEmpty()) {
+                        plID = idList.get(0);
+
+                        if (Strings.isNullOrEmpty(plID)) {
+                            ctx.channel().close();
+                            return;
+                        }
+                    }
                 }
             }
 
-			final List<String> adUrls = reqTransformer(request.uri());
+            String account = HelperUtils.getAccount(req);
+
+			final List<String> adUrls = reqTransformer(plID, account, queryParams);
 
             if (LOG.isDebugEnabled())
 			    LOG.debug("VASTUrlList size: {}", adUrls.size());
@@ -320,7 +330,6 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         String ch = debugParams.get(CHANNEL);
         PairEx<Short, List<Short>> adList = adProcessing.getAdListFromTimeTable(ch);
         writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<>(), null, "text/plain");
-        ctx.channel().close();
     }
 
     private static Void errorHandle(Throwable e){
