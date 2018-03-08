@@ -23,13 +23,14 @@ public class HelperUtils {
     public static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
     public static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
     private static final Pattern NUM_ACCOUNT = Pattern.compile("(/[0-9]{1,}/)");
+    static short MAX_DURATION_BLOCK = 900;
 
     static int getRequiredAdDuration(final Map<String, List<String>> params) {
-        List<String> dur = params.get(HttpRequestHandler.DURATION);
+        List<String> dur = params.get(Configuration.DURATION);
         if (dur != null) {
             try {
                 int d = Integer.parseInt(dur.get(0));
-                return d > HttpRequestHandler.MAX_DURATION_BLOCK ? HttpRequestHandler.MAX_DURATION_BLOCK : d;
+                return d > MAX_DURATION_BLOCK ? MAX_DURATION_BLOCK : d;
             } catch (NumberFormatException e) {
                 return -1;
             }
@@ -63,7 +64,7 @@ public class HelperUtils {
 	}
 	
 	static String getChannelFromParams(final Map<String, List<String>> params) {
-		List<String> channel = params.remove(HttpRequestHandler.CHANNEL);
+		List<String> channel = params.remove(Configuration.CHANNEL);
 		if (channel == null || channel.isEmpty()) {
 			LOG.info("no channel param found, using default");
 			return HttpRequestHandler.DEFAULT_CHANNEL;

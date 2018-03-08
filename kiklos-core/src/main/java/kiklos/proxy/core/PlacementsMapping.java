@@ -35,7 +35,7 @@ public class PlacementsMapping {
 		return placements.get(key);
 	}
 	
-	public List<String> getMappingVASTList(final String key) {
+	public List<String> getProxyURIList(final String key) {
 		List<String> val = placements.get(key); 
 		if (val != null)
 			return val;

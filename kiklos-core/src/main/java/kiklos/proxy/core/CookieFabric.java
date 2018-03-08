@@ -6,15 +6,14 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.SplittableRandom;
 
 import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -23,8 +22,9 @@ import org.slf4j.LoggerFactory;
 class CookieFabric {
 	
 	private final static int byteMask = 0x4f;	
-	private final static Random random = ThreadLocalRandom.current();
+	private final static SplittableRandom random = new SplittableRandom();
 	private final static String substitutionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";
+    private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	private final static ThreadLocal<MessageDigest> md = new ThreadLocal<MessageDigest>() {
         @Override protected MessageDigest initialValue() {
             try {
@@ -132,4 +132,13 @@ class CookieFabric {
 		}
 		return httpCookieList;
 	}
+
+    public Cookie createCookie() {
+        Cookie c = new DefaultCookie(CookieFabric.UID_COOKIE_NAME, generateUserId());
+        c.setMaxAge(COOKIE_MAX_AGE);
+        c.setPath("/");
+        c.setDomain(".1tv.ru");
+        c.setHttpOnly(true);
+        return c;
+    }
 }

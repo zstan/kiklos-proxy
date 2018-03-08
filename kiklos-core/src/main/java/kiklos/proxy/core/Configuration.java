@@ -9,12 +9,21 @@ import org.asynchttpclient.AsyncHttpClientConfig;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
 public class Configuration {
+    public static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
+    public static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
+    public static final String XML_CONTENT_TYPE = "application/xml; charset=" + StandardCharsets.UTF_8.name();
+    public static final String ALLOW_ACC_CONTROL = "http://static.1tv.ru";
+    public static final String DURATION = "t";
+    public static final String CHANNEL = "ch";
+    public static final String ID = "id";
+
     private final AsyncHttpClient httpClient = asyncHttpClient(ASYNC_CFG);
     private final RedissonClient storage = Redisson.create();
     private final ExecutorService minPriorityPool = Executors.newCachedThreadPool(r ->

@@ -3,7 +3,6 @@ package kiklos.proxy.core;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLEncoder;
@@ -25,7 +24,6 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import kiklos.planner.DurationSettings;
 import kiklos.planner.SimpleStrategy;
 import kiklos.tv.timetable.AdProcessing;
-import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -57,17 +55,8 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private final AsyncHttpClient httpClient;
 	private final PlacementsMapping placementsMapping;
 	private final DurationSettings durationSettings;
-	private static final String EMPTY_VAST = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" />";
-	private static final String EMPTY_VAST_NO_AD = "<VAST version=\"2.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"oxml.xsd\" <no_ad_for_this_time/>/>";
 	private final CookieFabric cookieFabric;
-	private static final String XML_CONTENT_TYPE = "application/xml; charset=" + StandardCharsets.UTF_8.name();
-	private static final String ALLOW_ACC_CONTROL = "http://static.1tv.ru";
-	static final String DURATION = "t";
-	static final String CHANNEL = "ch";
-    static final String ID = "id";
 	static final String DEFAULT_CHANNEL = "408";
-	private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
-	static short MAX_DURATION_BLOCK = 900;
 	private final int waitTimeout;
 	private static final DateTimeFormatter datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
@@ -95,26 +84,26 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         // берем vast xml или из базы редиса или из расписания, если попадаем в рекламный блок бьем его на части и каждой части смотрим в редис базу
         // за соотв. записями : redis-cli HSET "\".durations\"" "5" "\"http://ads.adfox.ru/216891/getCode?p1=bpvvo&p2=euhw&pfc=a&pfb=a&plp=a&pli=a&pop=a\""
         // так же для каждого канала в отдельности конфигурится допуски +- от рекламного блока.
-        List<String> vastList =  placementsMapping.getMappingVASTList(plID);
+        List<String> proxyAdURIs =  placementsMapping.getProxyURIList(plID);
 
         // Если не нашли в редис, лезем в расписание
-        if (vastList.isEmpty()) {
+        if (proxyAdURIs.isEmpty()) {
             int reqDuration = HelperUtils.getRequiredAdDuration(queryParams);
             LOG.debug("no correspond placement found, try to get from TimeTable req duration: {}", reqDuration);
             PairEx<Short, List<Short>> tt4ch = adProcessing.getAdListFromTimeTable(HelperUtils.getChannelFromParams(queryParams));
             if (tt4ch != null) {
                 reqDuration = tt4ch.getKey();
                 LOG.debug("reqDuration: {}", reqDuration);
-                vastList = SimpleStrategy.formAdList(durationSettings, reqDuration);
+                proxyAdURIs = SimpleStrategy.formAdList(durationSettings, reqDuration);
             } else {
-                vastList = Collections.emptyList(); // empty for unknown channel !!!
+                proxyAdURIs = Collections.emptyList(); // empty for unknown channel !!!
             }
         }
 
         if (LOG.isDebugEnabled())
-            LOG.debug("vastList size: {}", vastList.size());
+            LOG.debug("proxyAdURIs size: {}", proxyAdURIs.size());
 
-        if (!vastList.isEmpty()) {
+        if (!proxyAdURIs.isEmpty()) {
 
             // к нашей системе идем с запросом
             // http://178.170.237.19/22627[99]/tvd?id=111&puid30=12377&puid6=15&pr=123&eid1=12377:1:123&dl=http://1tv.ru/ott/:www.ru
@@ -124,44 +113,29 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             // в редис сетим соотв.
             // redis-cli HSET "\".placements\"" "\"111\"" "[\"java.util.ArrayList\",[\"http://v.adfox.ru/{account}/getCode?pp=efi&ps=byof&p2=eyit&pfc=a&pfb=a&plp=a&pli=a&pop=a&pct=c&puid5=1&puid25=1\"]]"
 
-            queryParams.remove(ID);
-            queryParams.remove(DURATION);
-            queryParams.remove(CHANNEL);
+            queryParams.remove(Configuration.ID);
+            queryParams.remove(Configuration.DURATION);
+            queryParams.remove(Configuration.CHANNEL);
 
             String query = HelperUtils.queryParams2String(queryParams);
 
             if (!Strings.isNullOrEmpty(query)) {
-                List<String> vastUriList = new ArrayList<>(vastList.size());
+                List<String> transformedAdURIs = new ArrayList<>(proxyAdURIs.size());
 
-                for (String vastURL: vastList) {
+                for (String uri: proxyAdURIs) {
                     if (!Strings.isNullOrEmpty(account))
-                        vastURL = vastURL.replace("{account}", account);
+                        uri = uri.replace("{account}", account);
 
-                    if (queryParams.isEmpty())
-                        vastURL += "?";
-                    else
-                        vastURL += "&";
-                    vastUriList.add(vastURL + query);
+                    transformedAdURIs.add(uri + (queryParams.isEmpty() ? "?" + query : "&" + query));
 
                     if (LOG.isDebugEnabled())
-                        LOG.debug("final ad string: {}{}", vastURL, query);
+                        LOG.debug("final ad string: {}{}", uri, query);
                 }
-                return vastUriList;
+                return transformedAdURIs;
             } else
-                return vastList;
+                return proxyAdURIs;
         }
 		return Collections.emptyList();
-	}
-	
-	private Map<String, String> getDebugParams(final Map<String, List<String>> params) {
-		Map<String, String> mOut = new HashMap<>();
-
-		if (params.keySet().contains("debug")) {
-			if (params.get(CHANNEL) != null) {
-				return Collections.singletonMap(CHANNEL, params.get(CHANNEL).get(0));
-			}
-		}
-		return mOut;
 	}
 	
 	private String composeLogString(final HttpRequest req, final String newUri, final String remoteHost) {
@@ -181,7 +155,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
 	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
 			final String buff, List<Cookie> cookieList, final Cookie stCookie) {
-		writeResp(ctx, msg, buff, cookieList, stCookie, XML_CONTENT_TYPE);
+		writeResp(ctx, msg, buff, cookieList, stCookie, Configuration.XML_CONTENT_TYPE);
 	}
 
 	private void writeResp(final ChannelHandlerContext ctx, final HttpRequest msg,
@@ -189,7 +163,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		ByteBuf bb = Unpooled.wrappedBuffer(buff.getBytes());
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, bb);
 		if (stCookie == null) {					
-			cookieList.add(currentCookie());
+			cookieList.add(cookieFabric.createCookie());
 		}
 				
 		LOG.debug(cookieList.toString());
@@ -204,7 +178,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 .add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes())
 		        .add(HttpHeaderNames.CONTENT_TYPE, contentType)
 		        .add(HttpHeaderNames.CACHE_CONTROL, HttpHeaderValues.NO_CACHE)
-		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, ALLOW_ACC_CONTROL)
+		        .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, Configuration.ALLOW_ACC_CONTROL)
                 .add(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
 
 		boolean keepAlive = HttpUtil.isKeepAlive(msg);
@@ -251,7 +225,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 }
 
                 if (!queryParams.isEmpty()) {
-                    List<String> idList = queryParams.get(ID);
+                    List<String> idList = queryParams.get(Configuration.ID);
 
                     if (!idList.isEmpty()) {
                         plID = idList.get(0);
@@ -312,7 +286,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
                 final String respBody = response.getResponseBody();
 
-                adContents.add(respBody.isEmpty() ? EMPTY_VAST : respBody);
+                adContents.add(respBody.isEmpty() ? Configuration.EMPTY_VAST : respBody);
                 if (!cookieAccepted) { // нет нужды сетить все куки, если крутилка одна и та же.., сетим первые и все.
                     sessionCookieList.addAll(CookieFabric.getResponseCookies(response.getHeaders(SET_COOKIE)));
                     cookieAccepted = true;
@@ -321,15 +295,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             }
 
             writeResp(ctx, (HttpRequest)msg, adUrls.size() > 1 ?
-                Vast3Fabric.Vast2ListToVast3(adContents) : adContents.isEmpty() ? EMPTY_VAST : adContents.get(0),
+                Vast3Fabric.Vast2ListToVast3(adContents) : adContents.isEmpty() ? Configuration.EMPTY_VAST : adContents.get(0),
                         sessionCookieList, stCookie);
         }
 	}
 
     private void writeDebug(Map<String, String> debugParams, ChannelHandlerContext ctx, Object msg) {
-        String ch = debugParams.get(CHANNEL);
+        String ch = debugParams.get(Configuration.CHANNEL);
         PairEx<Short, List<Short>> adList = adProcessing.getAdListFromTimeTable(ch);
-        writeResp(ctx, (HttpRequest)msg, adList == null ? EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<>(), null, "text/plain");
+        writeResp(ctx, (HttpRequest)msg, adList == null ? Configuration.EMPTY_VAST_NO_AD : adList.toString(), new ArrayList<>(), null, "text/plain");
     }
 
     private static Void errorHandle(Throwable e){
@@ -346,7 +320,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 		}
 		return rb.execute(new AsyncCompletionHandler<Response>() {
             @Override
-            public Response onCompleted(Response response) throws Exception {
+            public Response onCompleted(Response response) {
                 LOG.info("req completed : {} status code : {}, response size: {}", newPath, response.getStatusCode(), response.getResponseBody().length());
                 return response;
             }
@@ -364,13 +338,15 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         cause.printStackTrace();
 		ctx.close();
 	}
-	
-	private Cookie currentCookie() {
-		Cookie c = new DefaultCookie(CookieFabric.UID_COOKIE_NAME, cookieFabric.generateUserId());
-		c.setMaxAge(COOKIE_MAX_AGE);
-		c.setPath("/");
-		c.setDomain(".1tv.ru");
-		c.setHttpOnly(true);
-		return c;
-	}
+
+    private Map<String, String> getDebugParams(final Map<String, List<String>> params) {
+        Map<String, String> mOut = new HashMap<>();
+
+        if (params.keySet().contains("debug")) {
+            if (params.get(Configuration.CHANNEL) != null) {
+                return Collections.singletonMap(Configuration.CHANNEL, params.get(Configuration.CHANNEL).get(0));
+            }
+        }
+        return mOut;
+    }
 }
