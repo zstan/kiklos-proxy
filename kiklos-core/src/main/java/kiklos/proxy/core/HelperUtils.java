@@ -22,7 +22,7 @@ public class HelperUtils {
     private static final Logger LOG = LoggerFactory.getLogger(HelperUtils.class);
     public static final SimpleDateFormat DATE_FILE_FORMAT = new SimpleDateFormat("yyMMdd");
     public static final SimpleDateFormat TIME_TV_FORMAT = new SimpleDateFormat("HH:mm:ss");
-    private static final Pattern NUM_ACCOUNT = Pattern.compile("(/[0-9]{1,}/)");
+    private static final Pattern NUM_ACCOUNT = Pattern.compile("(^/*)(/{1}[0-9]{1,}/)");
     static short MAX_DURATION_BLOCK = 900;
 
     static int getRequiredAdDuration(final Map<String, List<String>> params) {
@@ -40,7 +40,11 @@ public class HelperUtils {
 
     static String getAccount(final String req) {
         Matcher m = NUM_ACCOUNT.matcher(req);
-        return m.find() ? req.substring(m.start() + 1, m.end() - 1) : "";
+        if (m.find() && m.groupCount() >= 2) {
+            String tmp = m.group(2);
+            return tmp.substring(1, tmp.length()-1);
+        }
+        return "";
     }
 
 	static String queryParams2String(final Map<String, List<String>> params) {
@@ -121,7 +125,20 @@ public class HelperUtils {
         try {
         	unit.sleep(duration);
 		} catch (InterruptedException e1) {
-			e1.printStackTrace();
+			Thread.currentThread().interrupt();
 		}
 	}
+
+	public static void main(String[] a) {
+        Pattern NUM_ACCOUNT = Pattern.compile("(^/*)(/{1}[0-9]{1,}/)");
+
+	    String req = "/123////asd/";
+
+        Matcher m = NUM_ACCOUNT.matcher(req);
+        if (m.find() && m.groupCount() >= 2) {
+            String gg = m.group(2);
+            System.out.println(gg.substring(1, gg.length()-1));
+        }
+        //System.out.println( m.find() ? req.substring(m.start() + 1, m.end() - 1) : "");
+    }
 }

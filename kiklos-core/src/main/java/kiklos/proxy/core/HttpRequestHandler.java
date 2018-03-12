@@ -41,6 +41,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
 import static io.netty.handler.codec.http.HttpHeaders.Names.SET_COOKIE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import kiklos.tv.timetable.Vast3Fabric;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.BoundRequestBuilder;
@@ -57,20 +58,20 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 	private final DurationSettings durationSettings;
 	private final CookieFabric cookieFabric;
 	static final String DEFAULT_CHANNEL = "408";
-	private final int waitTimeout;
 	private static final DateTimeFormatter datePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestHandler.class);
     private final MemoryLogStorage memLogStorage;
     private final AdProcessing adProcessing;
+    private final Configuration cfg;
 	
 	HttpRequestHandler(Configuration config) {
+        this.cfg = config;
 		httpClient = config.getHttpClient();
 		placementsMapping = config.getPlacementsMap();
 		memLogStorage = config.getMemLogStorage();
 		cookieFabric = config.getCookieFabric();
 		durationSettings = config.getDurationsConfig();
 		adProcessing = config.getAdProcessing();
-        waitTimeout = httpClient.getConfig().getConnectTimeout();
 	}
 
 	/**
@@ -227,7 +228,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
                 if (!queryParams.isEmpty()) {
                     List<String> idList = queryParams.get(Configuration.ID);
 
-                    if (!idList.isEmpty()) {
+                    if (idList != null && !idList.isEmpty()) {
                         plID = idList.get(0);
 
                         if (Strings.isNullOrEmpty(plID)) {
@@ -280,7 +281,7 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
             CompletableFuture<List<Response>> completed = CompletableFuture.allOf(cfs).exceptionally(e -> errorHandle(e))
                     .thenApply(x -> Arrays.stream(cfs).map(CompletableFuture::join).collect(Collectors.toList()));
 
-            for (Response response : completed.get(waitTimeout, TimeUnit.MILLISECONDS)) {
+            for (Response response : completed.get(cfg.getConnectTimeout(), TimeUnit.MILLISECONDS)) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("response statusCode: {}", response.getStatusCode());
 

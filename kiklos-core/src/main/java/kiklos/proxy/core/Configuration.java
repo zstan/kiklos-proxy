@@ -81,4 +81,8 @@ public class Configuration {
     CookieFabric getCookieFabric() {
         return cookieFabric;
     }
+
+    int getConnectTimeout() {
+        return httpClient.getConfig().getConnectTimeout();
+    }
 }

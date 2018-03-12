@@ -24,7 +24,7 @@ public class MemoryLogStorage {
 	
 	private final List<String> memStorageList;	
 	private static final int LOG_DATA_CHUNK_SIZE = 10000;
-    private final BlockingQueue logData = new LinkedBlockingQueue();
+    private final BlockingQueue<String> logData = new LinkedBlockingQueue<>();
     private final ExecutorService minPriorityPool;
 	private static final String LOG_NAME = ".access_log";
 	private static final Logger LOG = LoggerFactory.getLogger(MemoryLogStorage.class);
@@ -70,10 +70,10 @@ public class MemoryLogStorage {
                 try {
                     tmpList.clear();
 
-                    Object data = logData.take();
+                    String data = logData.take();
 
                     while (data != null){
-                        tmpList.add((String)data);
+                        tmpList.add(data);
                         data = logData.poll(1, TimeUnit.SECONDS);
                     }
                     if (!tmpList.isEmpty())

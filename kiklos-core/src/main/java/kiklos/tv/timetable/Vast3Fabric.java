@@ -1,4 +1,4 @@
-package kiklos.proxy.core;
+package kiklos.tv.timetable;
 
 import java.io.StringWriter;
 import java.util.List;
