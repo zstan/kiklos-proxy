@@ -37,7 +37,7 @@ public class TimeTableResponder
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(bossGroup, workerGroup)
         	.channel(NioServerSocketChannel.class)
-        	.handler(new LoggingHandler(LogLevel.INFO))
+        	.handler(new LoggingHandler(LogLevel.WARN))
         	.childHandler(new HttpServerPipelineFactory());
 
 /*        String[] portsArr = ports.trim().split(",");
@@ -79,10 +79,10 @@ public class TimeTableResponder
 		@Override
 		public void initChannel(SocketChannel ch) {
 			ch.config().setTcpNoDelay(true);
-			ch.config().setConnectTimeoutMillis(5000);
+			ch.config().setConnectTimeoutMillis(config.getConnectTimeout());
 			ChannelPipeline p = ch.pipeline();
 			p.addLast(new HttpServerCodec());
-            p.addLast("compressor", new HttpContentCompressor());
+            p.addLast("compressor", new HttpContentCompressor(8));
 			p.addLast(new HttpRequestHandler(config));
 		}
 	}

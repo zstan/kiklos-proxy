@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 class CookieFabric {
 	
 	private final static int byteMask = 0x4f;	
-	private final static SplittableRandom random = new SplittableRandom();
+	private final static ThreadLocal<SplittableRandom> random = ThreadLocal.withInitial(() -> new SplittableRandom());
 	private final static String substitutionTable = "5FRA7KObkcHinBvxu.wUZX6YpdfTWDMVlhQ1gsGj_Le029SC3yPmratNJz84oqEIm32rm13rm12p3or12perk3m452m345;2m45k6m57lm567;4m567m467;4km67km";
     private static final int COOKIE_MAX_AGE = 60*60*24*30*3;
 	private final static ThreadLocal<MessageDigest> md = new ThreadLocal<MessageDigest>() {
@@ -43,7 +43,7 @@ class CookieFabric {
 	String generateUserId() {
         long sessionCreationTime = System.currentTimeMillis();
 
-        String cString = Long.toString(sessionCreationTime) + Integer.toString(random.nextInt());
+        String cString = Long.toString(sessionCreationTime) + Integer.toString(random.get().nextInt());
 
 		byte[] bytesOfMessage;
 
@@ -54,7 +54,7 @@ class CookieFabric {
 			return "";
 		}
 		byte[] thedigest = md.get().digest(bytesOfMessage);
-		int seed = random.nextInt();
+		int seed = random.get().nextInt();
 		
 		char[] uuid = new char[20];
 
